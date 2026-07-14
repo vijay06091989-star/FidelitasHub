@@ -682,6 +682,173 @@ into shiftGroup
 
             return View(attendanceList);
         }
+
+        //====================================================
+        // ATTENDANCE REGISTER
+        //====================================================
+
+        [HttpGet]
+        public IActionResult Register(
+            DateTime? fromDate,
+            DateTime? toDate,
+            string shift = "All",
+            string employee = "",
+            string status = "All")
+        {
+            ViewBag.FromDate = fromDate;
+            ViewBag.ToDate = toDate;
+            ViewBag.Shift = shift;
+            ViewBag.Employee = employee;
+            ViewBag.Status = status;
+
+            //==============================================
+            // 90 DAY VALIDATION
+            //==============================================
+
+            if (fromDate.HasValue && toDate.HasValue)
+            {
+                if (fromDate > toDate)
+                {
+                    TempData["Error"] = "From Date cannot be greater than To Date.";
+
+                    return View(new List<AttendanceRegisterViewModel>());
+                }
+
+                if ((toDate.Value - fromDate.Value).TotalDays > 90)
+                {
+                    TempData["Error"] = "Attendance Register can be generated only for a maximum period of 90 days.";
+
+                    return View(new List<AttendanceRegisterViewModel>());
+                }
+
+                if (fromDate.Value < DateTime.Today.AddDays(-90))
+                {
+                    TempData["Error"] = "Attendance records older than 90 days cannot be viewed.";
+
+                    return View(new List<AttendanceRegisterViewModel>());
+                }
+            }
+
+            var attendanceList = (
+
+    from e in _context.Employees
+
+    join s in _context.Shifts
+        on e.ShiftId equals s.ShiftId
+        into shiftGroup
+
+    from s in shiftGroup.DefaultIfEmpty()
+
+    join a in _context.Attendances
+        on e.EmployeeId equals a.EmployeeId
+        into attendanceGroup
+
+    from a in attendanceGroup.DefaultIfEmpty()
+
+    where e.IsActive
+
+    orderby e.EmployeeCode,
+            a != null ? a.AttendanceDate : DateTime.MinValue
+
+    select new AttendanceRegisterViewModel
+    {
+        EmployeeCode = e.EmployeeCode,
+
+        EmployeeName = e.EmployeeName,
+
+        AttendanceDate = a != null
+            ? a.AttendanceDate
+            : DateTime.MinValue,
+
+        Shift = s != null
+            ? s.ShiftName
+            : "--",
+
+        PunchIn = a != null && a.PunchIn != null
+            ? a.PunchIn.Value.ToString("hh:mm tt")
+            : "--",
+
+        PunchOut = a != null && a.PunchOut != null
+            ? a.PunchOut.Value.ToString("hh:mm tt")
+            : "--",
+
+        WorkedTime = a != null
+            ? TimeSpan.FromMinutes(a.WorkedMinutes).ToString(@"hh\:mm")
+            : "--",
+
+        BreakTime = a != null
+            ? TimeSpan.FromMinutes(a.TotalBreakMinutes).ToString(@"hh\:mm")
+            : "--",
+
+        Overtime = a != null
+            ? TimeSpan.FromMinutes(a.OvertimeMinutes).ToString(@"hh\:mm")
+            : "--",
+
+        Status = a != null
+            ? a.Status
+            : "Absent"
+    }
+
+).ToList();
+
+            //==============================================
+            // DATE FILTER
+            //==============================================
+
+            if (fromDate.HasValue)
+            {
+                attendanceList = attendanceList
+                    .Where(x => x.AttendanceDate.Date >= fromDate.Value.Date)
+                    .ToList();
+            }
+
+            if (toDate.HasValue)
+            {
+                attendanceList = attendanceList
+                    .Where(x => x.AttendanceDate.Date <= toDate.Value.Date)
+                    .ToList();
+            }
+
+            //==============================================
+            // SHIFT FILTER
+            //==============================================
+
+            if (!string.IsNullOrWhiteSpace(shift) && shift != "All")
+            {
+                attendanceList = attendanceList
+                    .Where(x => x.Shift == shift)
+                    .ToList();
+            }
+
+            //==============================================
+            // EMPLOYEE FILTER
+            //==============================================
+
+            if (!string.IsNullOrWhiteSpace(employee))
+            {
+                employee = employee.Trim();
+
+                attendanceList = attendanceList
+                    .Where(x =>
+                        x.EmployeeCode.Contains(employee, StringComparison.OrdinalIgnoreCase) ||
+                        x.EmployeeName.Contains(employee, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            //==============================================
+            // STATUS FILTER
+            //==============================================
+
+            if (!string.IsNullOrWhiteSpace(status) && status != "All")
+            {
+                attendanceList = attendanceList
+                    .Where(x => x.Status == status)
+                    .ToList();
+            }
+
+            return View(attendanceList);
+        }
+
         //====================================================
         // EXPORT TODAY ATTENDANCE - EXCEL
         //====================================================

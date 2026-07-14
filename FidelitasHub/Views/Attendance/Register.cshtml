@@ -1,0 +1,364 @@
+﻿@model List<FidelitasHub.Models.AttendanceRegisterViewModel>
+
+@{
+    ViewData["Title"] = "Attendance Register";
+
+    var minDate = DateTime.Today.AddDays(-90).ToString("yyyy-MM-dd");
+    var maxDate = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow-lg">
+
+        <div class="card-header bg-primary text-white">
+
+            <h3 class="mb-0">
+                📅 Attendance Register
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+
+                    <i class="fa-solid fa-circle-exclamation me-2"></i>
+
+                    @TempData["Error"]
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+
+                </div>
+            }
+
+            <form asp-action="Register" method="get">
+
+                <div class="row g-3">
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-bold">
+                            From Date
+                        </label>
+
+                        <input type="date"
+                               class="form-control"
+                               id="fromDate"
+                               name="fromDate"
+                               value="@(((DateTime?)ViewBag.FromDate)?.ToString("yyyy-MM-dd"))"
+                               min="@minDate"
+                               max="@maxDate" />
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-bold">
+                            To Date
+                        </label>
+
+                        <input type="date"
+                               class="form-control"
+                               id="toDate"
+                               name="toDate"
+                               value="@(((DateTime?)ViewBag.ToDate)?.ToString("yyyy-MM-dd"))"
+                               min="@minDate"
+                               max="@maxDate" />
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-bold">
+                            Shift
+                        </label>
+
+                        <select class="form-select"
+                                id="shift"
+                                name="shift">
+
+                            <option value="All"
+                                    selected="@(ViewBag.Shift == "All")">
+                                All
+                            </option>
+
+                            <option value="General Shift"
+                                    selected="@(ViewBag.Shift == "General Shift")">
+                                General Shift
+                            </option>
+
+                            <option value="US Shift"
+                                    selected="@(ViewBag.Shift == "US Shift")">
+                                US Shift
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-bold">
+                            Employee
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               id="employee"
+                               name="employee"
+                               value="@ViewBag.Employee"
+                               placeholder="Employee Code / Employee Name" />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-bold">
+                            Status
+                        </label>
+
+                        <select class="form-select"
+                                id="status"
+                                name="status">
+
+                            <option value="All"
+                                    selected="@(ViewBag.Status == "All")">
+                                All
+                            </option>
+
+                            <option value="Working"
+                                    selected="@(ViewBag.Status == "Working")">
+                                Working
+                            </option>
+
+                            <option value="On Break"
+                                    selected="@(ViewBag.Status == "On Break")">
+                                On Break
+                            </option>
+
+                            <option value="Punched Out"
+                                    selected="@(ViewBag.Status == "Punched Out")">
+                                Punched Out
+                            </option>
+
+                            <option value="Absent"
+                                    selected="@(ViewBag.Status == "Absent")">
+                                Absent
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="text-end">
+
+                    <button type="submit" class="btn btn-primary">
+
+                        <i class="fa fa-search"></i>
+
+                        Search
+
+                    </button>
+
+                    <a asp-controller="Attendance"
+                       asp-action="Register"
+                       class="btn btn-secondary">
+
+                        <i class="fa fa-eraser"></i>
+
+                        Clear
+
+                    </a>
+
+                    <button type="button" class="btn btn-success">
+
+                        <i class="fa fa-file-excel"></i>
+
+                        Excel
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-danger"
+                            disabled
+                            title="Coming in Version 2">
+
+                        <i class="fa fa-file-pdf"></i>
+
+                        PDF (Coming Soon)
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-dark"
+                            disabled
+                            title="Coming in Version 2">
+
+                        <i class="fa fa-print"></i>
+
+                        Print (Coming Soon)
+
+                    </button>
+
+                </div>
+
+            </form>
+
+            <hr />
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div>
+
+                    <span class="badge bg-primary fs-6">
+
+                        Total Records : @Model.Count
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover table-striped align-middle">
+
+                    <thead class="table-primary">
+
+                        <tr class="text-center">
+
+                            <th>Sl No</th>
+
+                            <th>Employee Code</th>
+
+                            <th>Employee Name</th>
+
+                            <th>Date</th>
+
+                            <th>Shift</th>
+
+                            <th>Punch In</th>
+
+                            <th>Punch Out</th>
+
+                            <th>Worked</th>
+
+                            <th>Break</th>
+
+                            <th>OT</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @if (Model.Any())
+                        {
+                            int slNo = 1;
+
+                            foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <td class="text-center">@slNo</td>
+
+                                    <td>@item.EmployeeCode</td>
+
+                                    <td>@item.EmployeeName</td>
+
+                                    <td>
+                                        @(item.AttendanceDate == DateTime.MinValue
+                                            ? "--"
+                                            : item.AttendanceDate.ToString("dd-MMM-yyyy"))
+                                    </td>
+
+                                    <td>@item.Shift</td>
+
+                                    <td>@item.PunchIn</td>
+
+                                    <td>@item.PunchOut</td>
+
+                                    <td>@item.WorkedTime</td>
+
+                                    <td>@item.BreakTime</td>
+
+                                    <td>@item.Overtime</td>
+
+                                    <td class="text-center">
+
+                                        @if (item.Status == "Working")
+                                        {
+                                            <span class="badge bg-success">
+                                                🟢 Working
+                                            </span>
+                                        }
+                                        else if (item.Status == "On Break")
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                ☕ On Break
+                                            </span>
+                                        }
+                                        else if (item.Status == "Punched Out")
+                                        {
+                                            <span class="badge bg-primary">
+                                                🔵 Punched Out
+                                            </span>
+                                        }
+                                        else if (item.Status == "Absent")
+                                        {
+                                            <span class="badge bg-danger">
+                                                🔴 Absent
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                @item.Status
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+
+                                slNo++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="11" class="text-center text-muted">
+
+                                    No attendance records found.
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
