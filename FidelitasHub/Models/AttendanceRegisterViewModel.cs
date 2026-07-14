@@ -28,6 +28,12 @@
 
         public string Status { get; set; } = "";
 
+        //==================================
+        // Final Attendance Result
+        //==================================
+
+        public string AttendanceStatus { get; set; } = "";
+
         public string Remarks { get; set; } = "";
     }
 }

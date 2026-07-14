@@ -1,5 +1,6 @@
 ﻿using FidelitasHub.Data;
 using FidelitasHub.Models;
+using AttendanceModel = FidelitasHub.Models.Attendance;
 
 namespace FidelitasHub.Services.Attendance
 {
@@ -54,8 +55,13 @@ namespace FidelitasHub.Services.Attendance
             // Load Shifts Once
             //====================================
 
-            var shiftLookup = _context.Shifts
-                .ToDictionary(x => x.ShiftId, x => x.ShiftName);
+            var shifts = _context.Shifts
+                .Where(x => x.IsActive)
+                .ToList();
+
+            var shiftLookup = shifts.ToDictionary(
+                x => x.ShiftId,
+                x => x);
 
             //====================================
             // Get Dates
@@ -101,6 +107,10 @@ namespace FidelitasHub.Services.Attendance
     (employee.EmployeeId, attendanceDate.Date),
     out var attendance);
 
+                    shiftLookup.TryGetValue(
+    employee.ShiftId,
+    out var shift);
+
                     attendanceRegister.Add(new AttendanceRegisterViewModel
                     {
                         EmployeeCode = employee.EmployeeCode,
@@ -109,9 +119,7 @@ namespace FidelitasHub.Services.Attendance
 
                         Department = employee.Department,
 
-                        Shift = shiftLookup.TryGetValue(employee.ShiftId, out var shiftName)
-    ? shiftName
-    : "--",
+                        Shift = shift?.ShiftName ?? "--",
 
                         AttendanceDate = attendanceDate,
 
@@ -136,6 +144,10 @@ namespace FidelitasHub.Services.Attendance
     : "--",
 
                         Status = attendance?.Status ?? "Absent",
+
+                        AttendanceStatus = CalculateAttendanceStatus(
+    attendance,
+    shift),
 
                         Remarks = ""
                     });
@@ -178,12 +190,62 @@ namespace FidelitasHub.Services.Attendance
                 request.Status != "All")
             {
                 attendanceRegister = attendanceRegister
-                    .Where(x => x.Status == request.Status)
+                    .Where(x => x.AttendanceStatus == request.Status)
                     .ToList();
             }
 
             return attendanceRegister;
 
+        }
+
+        //====================================================
+        // ATTENDANCE STATUS POLICY
+        //====================================================
+
+        private string CalculateAttendanceStatus(
+    AttendanceModel? attendance,
+    Shift? shift)
+
+        {
+            if (attendance == null)
+                return "Absent";
+
+            //====================================
+            // Today's Attendance - Live Status
+            //====================================
+
+            if (attendance.AttendanceDate.Date == DateTime.Today &&
+                attendance.PunchOut == null)
+            {
+                return attendance.Status;
+            }
+
+            int workedMinutes = attendance.WorkedMinutes;
+
+            if (workedMinutes < 240)
+                return "Absent";
+
+            if (workedMinutes >= 240 && workedMinutes <= 300)
+                return "Half Day";
+
+            if (workedMinutes > 300 && workedMinutes < 480)
+                return "Present";
+
+            if (workedMinutes >= 480)
+            {
+                if (attendance.PunchIn.HasValue && shift != null)
+                {
+                    var shiftStart = attendance.AttendanceDate.Date + shift.StandardStartTime;
+                    var graceTime = shiftStart.AddMinutes(shift.GraceMinutes);
+
+                    if (attendance.PunchIn.Value > graceTime)
+                        return "Present - Late Entry";
+                }
+
+                return "Present";
+            }
+
+            return "Absent";
         }
 
         public List<Employee> GetActiveEmployees()

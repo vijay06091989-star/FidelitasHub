@@ -132,19 +132,19 @@
                                 All
                             </option>
 
-                            <option value="Working"
-                                    selected="@(ViewBag.Status == "Working")">
-                                Working
+                            <option value="Present"
+                                    selected="@(ViewBag.Status == "Present")">
+                                Present
                             </option>
 
-                            <option value="On Break"
-                                    selected="@(ViewBag.Status == "On Break")">
-                                On Break
+                            <option value="Present - Late Entry"
+                                    selected="@(ViewBag.Status == "Present - Late Entry")">
+                                Present - Late Entry
                             </option>
 
-                            <option value="Punched Out"
-                                    selected="@(ViewBag.Status == "Punched Out")">
-                                Punched Out
+                            <option value="Half Day"
+                                    selected="@(ViewBag.Status == "Half Day")">
+                                Half Day
                             </option>
 
                             <option value="Absent"
@@ -261,7 +261,7 @@
 
                             <th>OT</th>
 
-                            <th>Status</th>
+                            <th>Attendance Status</th>
 
                         </tr>
 
@@ -303,34 +303,46 @@
 
                                     <td class="text-center">
 
-                                        @if (item.Status == "Working")
+                                        @if (item.AttendanceStatus == "Working")
                                         {
                                             <span class="badge bg-success">
                                                 🟢 Working
                                             </span>
                                         }
-                                        else if (item.Status == "On Break")
+                                        else if (item.AttendanceStatus == "On Break")
                                         {
                                             <span class="badge bg-warning text-dark">
                                                 ☕ On Break
                                             </span>
                                         }
-                                        else if (item.Status == "Punched Out")
+                                        else if (item.AttendanceStatus == "Present")
                                         {
-                                            <span class="badge bg-primary">
-                                                🔵 Punched Out
+                                            <span class="badge bg-success">
+                                                ✅ Present
                                             </span>
                                         }
-                                        else if (item.Status == "Absent")
+                                        else if (item.AttendanceStatus == "Present - Late Entry")
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                ⏰ Present - Late Entry
+                                            </span>
+                                        }
+                                        else if (item.AttendanceStatus == "Half Day")
+                                        {
+                                            <span class="badge bg-info text-dark">
+                                                🌓 Half Day
+                                            </span>
+                                        }
+                                        else if (item.AttendanceStatus == "Absent")
                                         {
                                             <span class="badge bg-danger">
-                                                🔴 Absent
+                                                ❌ Absent
                                             </span>
                                         }
                                         else
                                         {
                                             <span class="badge bg-secondary">
-                                                @item.Status
+                                                @item.AttendanceStatus
                                             </span>
                                         }
 

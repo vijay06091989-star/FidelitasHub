@@ -877,7 +877,7 @@ into shiftGroup
                     ws.Cell(row, 8).Value = item.WorkedTime;
                     ws.Cell(row, 9).Value = item.BreakTime;
                     ws.Cell(row, 10).Value = item.Overtime;
-                    ws.Cell(row, 11).Value = item.Status;
+                    ws.Cell(row, 11).Value = item.AttendanceStatus;
                     ws.Cell(row, 12).Value = item.Remarks;
 
                     row++;
