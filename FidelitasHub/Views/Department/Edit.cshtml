@@ -1,0 +1,123 @@
+﻿@model FidelitasHub.Models.Department
+
+@{
+    ViewData["Title"] = "Edit Department";
+}
+
+<div class="container-fluid mt-4">
+
+    <h2 class="text-primary fw-bold">
+
+        ✏️ Edit Department
+
+    </h2>
+
+    <hr />
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            Department Information
+
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Edit" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="DepartmentId" type="hidden" />
+                <input asp-for="DepartmentCode" type="hidden" />
+                <input asp-for="CreatedDate" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Department Code
+
+                    </label>
+
+                    <input class="form-control"
+                           value="@Model.DepartmentCode"
+                           readonly />
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="DepartmentName"
+                           class="form-label"></label>
+
+                    <input asp-for="DepartmentName"
+                           class="form-control" />
+
+                    <span asp-validation-for="DepartmentName"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="Description"
+                           class="form-label"></label>
+
+                    <textarea asp-for="Description"
+                              rows="3"
+                              class="form-control"></textarea>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="form-check mb-4">
+
+                    <input asp-for="IsActive"
+                           class="form-check-input" />
+
+                    <label asp-for="IsActive"
+                           class="form-check-label">
+
+                        Active Department
+
+                    </label>
+
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+
+                    Update Department
+
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

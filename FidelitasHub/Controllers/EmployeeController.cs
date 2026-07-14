@@ -1,0 +1,326 @@
+﻿using FidelitasHub.Data;
+using FidelitasHub.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace FidelitasHub.Controllers
+{
+    public class EmployeeController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public EmployeeController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        //==================================================
+        // Employee List / Search
+        //==================================================
+
+        public IActionResult Index(string searchText, string status)
+        {
+            var employees = _context.Employees.AsQueryable();
+
+            //=========================
+            // Search
+            //=========================
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                employees = employees.Where(e =>
+
+                    e.EmployeeCode.Contains(searchText) ||
+
+                    e.EmployeeName.Contains(searchText) ||
+
+                    e.Department.Contains(searchText) ||
+
+                    e.Designation.Contains(searchText) ||
+
+                    e.Email.Contains(searchText)
+
+                );
+            }
+
+            //=========================
+            // Status Filter
+            //=========================
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (status == "Active")
+                {
+                    employees = employees.Where(e => e.IsActive);
+                }
+                else if (status == "Inactive")
+                {
+                    employees = employees.Where(e => !e.IsActive);
+                }
+            }
+
+            ViewBag.SearchText = searchText;
+            ViewBag.Status = status;
+
+            ViewBag.TotalEmployees =
+                _context.Employees.Count();
+
+            ViewBag.ActiveEmployees =
+                _context.Employees.Count(e => e.IsActive);
+
+            ViewBag.InactiveEmployees =
+                _context.Employees.Count(e => !e.IsActive);
+
+            // Load Shift Names
+            ViewBag.ShiftNames = _context.Shifts
+                                         .ToDictionary(
+                                             s => s.ShiftId,
+                                             s => s.ShiftName);
+
+            return View(employees
+                .OrderBy(e => e.EmployeeCode)
+                .ToList());
+        }
+
+        //==================================================
+        // Add Employee (GET)
+        //==================================================
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            LoadDepartments();
+
+            LoadShifts();
+
+            return View();
+        }
+
+        //==================================================
+        // Add Employee (POST)
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Employee employee)
+        {
+            employee.Password = "Welcome@123";
+            employee.IsActive = true;
+
+            ModelState.Remove(nameof(Employee.Password));
+
+            //--------------------------------------------------
+            // Duplicate Employee Code
+            //--------------------------------------------------
+
+            if (_context.Employees.Any(e =>
+                e.EmployeeCode.Trim().ToUpper() ==
+                employee.EmployeeCode.Trim().ToUpper()))
+            {
+                ModelState.AddModelError(
+                    "EmployeeCode",
+                    "Employee Code already exists.");
+            }
+
+            //--------------------------------------------------
+            // Duplicate Email
+            //--------------------------------------------------
+
+            if (!string.IsNullOrWhiteSpace(employee.Email))
+            {
+                if (_context.Employees.Any(e =>
+                    e.Email.Trim().ToUpper() ==
+                    employee.Email.Trim().ToUpper()))
+                {
+                    ModelState.AddModelError(
+                        "Email",
+                        "Email Address already exists.");
+                }
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.Employees.Add(employee);
+
+                _context.SaveChanges();
+
+                TempData["Success"] =
+                    "Employee created successfully.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            LoadDepartments();
+
+            LoadShifts();
+
+            return View(employee);
+        }
+
+        //==================================================
+        // Edit Employee (GET)
+        //==================================================
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var employee = _context.Employees.Find(id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            LoadDepartments();
+
+            LoadShifts();
+
+            return View(employee);
+        }
+
+        //==================================================
+        // Edit Employee (POST)
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Employee employee)
+        {
+            ModelState.Remove(nameof(Employee.Password));
+
+            //--------------------------------------------------
+            // Duplicate Employee Code
+            //--------------------------------------------------
+
+            if (_context.Employees.Any(e =>
+                e.EmployeeId != employee.EmployeeId &&
+                e.EmployeeCode.Trim().ToUpper() ==
+                employee.EmployeeCode.Trim().ToUpper()))
+            {
+                ModelState.AddModelError(
+                    "EmployeeCode",
+                    "Employee Code already exists.");
+            }
+
+            //--------------------------------------------------
+            // Duplicate Email
+            //--------------------------------------------------
+
+            if (!string.IsNullOrWhiteSpace(employee.Email))
+            {
+                if (_context.Employees.Any(e =>
+                    e.EmployeeId != employee.EmployeeId &&
+                    e.Email.Trim().ToUpper() ==
+                    employee.Email.Trim().ToUpper()))
+                {
+                    ModelState.AddModelError(
+                        "Email",
+                        "Email Address already exists.");
+                }
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.Update(employee);
+
+                _context.SaveChanges();
+
+                TempData["Success"] =
+                    "Employee updated successfully.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            LoadDepartments();
+
+            LoadShifts();
+
+            return View(employee);
+        }
+
+
+        //==================================================
+        // Disable Employee
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Disable(int id)
+        {
+            var employee = _context.Employees.Find(id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            employee.IsActive = false;
+
+            _context.SaveChanges();
+
+            TempData["Success"] = "Employee disabled successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        //==================================================
+        // Enable Employee
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Enable(int id)
+        {
+            var employee = _context.Employees.Find(id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            employee.IsActive = true;
+
+            _context.SaveChanges();
+
+            TempData["Success"] = "Employee enabled successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        //==================================================
+        // Load Department Dropdown
+        //==================================================
+
+        private void LoadDepartments()
+
+        {
+            ViewBag.Departments = new SelectList(
+
+                _context.Departments
+                        .Where(d => d.IsActive)
+                        .OrderBy(d => d.DepartmentName)
+                        .ToList(),
+
+                "DepartmentName",
+
+                "DepartmentName"
+
+            );
+        }
+        private void LoadShifts()
+        {
+            ViewBag.Shifts = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+
+                _context.Shifts
+                        .Where(s => s.IsActive)
+                        .OrderBy(s => s.ShiftName)
+                        .ToList(),
+
+                "ShiftId",
+
+                "ShiftName"
+
+            );
+        }
+    }
+}

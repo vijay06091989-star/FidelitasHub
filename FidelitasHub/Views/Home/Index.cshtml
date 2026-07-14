@@ -1,0 +1,293 @@
+﻿@model FidelitasHub.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid">
+
+    <div class="row mb-4">
+
+        <div class="col-md-8">
+
+            <h2 class="fw-bold text-primary">
+                Fidelitas Hub
+            </h2>
+
+            <p class="text-muted">
+                Employee Dashboard
+            </p>
+
+        </div>
+
+        <div class="col-md-4 text-end">
+
+            <h5>
+                Welcome,
+                <span class="text-primary">
+                    @Model.EmployeeName
+                </span>
+            </h5>
+
+            <div class="text-muted">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                <span id="clock"></span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="mb-4">
+
+        <input class="form-control form-control-lg"
+               placeholder="Search applications, protocols, clients..." />
+
+    </div>
+
+    <div class="row">
+
+        <!-- Quick Access -->
+
+        <div class="col-lg-3">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-primary text-white">
+
+                    Quick Access
+
+                </div>
+
+                <div class="card-body">
+
+                    <a href="#">AdvancedMD</a><br />
+                    <a href="#">Office 365</a><br />
+                    <a href="#">Zoho Mail</a><br />
+                    <a href="#">PurEDI</a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Attendance -->
+
+        <div class="col-lg-3">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-success text-white">
+
+                    Attendance
+
+                </div>
+
+                <div class="card-body">
+
+                    @if (Model.CanPunchIn)
+                    {
+                        <button id="btnPunchIn"
+                                class="btn btn-success w-100 mb-2">
+
+                            <span id="btnPunchInText">
+
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                Punch In
+
+                            </span>
+
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary w-100 mb-2" disabled>
+
+                            <i class="fa-solid fa-check"></i>
+                            Punched In Today
+
+                        </button>
+                    }
+
+                    <button id="btnBreak"
+                            class="btn btn-warning w-100 mb-2"
+                        @(Model.CanBreak ? "" : "disabled")>
+
+                        <i class="fa-solid fa-mug-hot"></i>
+                        Break
+
+                    </button>
+
+                    <button id="btnResume"
+                            class="btn btn-info w-100 mb-2"
+                        @(Model.CanResume ? "" : "disabled")>
+
+                        <i class="fa-solid fa-play"></i>
+                        Resume
+
+                    </button>
+
+                    <button id="btnPunchOut"
+                            class="btn btn-danger w-100"
+                        @(Model.CanPunchOut ? "" : "disabled")>
+
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Punch Out
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Today's Status -->
+
+        <div class="col-lg-3">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-info text-white">
+
+                    Today's Status
+
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+
+                        <strong>Status :</strong>
+
+                        @if (Model.Status == "Working")
+                        {
+                            <span class="badge bg-success">Working</span>
+                        }
+                        else if (Model.Status == "On Break")
+                        {
+                            <span class="badge bg-warning text-dark">On Break</span>
+                        }
+                        else if (Model.Status == "Punched Out")
+                        {
+                            <span class="badge bg-danger">Punched Out</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Not Punched In</span>
+                        }
+
+                    </p>
+
+                    <p>
+
+                        <strong>Shift :</strong>
+
+                        @Model.ShiftName
+
+                    </p>
+
+                    <p>
+
+                        <strong>Punch In :</strong>
+
+                        @(Model.PunchIn.HasValue
+                            ? Model.PunchIn.Value.ToString("hh:mm:ss tt")
+                            : "--")
+
+                    </p>
+
+                    <p>
+
+                        <strong>Total Break :</strong>
+
+                        @Model.TotalBreakMinutes minutes
+
+                    </p>
+
+                    <p>
+
+                        <strong>Worked :</strong>
+
+                        <span id="workedTime">
+
+                            @TimeSpan.FromMinutes(Model.WorkedMinutes).ToString(@"hh\:mm\:ss")
+
+                        </span>
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Announcements -->
+
+        <div class="col-lg-3">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-dark text-white">
+
+                    Announcements
+
+                </div>
+
+                <div class="card-body">
+
+                    No announcements today.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    function updateClock() {
+
+        const now = new Date();
+
+        const options = {
+
+            timeZone: "Asia/Kolkata",
+
+            weekday: "long",
+
+            year: "numeric",
+
+            month: "long",
+
+            day: "numeric",
+
+            hour: "2-digit",
+
+            minute: "2-digit",
+
+            second: "2-digit",
+
+            hour12: true
+
+        };
+
+        document.getElementById("clock").innerHTML =
+            now.toLocaleString("en-IN", options) + " IST";
+
+    }
+
+    updateClock();
+
+    setInterval(updateClock, 1000);
+
+</script>

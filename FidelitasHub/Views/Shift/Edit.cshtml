@@ -1,0 +1,291 @@
+﻿@model FidelitasHub.Models.Shift
+
+@{
+    ViewData["Title"] = "Edit Shift";
+}
+
+<div class="container-fluid mt-4">
+
+    <h2 class="text-success fw-bold">
+
+        📝 Edit Shift
+
+    </h2>
+
+    <hr />
+
+    <div class="card shadow">
+
+        <div class="card-header bg-success text-white">
+
+            Shift Information
+
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Edit"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                
+                <input asp-for="ShiftId" type="hidden" />
+
+                <input asp-for="ShiftCode" type="hidden" />
+
+                <input asp-for="CreatedDate" type="hidden" />
+
+                <input asp-for="IsActive" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <!-- ================================= -->
+                <!-- Shift Timing -->
+                <!-- ================================= -->
+
+                <div class="card border-primary mb-4">
+
+                    <div class="card-header bg-primary text-white">
+
+                        <i class="fa-solid fa-clock"></i>
+
+                        Shift Timing
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <label asp-for="ShiftName"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="ShiftName"
+                                   class="form-control"
+                                   placeholder="General Shift / US Shift" />
+
+                            <span asp-validation-for="ShiftName"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6">
+
+                                <label asp-for="StandardStartTime"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="StandardStartTime"
+                                       type="time"
+                                       class="form-control" />
+
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <label asp-for="StandardEndTime"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="StandardEndTime"
+                                       type="time"
+                                       class="form-control" />
+
+                            </div>
+
+                        </div>
+
+                        <hr />
+
+                        <div class="form-check">
+
+                            <input asp-for="DstApplicable"
+                                   class="form-check-input"
+                                   id="chkDST" />
+
+                            <label asp-for="DstApplicable"
+                                   class="form-check-label">
+                            </label>
+
+                        </div>
+
+                        <div id="dstSection"
+                             style="display:none;">
+                            <div class="row mt-3">
+
+                                <div class="col-md-6">
+
+                                    <label asp-for="DstStartTime"
+                                           class="form-label">
+                                    </label>
+
+                                    <input asp-for="DstStartTime"
+                                           type="time"
+                                           class="form-control" />
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label asp-for="DstEndTime"
+                                           class="form-label">
+                                    </label>
+
+                                    <input asp-for="DstEndTime"
+                                           type="time"
+                                           class="form-control" />
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ================================= -->
+                <!-- Attendance Rules -->
+                <!-- ================================= -->
+
+                <div class="card border-success mb-4">
+
+                    <div class="card-header bg-success text-white">
+
+                        <i class="fa-solid fa-user-clock"></i>
+
+                        Attendance Rules
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="MinimumPunchInMinutes"
+                                       class="form-label">
+
+                                    Earliest Punch-In (Minutes Before Shift)
+
+                                </label>
+
+                                <input asp-for="MinimumPunchInMinutes"
+                                       class="form-control" />
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="GraceMinutes"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="GraceMinutes"
+                                       class="form-control" />
+
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="MaximumBreakMinutes"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="MaximumBreakMinutes"
+                                       class="form-control" />
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="MaximumPunchOutMinutes"
+                                       class="form-label">
+
+                                    Latest Punch-Out (Minutes After Shift)
+
+                                </label>
+
+                                <input asp-for="MaximumPunchOutMinutes"
+                                       class="form-control" />
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <hr />
+
+                <button type="submit"
+                        class="btn btn-success">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+
+                    Save Shift
+
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+
+        function toggleDST()
+        {
+            if ($("#chkDST").is(":checked"))
+            {
+                $("#dstSection").slideDown(300);
+            }
+            else
+            {
+                $("#dstSection").slideUp(300);
+            }
+        }
+
+        $(document).ready(function ()
+        {
+            toggleDST();
+
+            $("#chkDST").change(function ()
+            {
+                toggleDST();
+            });
+        });
+
+    </script>
+}

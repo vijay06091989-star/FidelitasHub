@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Employee Login";
+    Layout = "_Layout";
+}
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-5">
+
+            <div class="card shadow-lg border-0">
+
+                <div class="card-header bg-primary text-white text-center">
+
+                    <h3 class="mb-0">
+                        Fidelitas Hub
+                    </h3>
+
+                </div>
+
+                <div class="card-body p-4">
+
+                    <h4 class="text-center mb-4">
+                        Employee Attendance System
+                    </h4>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger text-center">
+                            @ViewBag.Error
+                        </div>
+                    }
+
+                    <form asp-controller="Account"
+                          asp-action="Login"
+                          method="post">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Employee Code
+                            </label>
+
+                            <input type="text"
+                                   name="employeeCode"
+                                   class="form-control"
+                                   placeholder="Enter Employee Code"
+                                   required />
+
+                        </div>
+
+                        <div class="mb-4">
+
+                            <label class="form-label">
+                                Password
+                            </label>
+
+                            <input type="password"
+                                   name="password"
+                                   class="form-control"
+                                   placeholder="Enter Password"
+                                   required />
+
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            Login
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <div class="card-footer text-center">
+
+                    <small class="text-muted">
+
+                        Version 1.0
+
+                        <br />
+
+                        © 2026 Fidelitas RCM Pvt. Ltd.
+
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

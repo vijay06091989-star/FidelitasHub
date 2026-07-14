@@ -1,0 +1,212 @@
+﻿@model FidelitasHub.Models.Employee
+
+@{
+    ViewData["Title"] = "Add Employee";
+}
+
+<div class="container-fluid mt-4">
+
+    <h2 class="text-success fw-bold">
+        ➕ Add Employee
+    </h2>
+
+    <hr />
+
+    <div class="card shadow">
+
+        <div class="card-header bg-success text-white">
+            Employee Information
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Create" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="EmployeeCode" class="form-label"></label>
+
+                        <input asp-for="EmployeeCode"
+                               class="form-control"
+                               placeholder="e.g. F0040" />
+
+                        <span asp-validation-for="EmployeeCode"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="EmployeeName" class="form-label"></label>
+
+                        <input asp-for="EmployeeName"
+                               class="form-control"
+                               placeholder="Enter full employee name" />
+
+                        <span asp-validation-for="EmployeeName"
+                              class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="Department" class="form-label"></label>
+
+                        <select asp-for="Department"
+                                asp-items="ViewBag.Departments"
+                                class="form-select">
+
+                            <option value="">-- Select Department --</option>
+
+                        </select>
+
+                        <span asp-validation-for="Department"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="Designation" class="form-label"></label>
+
+                        <input asp-for="Designation"
+                               class="form-control"
+                               placeholder="e.g. Assistant Manager" />
+
+                        <span asp-validation-for="Designation"
+                              class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="Email" class="form-label"></label>
+
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="name@fidelitascrm.com" />
+
+                        <span asp-validation-for="Email"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="Mobile" class="form-label"></label>
+
+                        <input asp-for="Mobile"
+                               class="form-control"
+                               placeholder="10-digit mobile number" />
+
+                        <span asp-validation-for="Mobile"
+                              class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label asp-for="ShiftId"
+                                   class="form-label">
+
+                                Shift
+
+                            </label>
+
+                            <select asp-for="ShiftId"
+                                    asp-items="ViewBag.Shifts"
+                                    class="form-select">
+
+                                <option value="">-- Select Shift --</option>
+
+                            </select>
+
+                            <span asp-validation-for="ShiftId"
+                                  class="text-danger"></span>
+
+                        </div>
+
+                        <label asp-for="Role" class="form-label"></label>
+
+                        <select asp-for="Role" class="form-select">
+
+                            <option value="">-- Select Role --</option>
+
+                            <option value="Employee">Employee</option>
+
+                            <option value="Manager">Manager</option>
+
+                            <option value="Admin">Admin</option>
+
+                        </select>
+
+                        <span asp-validation-for="Role"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="DateJoined" class="form-label"></label>
+
+                        <input asp-for="DateJoined"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="DateJoined"
+                              class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <button type="submit" class="btn btn-success">
+
+                    💾 Save Employee
+
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
