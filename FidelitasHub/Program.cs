@@ -1,4 +1,5 @@
 using FidelitasHub.Data;
+using FidelitasHub.Services.Attendance;
 using FidelitasHub.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 //==================================================
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IAttendanceRegisterService, AttendanceRegisterService>();
 
 //==================================================
 // SQL Server Database

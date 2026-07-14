@@ -180,7 +180,10 @@
 
                     </a>
 
-                    <button type="button" class="btn btn-success">
+                    <button type="submit"
+                            class="btn btn-success"
+                            formaction="@Url.Action("ExportAttendanceRegisterExcel", "Attendance")"
+                            formmethod="get">
 
                         <i class="fa fa-file-excel"></i>
 

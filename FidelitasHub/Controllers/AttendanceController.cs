@@ -4,16 +4,21 @@ using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using ClosedXML.Excel;
 using System.IO;
+using FidelitasHub.Services.Attendance;
 
 namespace FidelitasHub.Controllers
 {
     public class AttendanceController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAttendanceRegisterService _attendanceRegisterService;
 
-        public AttendanceController(ApplicationDbContext context)
+        public AttendanceController(
+            ApplicationDbContext context,
+            IAttendanceRegisterService attendanceRegisterService)
         {
             _context = context;
+            _attendanceRegisterService = attendanceRegisterService;
         }
 
         //====================================================
@@ -729,124 +734,177 @@ into shiftGroup
                 }
             }
 
-            var attendanceList = (
-
-    from e in _context.Employees
-
-    join s in _context.Shifts
-        on e.ShiftId equals s.ShiftId
-        into shiftGroup
-
-    from s in shiftGroup.DefaultIfEmpty()
-
-    join a in _context.Attendances
-        on e.EmployeeId equals a.EmployeeId
-        into attendanceGroup
-
-    from a in attendanceGroup.DefaultIfEmpty()
-
-    where e.IsActive
-
-    orderby e.EmployeeCode,
-            a != null ? a.AttendanceDate : DateTime.MinValue
-
-    select new AttendanceRegisterViewModel
-    {
-        EmployeeCode = e.EmployeeCode,
-
-        EmployeeName = e.EmployeeName,
-
-        AttendanceDate = a != null
-            ? a.AttendanceDate
-            : DateTime.MinValue,
-
-        Shift = s != null
-            ? s.ShiftName
-            : "--",
-
-        PunchIn = a != null && a.PunchIn != null
-            ? a.PunchIn.Value.ToString("hh:mm tt")
-            : "--",
-
-        PunchOut = a != null && a.PunchOut != null
-            ? a.PunchOut.Value.ToString("hh:mm tt")
-            : "--",
-
-        WorkedTime = a != null
-            ? TimeSpan.FromMinutes(a.WorkedMinutes).ToString(@"hh\:mm")
-            : "--",
-
-        BreakTime = a != null
-            ? TimeSpan.FromMinutes(a.TotalBreakMinutes).ToString(@"hh\:mm")
-            : "--",
-
-        Overtime = a != null
-            ? TimeSpan.FromMinutes(a.OvertimeMinutes).ToString(@"hh\:mm")
-            : "--",
-
-        Status = a != null
-            ? a.Status
-            : "Absent"
-    }
-
-).ToList();
-
-            //==============================================
-            // DATE FILTER
-            //==============================================
-
-            if (fromDate.HasValue)
+            var request = new AttendanceRegisterRequest
             {
-                attendanceList = attendanceList
-                    .Where(x => x.AttendanceDate.Date >= fromDate.Value.Date)
-                    .ToList();
-            }
+                FromDate = fromDate,
+                ToDate = toDate,
+                Shift = shift,
+                Employee = employee,
+                Status = status
+            };
 
-            if (toDate.HasValue)
-            {
-                attendanceList = attendanceList
-                    .Where(x => x.AttendanceDate.Date <= toDate.Value.Date)
-                    .ToList();
-            }
-
-            //==============================================
-            // SHIFT FILTER
-            //==============================================
-
-            if (!string.IsNullOrWhiteSpace(shift) && shift != "All")
-            {
-                attendanceList = attendanceList
-                    .Where(x => x.Shift == shift)
-                    .ToList();
-            }
-
-            //==============================================
-            // EMPLOYEE FILTER
-            //==============================================
-
-            if (!string.IsNullOrWhiteSpace(employee))
-            {
-                employee = employee.Trim();
-
-                attendanceList = attendanceList
-                    .Where(x =>
-                        x.EmployeeCode.Contains(employee, StringComparison.OrdinalIgnoreCase) ||
-                        x.EmployeeName.Contains(employee, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-
-            //==============================================
-            // STATUS FILTER
-            //==============================================
-
-            if (!string.IsNullOrWhiteSpace(status) && status != "All")
-            {
-                attendanceList = attendanceList
-                    .Where(x => x.Status == status)
-                    .ToList();
-            }
+            var attendanceList =
+                _attendanceRegisterService.GetAttendanceRegister(request);
 
             return View(attendanceList);
+        }
+
+        //====================================================
+        // EXPORT ATTENDANCE REGISTER - EXCEL
+        //====================================================
+
+        [HttpGet]
+        //====================================================
+        // EXPORT ATTENDANCE REGISTER - EXCEL
+        //====================================================
+
+        [HttpGet]
+        public IActionResult ExportAttendanceRegisterExcel(
+    DateTime? fromDate,
+    DateTime? toDate,
+    string shift = "All",
+    string employee = "",
+    string status = "All")
+        {
+            //==========================================
+            // Build Request
+            //==========================================
+
+            var request = new AttendanceRegisterRequest
+            {
+                FromDate = fromDate,
+                ToDate = toDate,
+                Shift = shift,
+                Employee = employee,
+                Status = status
+            };
+
+            //==========================================
+            // Get Attendance Data
+            //==========================================
+
+            var attendanceList =
+                _attendanceRegisterService.GetAttendanceRegister(request);
+
+            using (var workbook = new XLWorkbook())
+            {
+                var ws = workbook.Worksheets.Add("Attendance Register");
+
+                //==========================================
+                // Report Heading
+                //==========================================
+
+                ws.Range("A1:L1").Merge();
+                ws.Cell("A1").Value = "FIDELITAS HUB";
+                ws.Cell("A1").Style.Font.Bold = true;
+                ws.Cell("A1").Style.Font.FontSize = 20;
+                ws.Cell("A1").Style.Font.FontColor = XLColor.White;
+                ws.Cell("A1").Style.Fill.BackgroundColor = XLColor.RoyalBlue;
+                ws.Cell("A1").Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+                ws.Range("A2:L2").Merge();
+                ws.Cell("A2").Value = "ATTENDANCE REGISTER";
+                ws.Cell("A2").Style.Font.Bold = true;
+                ws.Cell("A2").Style.Font.FontSize = 16;
+                ws.Cell("A2").Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+                //==========================================
+                // Report Information
+                //==========================================
+
+                ws.Cell("A4").Value = "From Date";
+                ws.Cell("B4").Value =
+                    fromDate?.ToString("dd-MMM-yyyy") ?? "-";
+
+                ws.Cell("D4").Value = "To Date";
+                ws.Cell("E4").Value =
+                    toDate?.ToString("dd-MMM-yyyy") ?? "-";
+
+                ws.Cell("G4").Value = "Shift";
+                ws.Cell("H4").Value = shift;
+
+                ws.Cell("J4").Value = "Status";
+                ws.Cell("K4").Value = status;
+
+                ws.Cell("A5").Value = "Generated On";
+                ws.Cell("B5").Value =
+                    DateTimeHelper.GetIST().ToString("dd-MMM-yyyy hh:mm tt");
+
+                ws.Cell("J5").Value = "Records";
+                ws.Cell("K5").Value = attendanceList.Count;
+
+                //==========================================
+                // Column Headers
+                //==========================================
+
+                int row = 7;
+
+                ws.Cell(row, 1).Value = "Employee Code";
+                ws.Cell(row, 2).Value = "Employee Name";
+                ws.Cell(row, 3).Value = "Department";
+                ws.Cell(row, 4).Value = "Date";
+                ws.Cell(row, 5).Value = "Shift";
+                ws.Cell(row, 6).Value = "Punch In";
+                ws.Cell(row, 7).Value = "Punch Out";
+                ws.Cell(row, 8).Value = "Worked";
+                ws.Cell(row, 9).Value = "Break";
+                ws.Cell(row, 10).Value = "OT";
+                ws.Cell(row, 11).Value = "Status";
+                ws.Cell(row, 12).Value = "Remarks";
+
+                ws.Range(row, 1, row, 12).Style.Font.Bold = true;
+                ws.Range(row, 1, row, 12).Style.Fill.BackgroundColor =
+                    XLColor.LightBlue;
+
+                //==========================================
+                // Data
+                //==========================================
+
+                row++;
+
+                foreach (var item in attendanceList)
+                {
+                    ws.Cell(row, 1).Value = item.EmployeeCode;
+                    ws.Cell(row, 2).Value = item.EmployeeName;
+                    ws.Cell(row, 3).Value = item.Department;
+                    ws.Cell(row, 4).Value = item.AttendanceDate;
+                    ws.Cell(row, 4).Style.DateFormat.Format = "dd-MMM-yyyy";
+                    ws.Cell(row, 5).Value = item.Shift;
+                    ws.Cell(row, 6).Value = item.PunchIn;
+                    ws.Cell(row, 7).Value = item.PunchOut;
+                    ws.Cell(row, 8).Value = item.WorkedTime;
+                    ws.Cell(row, 9).Value = item.BreakTime;
+                    ws.Cell(row, 10).Value = item.Overtime;
+                    ws.Cell(row, 11).Value = item.Status;
+                    ws.Cell(row, 12).Value = item.Remarks;
+
+                    row++;
+                }
+
+                //==========================================
+                // Formatting
+                //==========================================
+
+                ws.Columns().AdjustToContents();
+
+                ws.RangeUsed().Style.Border.OutsideBorder =
+                    XLBorderStyleValues.Thin;
+
+                ws.RangeUsed().Style.Border.InsideBorder =
+                    XLBorderStyleValues.Thin;
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        $"Attendance Register {DateTimeHelper.GetIST():yyyyMMddHHmmss}.xlsx");
+                }
+            }
         }
 
         //====================================================
