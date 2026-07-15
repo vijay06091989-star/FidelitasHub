@@ -984,7 +984,7 @@ into shiftGroup
                     ws.Cell(row, 5).Value = item.PunchIn;
                     ws.Cell(row, 6).Value = item.PunchOut;
                     ws.Cell(row, 7).Value = item.Worked;
-                    ws.Cell(row, 9).Value = item.Status;
+                    ws.Cell(row, 8).Value = item.Status;
 
                     row++;
                 }
@@ -1003,6 +1003,255 @@ into shiftGroup
                 }
             }
         }
+
+        //====================================================
+        // ATTENDANCE CORRECTION
+        //====================================================
+
+        //====================================================
+        // LOAD EMPLOYEE DROPDOWN
+        //====================================================
+
+        private void LoadAttendanceCorrectionDropdown(
+            AttendanceCorrectionViewModel model)
+        {
+            model.Employees = _context.Employees
+                .Where(e => e.IsActive)
+                .OrderBy(e => e.EmployeeCode)
+                .Select(e => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = e.EmployeeId.ToString(),
+                    Text = e.EmployeeCode + " - " + e.EmployeeName
+                })
+                .ToList();
+        }
+
+        //====================================================
+        // LOAD ATTENDANCE DETAILS
+        //====================================================
+
+        private void LoadAttendanceDetails(
+            AttendanceCorrectionViewModel model)
+        {
+            var employee = _context.Employees
+                .FirstOrDefault(e => e.EmployeeId == model.EmployeeId);
+
+            if (employee == null)
+                return;
+
+            model.EmployeeCode = employee.EmployeeCode;
+            model.EmployeeName = employee.EmployeeName;
+            model.Department = employee.Department;
+            var shift = _context.Shifts
+    .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
+
+            model.Shift = shift != null
+                ? shift.ShiftName
+                : "";
+
+            var attendance = _context.Attendances
+                .FirstOrDefault(a =>
+                    a.EmployeeId == model.EmployeeId &&
+                    a.AttendanceDate.Date == model.AttendanceDate.Date);
+
+            if (attendance == null)
+                return;
+
+            model.PunchIn = attendance.PunchIn;
+            model.PunchOut = attendance.PunchOut;
+            model.BreakMinutes = attendance.TotalBreakMinutes;
+            model.Status = attendance.Status;
+
+            if (attendance.PunchIn.HasValue)
+                model.NewPunchInTime = attendance.PunchIn.Value.TimeOfDay;
+
+            if (attendance.PunchOut.HasValue)
+                model.NewPunchOutTime = attendance.PunchOut.Value.TimeOfDay;
+
+            model.NewBreakMinutes = attendance.TotalBreakMinutes;
+        }
+
+        [HttpGet]
+        public IActionResult AttendanceCorrection()
+        {
+            var model = new AttendanceCorrectionViewModel();
+
+            LoadAttendanceCorrectionDropdown(model);
+
+            return View(model);
+        }
+
+        //====================================================
+        // LOAD ATTENDANCE FOR CORRECTION
+        //====================================================
+
+        [HttpPost]
+        public IActionResult AttendanceCorrection(
+            AttendanceCorrectionViewModel model)
+        {
+            LoadAttendanceCorrectionDropdown(model);
+
+            LoadAttendanceDetails(model);
+
+            //==========================================
+            // Decide which correction fields to show
+            //==========================================
+
+            switch (model.CorrectionType)
+            {
+                case "Forgot Punch In":
+                    model.ShowPunchIn = true;
+                    break;
+
+                case "Forgot Punch Out":
+                    model.ShowPunchOut = true;
+                    break;
+
+                case "Wrong Punch Time":
+                    model.ShowPunchIn = true;
+                    model.ShowPunchOut = true;
+                    break;
+
+                case "Wrong Break Time":
+                    model.ShowBreakMinutes = true;
+                    break;
+            }
+
+            return View(model);
+        }
+
+        //====================================================
+        // SAVE ATTENDANCE CORRECTION
+        //====================================================
+
+        [HttpPost]
+        public IActionResult SaveAttendanceCorrection(
+    AttendanceCorrectionViewModel model)
+        {
+            //==========================================
+            // Validation
+            //==========================================
+
+            if (model.EmployeeId == 0)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Please select an employee.");
+
+                LoadAttendanceCorrectionDropdown(model);
+                LoadAttendanceDetails(model);
+
+                return View("AttendanceCorrection", model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.CorrectionType))
+            {
+                ModelState.AddModelError("", "Please select a correction type.");
+
+                LoadAttendanceCorrectionDropdown(model);
+                LoadAttendanceDetails(model);
+
+                return View("AttendanceCorrection", model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Reason))
+            {
+                ModelState.AddModelError("", "Please enter the reason for correction.");
+
+                LoadAttendanceCorrectionDropdown(model);
+                LoadAttendanceDetails(model);
+
+                return View("AttendanceCorrection", model);
+            }
+
+            //==========================================
+            // Find Attendance Record
+            //==========================================
+
+            var attendance = _context.Attendances
+                .FirstOrDefault(a =>
+                    a.EmployeeId == model.EmployeeId &&
+                    a.AttendanceDate.Date == model.AttendanceDate.Date);
+
+            if (attendance == null)
+            {
+                ModelState.AddModelError("", "Attendance record not found.");
+
+                LoadAttendanceCorrectionDropdown(model);
+                LoadAttendanceDetails(model);
+
+                return View("AttendanceCorrection", model);
+            }
+
+            //==========================================
+            // UPDATE PUNCH IN
+            //==========================================
+
+            if (model.NewPunchInTime.HasValue)
+            {
+                attendance.PunchIn = model.AttendanceDate.Date
+                    + model.NewPunchInTime.Value;
+            }
+
+            //==========================================
+            // UPDATE PUNCH OUT
+            //==========================================
+
+            if (model.NewPunchOutTime.HasValue)
+            {
+                attendance.PunchOut = model.AttendanceDate.Date
+                    + model.NewPunchOutTime.Value;
+            }
+
+            //==========================================
+            // UPDATE BREAK MINUTES
+            //==========================================
+
+            attendance.TotalBreakMinutes = model.NewBreakMinutes;
+
+            //==========================================
+            // RECALCULATE WORKED MINUTES
+            //==========================================
+
+            if (attendance.PunchIn.HasValue && attendance.PunchOut.HasValue)
+            {
+                attendance.WorkedMinutes =
+                    (int)(attendance.PunchOut.Value - attendance.PunchIn.Value)
+                    .TotalMinutes
+                    - attendance.TotalBreakMinutes;
+            }
+
+            //==========================================
+            // SAVE CHANGES
+            //==========================================
+
+            //==========================================
+            // AUDIT LOG
+            //==========================================
+
+            _context.AuditLogs.Add(new AuditLog
+            {
+                EmployeeId = model.EmployeeId,
+                Action = "Attendance Correction",
+                ActionTime = DateTimeHelper.GetIST(),
+                Remarks =
+                    $"Type : {model.CorrectionType} | Reason : {model.Reason}",
+                IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                ComputerName = Environment.MachineName
+            });
+
+            _context.SaveChanges();
+
+            //==========================================
+            // SUCCESS
+            //==========================================
+
+            TempData["Success"] = "Attendance corrected successfully.";
+
+            return RedirectToAction(nameof(AttendanceCorrection));
+        }
+
     }
+
 }
 

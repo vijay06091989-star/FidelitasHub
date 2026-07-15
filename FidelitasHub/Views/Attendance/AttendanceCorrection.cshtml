@@ -1,0 +1,334 @@
+﻿@model FidelitasHub.Models.AttendanceCorrectionViewModel
+
+@{
+    ViewData["Title"] = "Attendance Correction";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h3 class="mb-0">
+                ✏️ Attendance Correction
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="AttendanceCorrection" method="post">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger mb-3">
+                </div>
+
+                <!-- ========================= -->
+                <!-- Search Section -->
+                <!-- ========================= -->
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-bold">
+                            Employee
+                        </label>
+
+                        <select asp-for="EmployeeId"
+                                asp-items="Model.Employees"
+                                class="form-select">
+
+                            <option value="">-- Select Employee --</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-bold">
+                            Attendance Date
+                        </label>
+
+                        <input asp-for="AttendanceDate"
+                               type="date"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            Load Attendance
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.EmployeeCode))
+                {
+                    <hr />
+
+                    <!-- ========================= -->
+                    <!-- Employee Information -->
+                    <!-- ========================= -->
+
+                    <div class="card border-success mb-3">
+
+                        <div class="card-header bg-success text-white">
+
+                            <strong>Employee Information</strong>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row">
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        Employee Code
+                                    </label>
+
+                                    <input class="form-control"
+                                           value="@Model.EmployeeCode"
+                                           readonly />
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        Employee Name
+                                    </label>
+
+                                    <input class="form-control"
+                                           value="@Model.EmployeeName"
+                                           readonly />
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        Department
+                                    </label>
+
+                                    <input class="form-control"
+                                           value="@Model.Department"
+                                           readonly />
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        Shift
+                                    </label>
+
+                                    <input class="form-control"
+                                           value="@Model.Shift"
+                                           readonly />
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- ========================= -->
+                    <!-- Attendance Information -->
+                    <!-- ========================= -->
+
+                    <div class="card border-primary mb-3">
+
+                        <div class="card-header bg-primary text-white">
+
+                            <strong>Attendance Information</strong>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row">
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        Punch In
+                                    </label>
+
+                                    <input asp-for="PunchIn"
+                                           class="form-control"
+                                           readonly />
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        Punch Out
+                                    </label>
+
+                                    <input asp-for="PunchOut"
+                                           class="form-control"
+                                           readonly />
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label class="fw-bold">
+                                        Break Minutes
+                                    </label>
+
+                                    <input asp-for="BreakMinutes"
+                                           class="form-control"
+                                           readonly />
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label class="fw-bold">
+                                        Status
+                                    </label>
+
+                                    <input asp-for="Status"
+                                           class="form-control"
+                                           readonly />
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card border-warning mb-3">
+
+                        <div class="card-header bg-warning">
+
+                            <strong>
+                                Correction Type
+                            </strong>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <select asp-for="CorrectionType"
+                                    class="form-select">
+
+                                <option value="">-- Select Correction Type --</option>
+
+                                <option>Forgot Punch In</option>
+
+                                <option>Forgot Punch Out</option>
+
+                                <option>Wrong Punch Time</option>
+
+                                <option>Wrong Break Time</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card border-danger mb-3">
+
+                        <div class="card-header bg-danger text-white">
+
+                            <strong>
+                                Correction Details
+                            </strong>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row">
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        New Punch In Time
+                                    </label>
+
+                                    <input asp-for="NewPunchInTime"
+                                           type="time"
+                                           class="form-control" />
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label class="fw-bold">
+                                        New Punch Out Time
+                                    </label>
+
+                                    <input asp-for="NewPunchOutTime"
+                                           type="time"
+                                           class="form-control" />
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label class="fw-bold">
+                                        New Break Minutes
+                                    </label>
+
+                                    <input asp-for="NewBreakMinutes"
+                                           class="form-control" />
+
+                                </div>
+
+                                <div class="col-md-4">
+
+                                    <label class="fw-bold">
+                                        Reason for Correction
+                                    </label>
+
+                                    <textarea asp-for="Reason"
+                                              class="form-control"
+                                              rows="3"></textarea>
+
+                                </div>
+
+                            </div>
+
+                            <hr />
+
+                            <button type="submit"
+                                    formaction="@Url.Action("SaveAttendanceCorrection", "Attendance")"
+                                    class="btn btn-success">
+
+                                💾 Save Correction
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                }
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
