@@ -12,13 +12,16 @@ namespace FidelitasHub.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IAttendanceRegisterService _attendanceRegisterService;
+        private readonly IAttendanceProcessingService _attendanceProcessingService;
 
         public AttendanceController(
-            ApplicationDbContext context,
-            IAttendanceRegisterService attendanceRegisterService)
+    ApplicationDbContext context,
+    IAttendanceRegisterService attendanceRegisterService,
+    IAttendanceProcessingService attendanceProcessingService)
         {
             _context = context;
             _attendanceRegisterService = attendanceRegisterService;
+            _attendanceProcessingService = attendanceProcessingService;
         }
 
         //====================================================
@@ -91,8 +94,6 @@ namespace FidelitasHub.Controllers
 
                 ViewBag.WorkedTime = "00:00";
 
-                ViewBag.Overtime = "00:00";
-
                 ViewBag.BreakStartTime = "--";
 
                 ViewBag.BreakEndTime = "--";
@@ -113,10 +114,6 @@ namespace FidelitasHub.Controllers
 
                 ViewBag.WorkedTime =
                     TimeSpan.FromMinutes(todayAttendance.WorkedMinutes)
-                            .ToString(@"hh\:mm");
-
-                ViewBag.Overtime =
-                    TimeSpan.FromMinutes(todayAttendance.OvertimeMinutes)
                             .ToString(@"hh\:mm");
 
                 var lastBreak = _context.AttendanceBreaks
@@ -552,30 +549,6 @@ You may continue your work."
 
             attendance.WorkedMinutes = workedMinutes;
 
-            //--------------------------------------------------
-            // Overtime
-            //--------------------------------------------------
-
-            var shift = _context.Shifts
-                .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
-
-            if (shift != null)
-            {
-                DateTime shiftEndToday =
-                    attendance.AttendanceDate.Date + shift.StandardEndTime;
-
-                if (attendance.PunchOut > shiftEndToday)
-                {
-                    attendance.OvertimeMinutes =
-                        (int)(attendance.PunchOut.Value - shiftEndToday)
-                        .TotalMinutes;
-                }
-                else
-                {
-                    attendance.OvertimeMinutes = 0;
-                }
-            }
-
             _context.AuditLogs.Add(new AuditLog
             {
                 EmployeeId = employee.EmployeeId,
@@ -594,21 +567,17 @@ You may continue your work."
             TimeSpan breakTime =
                 TimeSpan.FromMinutes(attendance.TotalBreakMinutes);
 
-            TimeSpan overtime =
-                TimeSpan.FromMinutes(attendance.OvertimeMinutes);
-
             return Json(new
             {
                 success = true,
                 title = $"👋 Goodbye {employee.EmployeeName}",
                 message =
-        $@"Punch Out Successful
+
+$@"Punch Out Successful
 
 Worked : {worked:hh\:mm}
 
 Break : {breakTime:hh\:mm}
-
-Overtime : {overtime:hh\:mm}
 
 See you tomorrow!"
             });
@@ -670,11 +639,6 @@ into shiftGroup
 
                                       WorkedTime = a != null
                                                 ? TimeSpan.FromMinutes(a.WorkedMinutes)
-                                                    .ToString(@"hh\:mm")
-                                                : "--",
-
-                                      Overtime = a != null
-                                                ? TimeSpan.FromMinutes(a.OvertimeMinutes)
                                                     .ToString(@"hh\:mm")
                                                 : "--",
 
@@ -850,7 +814,6 @@ into shiftGroup
                 ws.Cell(row, 7).Value = "Punch Out";
                 ws.Cell(row, 8).Value = "Worked";
                 ws.Cell(row, 9).Value = "Break";
-                ws.Cell(row, 10).Value = "OT";
                 ws.Cell(row, 11).Value = "Status";
                 ws.Cell(row, 12).Value = "Remarks";
 
@@ -876,7 +839,6 @@ into shiftGroup
                     ws.Cell(row, 7).Value = item.PunchOut;
                     ws.Cell(row, 8).Value = item.WorkedTime;
                     ws.Cell(row, 9).Value = item.BreakTime;
-                    ws.Cell(row, 10).Value = item.Overtime;
                     ws.Cell(row, 11).Value = item.AttendanceStatus;
                     ws.Cell(row, 12).Value = item.Remarks;
 
@@ -939,7 +901,8 @@ into shiftGroup
                 ws.Cell("B3").Value = shift;
 
                 ws.Cell("A4").Value = "Generated On";
-                ws.Cell("B4").Value = DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt");
+                ws.Cell("B4").Value =
+    DateTimeHelper.GetIST().ToString("dd-MMM-yyyy hh:mm tt");
                 //==========================================
                 // Column Headers
                 //==========================================
@@ -951,7 +914,6 @@ into shiftGroup
                 ws.Cell("E6").Value = "Punch In";
                 ws.Cell("F6").Value = "Punch Out";
                 ws.Cell("G6").Value = "Worked";
-                ws.Cell("H6").Value = "OT";
                 ws.Cell("I6").Value = "Status";
 
                 //==========================================
@@ -1001,12 +963,6 @@ into shiftGroup
                                                       .ToString(@"hh\:mm")
                                               : "--",
 
-                                          OT =
-                                              a != null
-                                              ? TimeSpan.FromMinutes(a.OvertimeMinutes)
-                                                      .ToString(@"hh\:mm")
-                                              : "--",
-
                                           Status = a != null
                                                     ? a.Status
                                                     : "Absent"
@@ -1028,7 +984,6 @@ into shiftGroup
                     ws.Cell(row, 5).Value = item.PunchIn;
                     ws.Cell(row, 6).Value = item.PunchOut;
                     ws.Cell(row, 7).Value = item.Worked;
-                    ws.Cell(row, 8).Value = item.OT;
                     ws.Cell(row, 9).Value = item.Status;
 
                     row++;

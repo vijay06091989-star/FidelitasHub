@@ -139,10 +139,6 @@ namespace FidelitasHub.Services.Attendance
     ? TimeSpan.FromMinutes(attendance.TotalBreakMinutes).ToString(@"hh\:mm")
     : "--",
 
-                        Overtime = attendance != null
-    ? TimeSpan.FromMinutes(attendance.OvertimeMinutes).ToString(@"hh\:mm")
-    : "--",
-
                         Status = attendance?.Status ?? "Absent",
 
                         AttendanceStatus = CalculateAttendanceStatus(

@@ -24,8 +24,6 @@
 
         public string BreakTime { get; set; } = "";
 
-        public string Overtime { get; set; } = "";
-
         public string Status { get; set; } = "";
 
         //==================================
