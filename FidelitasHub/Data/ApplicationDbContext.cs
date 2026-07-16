@@ -29,6 +29,18 @@ namespace FidelitasHub.Data
         public DbSet<AttendanceBreak> AttendanceBreaks { get; set; }
 
         //==================================================
+        // Leave Management
+        //==================================================
+
+        public DbSet<LeaveApplication> LeaveApplications { get; set; }
+
+        public DbSet<LeaveBalanceLedger> LeaveBalanceLedgers { get; set; }
+
+        public DbSet<EmployeeLeaveBalance> EmployeeLeaveBalances { get; set; }
+
+        public DbSet<PayrollCalendar> PayrollCalendars { get; set; }
+
+        //==================================================
         // Audit
         //==================================================
 

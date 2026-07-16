@@ -541,13 +541,20 @@ You may continue your work."
             // Worked Minutes
             //--------------------------------------------------
 
-            int workedMinutes =
-                (int)Math.Max(0,
-                (attendance.PunchOut.Value - attendance.PunchIn.Value)
-                .TotalMinutes
-                - attendance.TotalBreakMinutes);
+            DateTime punchIn = attendance.PunchIn.Value;
+            DateTime punchOut = attendance.PunchOut.Value;
 
-            attendance.WorkedMinutes = workedMinutes;
+            // Overnight Shift
+            if (punchOut < punchIn)
+            {
+                punchOut = punchOut.AddDays(1);
+            }
+
+            attendance.WorkedMinutes =
+                (int)Math.Max(
+                    0,
+                    (punchOut - punchIn).TotalMinutes
+                    - attendance.TotalBreakMinutes);
 
             _context.AuditLogs.Add(new AuditLog
             {
@@ -1175,12 +1182,17 @@ into shiftGroup
 
             if (attendance == null)
             {
-                ModelState.AddModelError("", "Attendance record not found.");
+                attendance = new Attendance
+                {
+                    EmployeeId = model.EmployeeId,
+                    AttendanceDate = model.AttendanceDate.Date,
+                    TotalBreakMinutes = 0,
+                    WorkedMinutes = 0,
+                    Status = "Present",
+                    PunchOutMode = "Manual Correction"
+                };
 
-                LoadAttendanceCorrectionDropdown(model);
-                LoadAttendanceDetails(model);
-
-                return View("AttendanceCorrection", model);
+                _context.Attendances.Add(attendance);
             }
 
             //==========================================
@@ -1215,10 +1227,38 @@ into shiftGroup
 
             if (attendance.PunchIn.HasValue && attendance.PunchOut.HasValue)
             {
+                DateTime punchIn = attendance.PunchIn.Value;
+                DateTime punchOut = attendance.PunchOut.Value;
+
+                //======================================
+                // Overnight Shift
+                //======================================
+
+                if (punchOut < punchIn)
+                {
+                    punchOut = punchOut.AddDays(1);
+                }
+
                 attendance.WorkedMinutes =
-                    (int)(attendance.PunchOut.Value - attendance.PunchIn.Value)
-                    .TotalMinutes
+                    (int)(punchOut - punchIn).TotalMinutes
                     - attendance.TotalBreakMinutes;
+            }
+
+            //==========================================
+            // ATTENDANCE STATUS
+            //==========================================
+
+            if (attendance.PunchIn.HasValue && attendance.PunchOut.HasValue)
+            {
+                attendance.Status = "Present";
+            }
+            else if (attendance.PunchIn.HasValue)
+            {
+                attendance.Status = "Working";
+            }
+            else
+            {
+                attendance.Status = "Absent";
             }
 
             //==========================================

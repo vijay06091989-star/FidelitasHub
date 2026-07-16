@@ -4,6 +4,7 @@ using FidelitasHub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FidelitasHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260716060936_AddLeaveApplication")]
+    partial class AddLeaveApplication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,34 +231,6 @@ namespace FidelitasHub.Migrations
                     b.ToTable("Employees");
                 });
 
-            modelBuilder.Entity("FidelitasHub.Models.EmployeeLeaveBalance", b =>
-                {
-                    b.Property<int>("EmployeeLeaveBalanceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeLeaveBalanceId"));
-
-                    b.Property<decimal>("CurrentLeaveBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastUpdatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("EmployeeLeaveBalanceId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.ToTable("EmployeeLeaveBalances");
-                });
-
             modelBuilder.Entity("FidelitasHub.Models.LeaveApplication", b =>
                 {
                     b.Property<int>("LeaveApplicationId")
@@ -324,88 +299,6 @@ namespace FidelitasHub.Migrations
                     b.ToTable("LeaveApplications");
                 });
 
-            modelBuilder.Entity("FidelitasHub.Models.LeaveBalanceLedger", b =>
-                {
-                    b.Property<int>("LedgerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LedgerId"));
-
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Credit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Debit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("LeaveApplicationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PayrollMonth")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remarks")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TransactionType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("LedgerId");
-
-                    b.ToTable("LeaveBalanceLedgers");
-                });
-
-            modelBuilder.Entity("FidelitasHub.Models.PayrollCalendar", b =>
-                {
-                    b.Property<int>("PayrollCalendarId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PayrollCalendarId"));
-
-                    b.Property<bool>("IsCarryForwardProcessed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsLeaveCreditProcessed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("PayrollMonth")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("PeriodEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("PeriodStart")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Remarks")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("SalaryProcessingDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("PayrollCalendarId");
-
-                    b.ToTable("PayrollCalendars");
-                });
-
             modelBuilder.Entity("FidelitasHub.Models.Shift", b =>
                 {
                     b.Property<int>("ShiftId")
@@ -460,17 +353,6 @@ namespace FidelitasHub.Migrations
                     b.HasKey("ShiftId");
 
                     b.ToTable("Shifts");
-                });
-
-            modelBuilder.Entity("FidelitasHub.Models.EmployeeLeaveBalance", b =>
-                {
-                    b.HasOne("FidelitasHub.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
                 });
 #pragma warning restore 612, 618
         }

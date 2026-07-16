@@ -1,0 +1,166 @@
+﻿@model FidelitasHub.Models.LeaveApplicationViewModel
+
+@{
+    ViewData["Title"] = "Apply Leave";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-success text-white">
+
+            <h3 class="mb-0">
+                📝 Leave Application
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <form>
+
+                <div class="row">
+
+                    <div class="col-md-4">
+
+                        <label class="fw-bold">
+                            Employee
+                        </label>
+
+                        <select asp-for="EmployeeId"
+                                asp-items="Model.Employees"
+                                class="form-select">
+
+                            <option value="">
+                                -- Select Employee --
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="fw-bold">
+                            Leave Type
+                        </label>
+
+                        <select asp-for="LeaveType"
+                                asp-items="Model.LeaveTypes"
+                                class="form-select">
+
+                            <option value="">
+                                -- Select Leave Type --
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="fw-bold">
+                            Leave Balance
+                        </label>
+
+                        <input class="form-control"
+                               value="@Model.LeaveBalance"
+                               readonly />
+
+                    </div>
+
+                </div>
+
+                <br />
+
+                <div class="row">
+
+                    <div class="col-md-3">
+
+                        <label class="fw-bold">
+                            From Date
+                        </label>
+
+                        <input asp-for="FromDate"
+                               type="date"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="fw-bold">
+                            To Date
+                        </label>
+
+                        <input asp-for="ToDate"
+                               type="date"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="fw-bold">
+                            Half Day
+                        </label>
+
+                        <select class="form-select">
+
+                            <option>
+                                Full Day
+                            </option>
+
+                            <option>
+                                Morning Half
+                            </option>
+
+                            <option>
+                                Afternoon Half
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="fw-bold">
+                            Total Days
+                        </label>
+
+                        <input class="form-control"
+                               value="@Model.TotalDays"
+                               readonly />
+
+                    </div>
+
+                </div>
+
+                <br />
+
+                <label class="fw-bold">
+                    Reason
+                </label>
+
+                <textarea asp-for="Reason"
+                          rows="4"
+                          class="form-control">
+                </textarea>
+
+                <br />
+
+                <button class="btn btn-success">
+
+                    Calculate Leave
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
