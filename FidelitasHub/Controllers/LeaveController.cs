@@ -23,23 +23,53 @@ namespace FidelitasHub.Controllers
         {
             LeaveApplicationViewModel model = new();
 
-            model.Employees = _context.Employees
-                .Where(e => e.IsActive)
-                .OrderBy(e => e.EmployeeCode)
-                .Select(e => new SelectListItem
-                {
-                    Value = e.EmployeeId.ToString(),
-                    Text = e.EmployeeCode + " - " + e.EmployeeName
-                })
-                .ToList();
+            // Logged-in Employee
+            string? employeeCode = HttpContext.Session.GetString("EmployeeCode");
 
-            model.LeaveTypes = new List<SelectListItem>()
+            if (!string.IsNullOrWhiteSpace(employeeCode))
             {
-                new SelectListItem{ Value="CL", Text="Casual / Sick Leave"},
-                new SelectListItem{ Value="LOP", Text="Loss of Pay"},
-                new SelectListItem{ Value="CO", Text="Comp Off"},
-                new SelectListItem{ Value="ML", Text="Maternity Leave"}
-            };
+                var employee = _context.Employees
+                    .FirstOrDefault(e => e.EmployeeCode == employeeCode);
+
+                if (employee != null)
+                {
+                    model.EmployeeId = employee.EmployeeId;
+
+                    var leaveBalance = _context.EmployeeLeaveBalances
+                        .FirstOrDefault(x => x.EmployeeId == employee.EmployeeId);
+
+                    if (leaveBalance != null)
+                    {
+                        model.LeaveBalance = leaveBalance.CurrentLeaveBalance;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(employeeCode))
+            {
+                var employee = _context.Employees
+                    .FirstOrDefault(e => e.EmployeeCode == employeeCode);
+
+                if (employee != null)
+                {
+                    model.Employees = new List<SelectListItem>
+        {
+            new SelectListItem
+            {
+                Value = employee.EmployeeId.ToString(),
+                Text = employee.EmployeeCode + " - " + employee.EmployeeName
+            }
+        };
+                }
+            }
+
+            // model.LeaveTypes = new List<SelectListItem>()
+            // {
+            //     new SelectListItem{ Value="CL", Text="Casual / Sick Leave"},
+            //     new SelectListItem{ Value="LOP", Text="Loss of Pay"},
+            //     new SelectListItem{ Value="CO", Text="Comp Off"},
+            //     new SelectListItem{ Value="ML", Text="Maternity Leave"}
+            // };   
 
             return View(model);
         }

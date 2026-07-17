@@ -4,32 +4,44 @@
 
 <div class="container-fluid mt-4">
 
-    <h2 class="text-primary fw-bold">
-        🏢 Fidelitas Hub - Admin Portal
-    </h2>
+    <!-- Header -->
 
-    <hr />
+    <div class="row mb-4">
 
-    <h4>
-        Welcome,
-        <span class="text-success">
-            @ViewBag.EmployeeName
-        </span>
-    </h4>
+        <div class="col-md-8">
 
-    <br />
+            <h2 class="fw-bold text-primary">
+                Admin Dashboard
+            </h2>
 
-    <div class="row">
+            <p class="text-muted mb-0">
+                Welcome,
+                <strong>@ViewBag.EmployeeName</strong>
+            </p>
 
-        <div class="col-md-3">
+        </div>
 
-            <div class="card shadow">
+        <div class="col-md-4 text-end">
+
+            <h5 id="clock" class="text-secondary"></h5>
+
+        </div>
+
+    </div>
+
+    <!-- KPI Cards -->
+
+    <div class="row g-3">
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card shadow-sm border-0">
 
                 <div class="card-body text-center">
 
-                    <h5>Total Employees</h5>
+                    <h6 class="text-muted">Total Employees</h6>
 
-                    <h2>0</h2>
+                    <h1 class="text-primary">168</h1>
 
                 </div>
 
@@ -37,15 +49,15 @@
 
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6">
 
-            <div class="card shadow">
+            <div class="card shadow-sm border-0">
 
                 <div class="card-body text-center">
 
-                    <h5>Present</h5>
+                    <h6 class="text-muted">Present Today</h6>
 
-                    <h2>0</h2>
+                    <h1 class="text-success">0</h1>
 
                 </div>
 
@@ -53,15 +65,15 @@
 
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6">
 
-            <div class="card shadow">
+            <div class="card shadow-sm border-0">
 
                 <div class="card-body text-center">
 
-                    <h5>On Break</h5>
+                    <h6 class="text-muted">On Leave</h6>
 
-                    <h2>0</h2>
+                    <h1 class="text-warning">0</h1>
 
                 </div>
 
@@ -69,15 +81,15 @@
 
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6">
 
-            <div class="card shadow">
+            <div class="card shadow-sm border-0">
 
                 <div class="card-body text-center">
 
-                    <h5>On Leave</h5>
+                    <h6 class="text-muted">Late Arrivals</h6>
 
-                    <h2>0</h2>
+                    <h1 class="text-danger">0</h1>
 
                 </div>
 
@@ -89,58 +101,151 @@
 
     <br />
 
-    <!-- ================= QUICK ACTIONS ================= -->
+    <div class="row">
 
-    <div class="card shadow">
+        <!-- Quick Actions -->
 
-        <div class="card-header bg-primary text-white">
+        <div class="col-lg-6">
 
-            Quick Actions
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-primary text-white">
+
+                    Quick Actions
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="d-grid gap-2">
+
+                        <a asp-controller="Employee"
+                           asp-action="Index"
+                           class="btn btn-outline-primary">
+
+                            👨 Employee Master
+
+                        </a>
+
+                        <a asp-controller="Department"
+                           asp-action="Index"
+                           class="btn btn-outline-success">
+
+                            🏢 Department Master
+
+                        </a>
+
+                        <a asp-controller="Shift"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary">
+
+                            🕒 Shift Master
+
+                        </a>
+
+                        <a asp-controller="LeaveBalance"
+                           asp-action="Import"
+                           class="btn btn-outline-warning">
+
+                            💰 Leave Balance Import
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
-        <div class="card-body">
+        <!-- System Status -->
 
-            <a asp-controller="Employee"
-               asp-action="Index"
-               class="btn btn-primary me-2 mb-2">
+        <div class="col-lg-6">
 
-                👨‍💼 Employees
+            <div class="card shadow-sm">
 
-            </a>
+                <div class="card-header bg-success text-white">
 
-            <a asp-controller="Department"
-               asp-action="Index"
-               class="btn btn-success me-2 mb-2">
+                    System Status
 
-                🏢 Departments
+                </div>
 
-            </a>
+                <div class="card-body">
 
-            <a href="#"
-               class="btn btn-warning me-2 mb-2">
+                    <table class="table table-borderless">
 
-                💼 Designations
+                        <tr>
 
-            </a>
+                            <td>Attendance Module</td>
 
-            <a asp-controller="Shift"
-               asp-action="Index"
-               class="btn btn-secondary me-2 mb-2">
+                            <td><span class="badge bg-success">Active</span></td>
 
-                🕒 Shifts
+                        </tr>
 
-            </a>
+                        <tr>
 
-            <a href="#"
-               class="btn btn-info me-2 mb-2">
+                            <td>Leave Module</td>
 
-                📊 Reports
+                            <td><span class="badge bg-warning text-dark">In Progress</span></td>
 
-            </a>
+                        </tr>
+
+                        <tr>
+
+                            <td>Employee Master</td>
+
+                            <td><span class="badge bg-success">Completed</span></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Shift Master</td>
+
+                            <td><span class="badge bg-success">Completed</span></td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
 
         </div>
 
     </div>
 
 </div>
+
+<script>
+
+    function updateClock() {
+
+        const now = new Date();
+
+        const options = {
+
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true,
+            timeZone: "Asia/Kolkata"
+
+        };
+
+        document.getElementById("clock").innerHTML =
+            now.toLocaleString("en-IN", options) + " IST";
+
+    }
+
+    updateClock();
+
+    setInterval(updateClock,1000);
+
+</script>

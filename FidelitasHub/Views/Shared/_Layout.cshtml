@@ -90,6 +90,13 @@
         bool isLoginPage = ViewContext.RouteData.Values["Action"]?.ToString() == "Login";
 
         var employeeName = Context.Session.GetString("EmployeeName");
+        var role = Context.Session.GetString("Role");
+
+        bool isAdmin = role == "Admin" || role == "SuperAdmin";
+        bool isManager = role == "Manager";
+        bool isHR = role == "HR";
+        bool isEmployee = role == "Employee";
+
     }
 
     <!-- =================== TOP BAR =================== -->
@@ -154,17 +161,46 @@
 
                         <!-- Dashboard -->
 
-                        <li class="nav-item">
+                        <li class="nav-item dropdown">
 
-                            <a asp-controller="Admin"
-                               asp-action="Dashboard"
-                               class="nav-link">
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               data-bs-toggle="dropdown">
 
                                 <i class="fa-solid fa-house"></i>
 
                                 Dashboard
 
                             </a>
+
+                            <ul class="dropdown-menu">
+
+                                <!-- Employee Dashboard (Everyone) -->
+                                <li>
+                                    <a asp-controller="Attendance"
+                                       asp-action="Dashboard"
+                                       class="dropdown-item">
+
+                                        🏠 My Dashboard
+
+                                    </a>
+                                </li>
+
+                                <!-- Admin Dashboard -->
+                                @if (isAdmin)
+                                {
+                                    <li>
+                                        <a asp-controller="Admin"
+                                           asp-action="Dashboard"
+                                           class="dropdown-item">
+
+                                            📊 Admin Dashboard
+
+                                        </a>
+                                    </li>
+                                }
+
+                            </ul>
 
                         </li>
 
@@ -184,17 +220,7 @@
 
                             <ul class="dropdown-menu">
 
-                                <li>
-
-                                    <a asp-controller="Attendance"
-                                       asp-action="Dashboard"
-                                       class="dropdown-item">
-
-                                        🏠 Employee Dashboard
-
-                                    </a>
-
-                                </li>
+                                <!-- Everyone -->
 
                                 <li>
 
@@ -208,43 +234,45 @@
 
                                 </li>
 
-                                <li><hr class="dropdown-divider"></li>
+                                @if (isAdmin)
+                                {
+                                    <li><hr class="dropdown-divider"></li>
 
-                                <li>
+                                    <li>
 
-                                    <a asp-controller="Attendance"
-                                       asp-action="Register"
-                                       class="dropdown-item">
+                                        <a asp-controller="Attendance"
+                                           asp-action="Register"
+                                           class="dropdown-item">
 
-                                        📋 Attendance Register
+                                            📋 Attendance Register
 
-                                    </a>
+                                        </a>
 
-                                </li>
+                                    </li>
 
-                                <li>
+                                    <li>
 
-                                    <a asp-controller="Attendance"
-                                       asp-action="AttendanceCorrection"
-                                       class="dropdown-item">
+                                        <a asp-controller="Attendance"
+                                           asp-action="AttendanceCorrection"
+                                           class="dropdown-item">
 
-                                        ✏️ Attendance Correction
+                                            ✏️ Attendance Correction
 
-                                    </a>
+                                        </a>
 
-                                </li>
+                                    </li>
 
-                                <li>
+                                    <li>
 
-                                    <a class="dropdown-item disabled"
-                                       href="#"
-                                       title="Available in Version 2">
+                                        <a class="dropdown-item disabled"
+                                           href="#">
 
-                                        📊 Attendance Reports (Coming Soon)
+                                            📊 Attendance Reports (Coming Soon)
 
-                                    </a>
+                                        </a>
 
-                                </li>
+                                    </li>
+                                }
 
                             </ul>
 
@@ -266,228 +294,225 @@
 
                             <ul class="dropdown-menu">
 
+                                <!-- Everyone -->
+
                                 <li>
 
                                     <a asp-controller="Leave"
                                        asp-action="ApplyLeave"
                                        class="dropdown-item">
 
-                                        📝 Leave Management
+                                        📝 Apply Leave
 
                                     </a>
 
                                 </li>
 
-                                <li>
+                                @if (isAdmin)
+                                {
+                                    <li><hr class="dropdown-divider"></li>
 
-                                    <a class="dropdown-item disabled"
-                                       href="#">
+                                    <li>
+                                        <a asp-controller="LeaveApproval"
+                                           asp-action="Index"
+                                           class="dropdown-item">
+                                            ✔ Leave Approval
+                                        </a>
+                                    </li>
 
-                                        ✔ Leave Approval (Coming Soon)
+                                    <li>
+                                        <a class="dropdown-item disabled" href="#">
+                                            📋 Leave Register (Coming Soon)
+                                        </a>
+                                    </li>
 
-                                    </a>
+                                    <li>
 
-                                </li>
+                                        <a asp-controller="LeaveBalance"
+                                           asp-action="Import"
+                                           class="dropdown-item">
 
-                                <li>
+                                            💰 Leave Balance Import
 
-                                    <a class="dropdown-item disabled"
-                                       href="#">
+                                        </a>
 
-                                        📋 Leave Register (Coming Soon)
+                                    </li>
 
-                                    </a>
+                                    <li><hr class="dropdown-divider"></li>
 
-                                </li>
+                                    <li>
+                                        <a class="dropdown-item disabled" href="#">
+                                            🎉 Holiday Calendar (Coming Soon)
+                                        </a>
+                                    </li>
 
-                                <li>
+                                    <li>
+                                        <a class="dropdown-item disabled" href="#">
+                                            ⏰ Permission Register (Coming Soon)
+                                        </a>
+                                    </li>
 
-                                    <a asp-controller="LeaveBalance"
-                                       asp-action="Import"
-                                       class="dropdown-item">
-
-                                        💰 Leave Balance Import
-
-                                    </a>
-
-                                </li>
-
-                                <li>
-
-                                    <a class="dropdown-item disabled"
-                                       href="#">
-
-                                        🎉 Holiday Calendar (Coming Soon)
-
-                                    </a>
-
-                                </li>
-
-                                <li>
-
-                                    <a class="dropdown-item disabled"
-                                       href="#">
-
-                                        ⏰ Permission Register (Coming Soon)
-
-                                    </a>
-
-                                </li>
-
-                                <li>
-
-                                    <a class="dropdown-item disabled"
-                                       href="#">
-
-                                        📅 Payroll Calendar (Coming Soon)
-
-                                    </a>
-
-                                </li>
+                                    <li>
+                                        <a class="dropdown-item disabled" href="#">
+                                            📅 Payroll Calendar (Coming Soon)
+                                        </a>
+                                    </li>
+                                }
 
                             </ul>
 
                         </li>
 
-                        <!-- Masters -->
+                        @if (isAdmin)
+                            {
+                                <!-- Masters -->
 
-                        <li class="nav-item dropdown">
+                                <li class="nav-item dropdown">
 
-                            <a class="nav-link dropdown-toggle"
-                               href="#"
-                               data-bs-toggle="dropdown">
+                                    <a class="nav-link dropdown-toggle"
+                                    href="#"
+                                    data-bs-toggle="dropdown">
 
-                                <i class="fa-solid fa-database"></i>
+                                        <i class="fa-solid fa-database"></i>
 
-                                Masters
-
-                            </a>
-
-                            <ul class="dropdown-menu">
-
-                                <li>
-
-                                    <a asp-controller="Employee"
-                                       asp-action="Index"
-                                       class="dropdown-item">
-
-                                        👨 Employee Master
+                                        Masters
 
                                     </a>
 
+                                    <ul class="dropdown-menu">
+
+                                        <li>
+
+                                            <a asp-controller="Employee"
+                                            asp-action="Index"
+                                            class="dropdown-item">
+
+                                                👨 Employee Master
+
+                                            </a>
+
+                                        </li>
+
+                                        <li>
+
+                                            <a asp-controller="Department"
+                                            asp-action="Index"
+                                            class="dropdown-item">
+
+                                                🏢 Department Master
+
+                                            </a>
+
+                                        </li>
+
+                                        <li>
+
+                                            <a class="dropdown-item" href="#">
+
+                                                💼 Designation Master
+
+                                            </a>
+
+                                        </li>
+
+                                        <li>
+
+                                            <a asp-controller="Shift"
+                                            asp-action="Index"
+                                            class="dropdown-item">
+
+                                                🕒 Shift Master
+
+                                            </a>
+
+                                        </li>
+
+                                        <li>
+
+                                            <a class="dropdown-item" href="#">
+
+                                                📅 Leave Type Master
+
+                                            </a>
+
+                                        </li>
+
+                                        <li>
+
+                                            <a class="dropdown-item" href="#">
+
+                                                🎉 Holiday Master
+
+                                            </a>
+
+                                        </li>
+
+                                    </ul>
+
                                 </li>
 
-                                <li>
+                            }
 
-                                    <a asp-controller="Department"
-                                       asp-action="Index"
-                                       class="dropdown-item">
+                        @if (isAdmin)
+                            {
+                                <!-- Reports -->
 
-                                        🏢 Department Master
+                                <li class="nav-item dropdown">
+
+                                    <a class="nav-link dropdown-toggle"
+                                    href="#"
+                                    data-bs-toggle="dropdown">
+
+                                        <i class="fa-solid fa-chart-column"></i>
+
+                                        Reports
 
                                     </a>
 
+                                    <ul class="dropdown-menu">
+
+                                        <li><a class="dropdown-item" href="#">Attendance Report</a></li>
+
+                                        <li><a class="dropdown-item" href="#">Employee Report</a></li>
+
+                                        <li><a class="dropdown-item" href="#">Leave Report</a></li>
+
+                                    </ul>
+
                                 </li>
+                            }
 
-                                <li>
 
-                                    <a class="dropdown-item" href="#">
+                        @if (isAdmin)
+                            {
+                                <!-- Administration -->
 
-                                        💼 Designation Master
+                                <li class="nav-item dropdown">
+
+                                    <a class="nav-link dropdown-toggle"
+                                    href="#"
+                                    data-bs-toggle="dropdown">
+
+                                        <i class="fa-solid fa-gear"></i>
+
+                                        Administration
 
                                     </a>
 
-                                </li>
+                                    <ul class="dropdown-menu">
 
-                                <li>
+                                        <li><a class="dropdown-item" href="#">Users</a></li>
 
-                                    <a asp-controller="Shift"
-                                       asp-action="Index"
-                                       class="dropdown-item">
+                                        <li><a class="dropdown-item" href="#">Roles</a></li>
 
-                                        🕒 Shift Master
+                                        <li><a class="dropdown-item" href="#">Company Settings</a></li>
 
-                                    </a>
+                                        <li><a class="dropdown-item" href="#">Audit Logs</a></li>
 
-                                </li>
-
-                                <li>
-
-                                    <a class="dropdown-item" href="#">
-
-                                        📅 Leave Type Master
-
-                                    </a>
+                                    </ul>
 
                                 </li>
-
-                                <li>
-
-                                    <a class="dropdown-item" href="#">
-
-                                        🎉 Holiday Master
-
-                                    </a>
-
-                                </li>
-
-                            </ul>
-
-                        </li>
-
-                        <!-- Reports -->
-
-                        <li class="nav-item dropdown">
-
-                            <a class="nav-link dropdown-toggle"
-                               href="#"
-                               data-bs-toggle="dropdown">
-
-                                <i class="fa-solid fa-chart-column"></i>
-
-                                Reports
-
-                            </a>
-
-                            <ul class="dropdown-menu">
-
-                                <li><a class="dropdown-item" href="#">Attendance Report</a></li>
-
-                                <li><a class="dropdown-item" href="#">Employee Report</a></li>
-
-                                <li><a class="dropdown-item" href="#">Leave Report</a></li>
-
-                            </ul>
-
-                        </li>
-
-                        <!-- Administration -->
-
-                        <li class="nav-item dropdown">
-
-                            <a class="nav-link dropdown-toggle"
-                               href="#"
-                               data-bs-toggle="dropdown">
-
-                                <i class="fa-solid fa-gear"></i>
-
-                                Administration
-
-                            </a>
-
-                            <ul class="dropdown-menu">
-
-                                <li><a class="dropdown-item" href="#">Users</a></li>
-
-                                <li><a class="dropdown-item" href="#">Roles</a></li>
-
-                                <li><a class="dropdown-item" href="#">Company Settings</a></li>
-
-                                <li><a class="dropdown-item" href="#">Audit Logs</a></li>
-
-                            </ul>
-
-                        </li>
+                            }
 
                     </ul>
 

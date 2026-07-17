@@ -13,7 +13,6 @@ namespace FidelitasHub.Models
 
         public List<SelectListItem> Employees { get; set; } = new();
 
-        [Required]
         public string LeaveType { get; set; } = "";
 
         public List<SelectListItem> LeaveTypes { get; set; } = new();

@@ -33,15 +33,26 @@ namespace FidelitasHub.Models
 
         public string Status { get; set; } = "Pending";
 
+        // Team Leader Approval
         public int? TeamLeaderId { get; set; }
+
+        public string TeamLeaderStatus { get; set; } = "Pending";
 
         public DateTime? TeamLeaderApprovalDate { get; set; }
 
+        public string? TeamLeaderRemarks { get; set; }
+
+
+        // Manager Approval
         public int? ManagerId { get; set; }
+
+        public string ManagerStatus { get; set; } = "Pending";
 
         public DateTime? ManagerApprovalDate { get; set; }
 
-        public string Remarks { get; set; } = "";
+        public string? ManagerRemarks { get; set; }
+
+        public string EmployeeRemarks { get; set; } = "";
 
         public DateTime AppliedOn { get; set; } = DateTime.Now;
     }
