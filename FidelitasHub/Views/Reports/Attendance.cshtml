@@ -1,13 +1,18 @@
+@model IEnumerable<FidelitasHub.Models.AttendanceReportRow>
+
 @{
     ViewData["Title"] = "Attendance Report";
     var maxDate = DateTime.Today.ToString("yyyy-MM-dd");
-    var minDate = DateTime.Today.AddDays(-90).ToString("yyyy-MM-dd");
+    var minDate = DateTime.Today.AddDays(-365).ToString("yyyy-MM-dd");
+    var from = ((DateTime?)ViewBag.FromDate)?.ToString("yyyy-MM-dd");
+    var to = ((DateTime?)ViewBag.ToDate)?.ToString("yyyy-MM-dd");
+    var shift = ViewBag.Shift as string ?? "All";
 }
 
 <div class="page-head">
     <div>
         <h1 class="page-head__title"><i class="fa-solid fa-calendar-check"></i> Attendance Report</h1>
-        <p class="page-head__sub">Filter and export attendance summaries</p>
+        <p class="page-head__sub">@ViewBag.FromDate.ToString("dd-MMM-yyyy") → @ViewBag.ToDate.ToString("dd-MMM-yyyy") · @Model.Count() employee(s)</p>
     </div>
     <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Reports</a>
 </div>
@@ -18,18 +23,18 @@
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label">From Date</label>
-                    <input type="date" name="fromDate" class="form-control" min="@minDate" max="@maxDate" />
+                    <input type="date" name="fromDate" value="@from" class="form-control" min="@minDate" max="@maxDate" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">To Date</label>
-                    <input type="date" name="toDate" class="form-control" min="@minDate" max="@maxDate" />
+                    <input type="date" name="toDate" value="@to" class="form-control" min="@minDate" max="@maxDate" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Shift</label>
                     <select name="shift" class="form-select">
-                        <option value="All">All</option>
-                        <option value="General Shift">General Shift</option>
-                        <option value="US Shift">US Shift</option>
+                        <option value="All" selected="@(shift == "All")">All</option>
+                        <option value="General Shift" selected="@(shift == "General Shift")">General Shift</option>
+                        <option value="US Shift" selected="@(shift == "US Shift")">US Shift</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -42,17 +47,45 @@
 
 <div class="table-card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover align-middle mb-0">
             <thead>
-                <tr><th>Code</th><th>Employee</th><th>Present</th><th>Absent</th><th>Late</th><th>Half Day</th></tr>
+                <tr>
+                    <th>Code</th>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th class="text-end">Present</th>
+                    <th class="text-end">Late</th>
+                    <th class="text-end">Half Day</th>
+                    <th class="text-end">Absent</th>
+                    <th class="text-end">Worked Hrs</th>
+                </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td colspan="6" class="text-center text-muted py-5">
-                        <i class="fa-solid fa-chart-line fa-lg d-block mb-2"></i>
-                        Choose a date range and shift, then select <strong>Generate</strong> to build the report.
-                    </td>
-                </tr>
+                @if (Model.Any())
+                {
+                    foreach (var r in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@r.EmployeeCode</span></td>
+                            <td>@r.EmployeeName</td>
+                            <td>@r.Department</td>
+                            <td class="text-end">@r.PresentDays</td>
+                            <td class="text-end">@r.LateDays</td>
+                            <td class="text-end">@r.HalfDays</td>
+                            <td class="text-end">@r.AbsentDays</td>
+                            <td class="text-end fw-semibold">@r.WorkedHours</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="fa-solid fa-chart-line fa-lg d-block mb-2"></i>
+                            No attendance records in this range. Adjust the filters and select <strong>Generate</strong>.
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
