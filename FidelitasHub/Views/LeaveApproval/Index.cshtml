@@ -1,64 +1,75 @@
-﻿@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+@model IEnumerable<FidelitasHub.Models.LeaveApplication>
 
 @{
     ViewData["Title"] = "Leave Approval";
+
+    Func<string, string> statusBadge = status =>
+    {
+        var s = (status ?? "").ToLower();
+        if (s.Contains("approve")) return "badge-soft-success";
+        if (s.Contains("reject")) return "badge-soft-danger";
+        return "badge-soft-warning";
+    };
 }
 
-<h3 class="mb-4">Leave Approval</h3>
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-circle-check"></i> Leave Approval</h1>
+        <p class="page-head__sub">Review and act on pending leave requests</p>
+    </div>
+</div>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Employee ID</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Days</th>
-            <th>Status</th>
-            <th>Team Leader</th>
-            <th>Manager</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        @foreach (var item in Model)
-        {
-            <tr>
-
-                <td>@item.EmployeeId</td>
-
-                <td>@item.FromDate.ToShortDateString()</td>
-
-                <td>@item.ToDate.ToShortDateString()</td>
-
-                <td>@item.TotalDays</td>
-
-                <td>@item.Status</td>
-
-                <td>@item.TeamLeaderStatus</td>
-
-                <td>@item.ManagerStatus</td>
-
-                <td>
-
-                    <a asp-action="Approve"
-                       asp-route-id="@item.LeaveApplicationId"
-                       class="btn btn-success btn-sm">
-                        Approve
-                    </a>
-
-                    <a asp-action="Reject"
-                       asp-route-id="@item.LeaveApplicationId"
-                       class="btn btn-danger btn-sm">
-                        Reject
-                    </a>
-
-                </td>
-
-            </tr>
-        }
-
-    </tbody>
-
-</table>
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Emp ID</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Days</th>
+                    <th>Status</th>
+                    <th>Team Leader</th>
+                    <th>Manager</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@item.EmployeeId</span></td>
+                            <td>@item.FromDate.ToShortDateString()</td>
+                            <td>@item.ToDate.ToShortDateString()</td>
+                            <td>@item.TotalDays</td>
+                            <td><span class="badge @statusBadge(item.Status)">@item.Status</span></td>
+                            <td><span class="badge @statusBadge(item.TeamLeaderStatus)">@item.TeamLeaderStatus</span></td>
+                            <td><span class="badge @statusBadge(item.ManagerStatus)">@item.ManagerStatus</span></td>
+                            <td class="text-end">
+                                <a asp-action="Approve" asp-route-id="@item.LeaveApplicationId"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="fa-solid fa-check me-1"></i>Approve
+                                </a>
+                                <a asp-action="Reject" asp-route-id="@item.LeaveApplicationId"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="fa-solid fa-xmark me-1"></i>Reject
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+                            No leave requests to approve.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

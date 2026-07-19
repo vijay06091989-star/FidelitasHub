@@ -1,148 +1,72 @@
-﻿@model FidelitasHub.Models.LeaveApplicationViewModel
+@model FidelitasHub.Models.LeaveApplicationViewModel
 
 @{
     ViewData["Title"] = "Apply Leave";
 }
 
-<div class="container-fluid mt-4">
-
-    <div class="card shadow">
-
-        <div class="card-header bg-success text-white">
-
-            <h3 class="mb-0">
-                📝 Leave Application
-            </h3>
-
-        </div>
-
-        <div class="card-body">
-
-            <form>
-
-                <div class="row">
-
-                    <div class="col-md-6">
-
-                        <label class="fw-bold">
-                            Employee
-                        </label>
-
-                        <select asp-for="EmployeeId"
-                                asp-items="Model.Employees"
-                                class="form-select">
-
-                            <option value="">
-                                -- Select Employee --
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <label class="fw-bold">
-                            Leave Balance
-                        </label>
-
-                        <input class="form-control"
-                               value="@Model.LeaveBalance"
-                               readonly />
-
-                    </div>
-
-                </div>
-
-                <br />
-
-                <div class="row">
-
-                    <div class="col-md-3">
-
-                        <label class="fw-bold">
-                            From Date
-                        </label>
-
-                        <input asp-for="FromDate"
-                               type="date"
-                               class="form-control" />
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="fw-bold">
-                            To Date
-                        </label>
-
-                        <input asp-for="ToDate"
-                               type="date"
-                               class="form-control" />
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="fw-bold">
-                            Half Day
-                        </label>
-
-                        <select class="form-select">
-
-                            <option>
-                                Full Day
-                            </option>
-
-                            <option>
-                                Morning Half
-                            </option>
-
-                            <option>
-                                Afternoon Half
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="fw-bold">
-                            Total Days
-                        </label>
-
-                        <input class="form-control"
-                               value="@Model.TotalDays"
-                               readonly />
-
-                    </div>
-
-                </div>
-
-                <br />
-
-                <label class="fw-bold">
-                    Reason
-                </label>
-
-                <textarea asp-for="Reason"
-                          rows="4"
-                          class="form-control">
-                </textarea>
-
-                <br />
-
-                <button class="btn btn-success">
-
-                    Calculate Leave
-
-                </button>
-
-            </form>
-
-        </div>
-
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-plane-departure"></i> Leave Application</h1>
+        <p class="page-head__sub">Submit a leave request</p>
     </div>
+</div>
 
+<div class="row">
+    <div class="col-xl-10">
+        <div class="fh-card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-primary"></i> Leave Details
+            </div>
+            <div class="card-body">
+
+                <form>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Employee</label>
+                            <select asp-for="EmployeeId" asp-items="Model.Employees" class="form-select">
+                                <option value="">-- Select Employee --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Leave Balance</label>
+                            <input class="form-control" value="@Model.LeaveBalance" readonly />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">From Date</label>
+                            <input asp-for="FromDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">To Date</label>
+                            <input asp-for="ToDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Half Day</label>
+                            <select class="form-select">
+                                <option>Full Day</option>
+                                <option>Morning Half</option>
+                                <option>Afternoon Half</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Total Days</label>
+                            <input class="form-control" value="@Model.TotalDays" readonly />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Reason</label>
+                            <textarea asp-for="Reason" rows="4" class="form-control" placeholder="Reason for leave"></textarea>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <button class="btn btn-primary">
+                        <i class="fa-solid fa-calculator me-1"></i> Calculate Leave
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
 </div>

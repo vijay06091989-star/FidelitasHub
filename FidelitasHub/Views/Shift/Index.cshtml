@@ -1,412 +1,194 @@
-﻿@model IEnumerable<FidelitasHub.Models.Shift>
+@model IEnumerable<FidelitasHub.Models.Shift>
 
 @{
     ViewData["Title"] = "Shift Master";
 }
 
-<div class="container-fluid mt-4">
-
-    <div class="d-flex justify-content-between align-items-center">
-
-        <h2 class="text-primary fw-bold">
-            🕒 Shift Master
-        </h2>
-
-        <a asp-action="Create"
-           class="btn btn-success">
-
-            <i class="fa-solid fa-plus"></i>
-
-            Add Shift
-
-        </a>
-
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-business-time"></i> Shift Master</h1>
+        <p class="page-head__sub">Define working shifts and timings</p>
     </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Add Shift
+    </a>
+</div>
 
-    <hr />
+<!-- Filter stats -->
+<div class="stat-grid">
 
-    <!-- ================= Dashboard ================= -->
-
-    <div class="row mb-4">
-
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(string.IsNullOrEmpty(ViewBag.Status) ? "border-4 border-primary" : "border-primary")">
-
-                    <div class="card-body text-center">
-
-                        <h6 class="text-muted">
-
-                            Total Shifts
-
-                        </h6>
-
-                        <h2 class="text-primary fw-bold">
-
-                            @ViewBag.TotalShifts
-
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat @(string.IsNullOrEmpty(ViewBag.Status as string) ? "is-active" : "")"
+       asp-action="Index" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-clock"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Total Shifts</p>
+            <p class="stat__value">@ViewBag.TotalShifts</p>
         </div>
+    </a>
 
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               asp-route-status="Active"
-               asp-route-searchText="@ViewBag.SearchText"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(ViewBag.Status=="Active" ? "border-4 border-success" : "border-success")">
-
-                    <div class="card-body text-center">
-
-                        <h6 class="text-muted">
-
-                            Active Shifts
-
-                        </h6>
-
-                        <h2 class="text-success fw-bold">
-
-                            @ViewBag.ActiveShifts
-
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat stat--success @(ViewBag.Status == "Active" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Active" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-circle-check"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Active</p>
+            <p class="stat__value">@ViewBag.ActiveShifts</p>
         </div>
+    </a>
 
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               asp-route-status="Inactive"
-               asp-route-searchText="@ViewBag.SearchText"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(ViewBag.Status=="Inactive" ? "border-4 border-danger" : "border-danger")">
-
-                    <div class="card-body text-center">
-
-                        <h6 class="text-muted">
-
-                            Inactive Shifts
-
-                        </h6>
-
-                        <h2 class="text-danger fw-bold">
-
-                            @ViewBag.InactiveShifts
-
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat stat--danger @(ViewBag.Status == "Inactive" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Inactive" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-circle-xmark"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Inactive</p>
+            <p class="stat__value">@ViewBag.InactiveShifts</p>
         </div>
+    </a>
 
+</div>
+
+<!-- Search -->
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-sm-6 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchText" value="@ViewBag.SearchText"
+                       class="form-control" placeholder="Search shift..." />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
     </div>
-        <!-- ================= Search ================= -->
+</form>
 
-    <form asp-action="Index"
-          method="get"
-          class="row mb-4">
+<!-- List -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Shift Name</th>
+                    <th>Timing</th>
+                    <th>DST</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@item.ShiftCode</span></td>
+                            <td>@item.ShiftName</td>
+                            <td>
+                                @{
+                                    var start = DateTime.Today.Add(item.StandardStartTime).ToString("hh:mm tt");
+                                    var end = DateTime.Today.Add(item.StandardEndTime).ToString("hh:mm tt");
+                                }
+                                <span class="text-muted">@start → @end</span>
+                            </td>
+                            <td>
+                                @if (item.DstApplicable)
+                                {
+                                    <span class="badge badge-soft">Yes</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary-emphasis">No</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.ShiftId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
 
-        <div class="col-md-4">
-
-            <input type="text"
-                   name="searchText"
-                   value="@ViewBag.SearchText"
-                   class="form-control"
-                   placeholder="Search Shift..." />
-
-        </div>
-
-        <div class="col-md-3">
-
-            <button type="submit"
-                    class="btn btn-primary">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                Search
-
-            </button>
-
-            <a asp-action="Index"
-               class="btn btn-secondary">
-
-                Clear
-
-            </a>
-
-        </div>
-
-    </form>
-
-    <!-- ================= Shift List ================= -->
-
-    <table class="table table-bordered table-hover table-striped">
-
-        <thead class="table-primary">
-
-            <tr>
-
-                <th width="120">Code</th>
-
-                <th>Shift Name</th>
-
-                <th width="220">Timing</th>
-
-                <th width="120">DST</th>
-
-                <th width="120">Status</th>
-
-                <th width="220">Action</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @if (Model.Any())
-            {
-                foreach (var item in Model)
+                                @if (item.IsActive)
+                                {
+                                    <form id="disableForm_@item.ShiftId" asp-action="Disable"
+                                          asp-route-id="@item.ShiftId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDisable('@item.ShiftId','@item.ShiftName')">
+                                            <i class="fa-solid fa-ban"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form id="enableForm_@item.ShiftId" asp-action="Enable"
+                                          asp-route-id="@item.ShiftId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                onclick="confirmEnable('@item.ShiftId','@item.ShiftName')">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-
-                        <td>
-
-                            @item.ShiftCode
-
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+                            No shifts found.
                         </td>
-
-                        <td>
-
-                            @item.ShiftName
-
-                        </td>
-
-                        <td>
-
-                            @{
-                                var start = DateTime.Today.Add(item.StandardStartTime)
-                                    .ToString("hh:mm tt");
-
-                                var end = DateTime.Today.Add(item.StandardEndTime)
-                                    .ToString("hh:mm tt");
-                            }
-
-                            @start → @end
-
-                        </td>
-
-                        <td>
-
-                            @if (item.DstApplicable)
-                            {
-                                <span class="badge bg-info">
-
-                                    Yes
-
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">
-
-                                    No
-
-                                </span>
-                            }
-
-                        </td>
-
-                        <td>
-
-                            @if (item.IsActive)
-                            {
-                                <span class="badge bg-success">
-
-                                    Active
-
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">
-
-                                    Inactive
-
-                                </span>
-                            }
-
-                        </td>
-
-                        <td>
-                            <a asp-action="Edit"
-                               asp-route-id="@item.ShiftId"
-                               class="btn btn-primary btn-sm">
-
-                                <i class="fa-solid fa-pen"></i>
-
-                                Edit
-
-                            </a>
-
-                            @if (item.IsActive)
-                            {
-                                <form id="disableForm_@item.ShiftId"
-                                      asp-action="Disable"
-                                      asp-route-id="@item.ShiftId"
-                                      method="post"
-                                      style="display:inline;">
-
-                                    @Html.AntiForgeryToken()
-
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="confirmDisable('@item.ShiftId','@item.ShiftName')">
-
-                                        <i class="fa-solid fa-ban"></i>
-
-                                        Disable
-
-                                    </button>
-
-                                </form>
-                            }
-                            else
-                            {
-                                <form id="enableForm_@item.ShiftId"
-                                      asp-action="Enable"
-                                      asp-route-id="@item.ShiftId"
-                                      method="post"
-                                      style="display:inline;">
-
-                                    @Html.AntiForgeryToken()
-
-                                    <button type="button"
-                                            class="btn btn-success btn-sm"
-                                            onclick="confirmEnable('@item.ShiftId','@item.ShiftName')">
-
-                                        <i class="fa-solid fa-check"></i>
-
-                                        Enable
-
-                                    </button>
-
-                                </form>
-                            }
-
-                        </td>
-
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-
-                    <td colspan="6"
-                        class="text-center text-danger fw-bold">
-
-                        No Shifts Found.
-
-                    </td>
-
-                </tr>
-            }
-
-        </tbody>
-
-    </table>
-
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @section Scripts
 {
     <script>
-
-        function confirmDisable(id, name)
-        {
+        function confirmDisable(id, name) {
             Swal.fire({
-
                 title: 'Disable Shift?',
-
-                html:
-                    '<b>' + name + '</b><br><br>' +
-                    'This shift will become inactive.',
-
+                html: '<b>' + name + '</b><br><br>This shift will become inactive.',
                 icon: 'warning',
-
                 showCancelButton: true,
-
-                confirmButtonColor: '#dc3545',
-
-                cancelButtonColor: '#6c757d',
-
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Disable',
-
                 cancelButtonText: 'Cancel'
-
             }).then((result) => {
-
-                if (result.isConfirmed)
-                {
-                    document.getElementById('disableForm_' + id).submit();
-                }
-
+                if (result.isConfirmed) { document.getElementById('disableForm_' + id).submit(); }
             });
         }
 
-        function confirmEnable(id, name)
-        {
+        function confirmEnable(id, name) {
             Swal.fire({
-
                 title: 'Enable Shift?',
-
-                html:
-                    '<b>' + name + '</b><br><br>' +
-                    'This shift will become active again.',
-
+                html: '<b>' + name + '</b><br><br>This shift will become active again.',
                 icon: 'question',
-
                 showCancelButton: true,
-
-                confirmButtonColor: '#198754',
-
-                cancelButtonColor: '#6c757d',
-
+                confirmButtonColor: '#0d9488',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Enable',
-
                 cancelButtonText: 'Cancel'
-
             }).then((result) => {
-
-                if (result.isConfirmed)
-                {
-                    document.getElementById('enableForm_' + id).submit();
-                }
-
+                if (result.isConfirmed) { document.getElementById('enableForm_' + id).submit(); }
             });
         }
-
     </script>
 }

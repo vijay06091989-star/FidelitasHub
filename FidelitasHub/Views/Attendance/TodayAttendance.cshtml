@@ -1,453 +1,182 @@
-﻿@model List<FidelitasHub.Models.TodayAttendanceViewModel>
+@model List<FidelitasHub.Models.TodayAttendanceViewModel>
 
 @{
     ViewData["Title"] = "Today's Attendance";
     int slNo = 1;
 }
 
-<div class="container-fluid mt-4">
-
-    <div class="card shadow-lg border-0">
-
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-
-            <h3 class="mb-0">
-                📅 Today's Attendance
-            </h3>
-
-            <button class="btn btn-light btn-sm"
-                    onclick="location.reload();">
-
-                <i class="fa-solid fa-rotate"></i>
-
-                Refresh
-
-            </button>
-
-        </div>
-
-        <div class="card-body">
-
-            <!-- ================= SHIFT SELECTION ================= -->
-
-            <div class="row mb-4">
-
-                <div class="col-md-12">
-
-                    <div class="card border-primary shadow-sm">
-
-                        <div class="card-body">
-
-                            <h5 class="mb-3">
-
-                                <i class="fa-solid fa-clock"></i>
-
-                                Select Shift
-
-                            </h5>
-
-                            <a asp-action="TodayAttendance"
-                               asp-route-shift="General Shift"
-                               class="btn @(ViewBag.SelectedShift == "General Shift" ? "btn-primary" : "btn-outline-primary") me-2">
-
-                                General Shift
-
-                            </a>
-
-                            <a asp-action="TodayAttendance"
-                               asp-route-shift="US Shift"
-                               class="btn @(ViewBag.SelectedShift == "US Shift" ? "btn-primary" : "btn-outline-primary")">
-
-                                US Shift
-
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- ================= SUMMARY ================= -->
-            <div class="text-center mb-3">
-
-                <h4 class="fw-bold text-primary">
-
-                    @ViewBag.SelectedShift SUMMARY
-
-                </h4>
-
-            </div>
-
-            <div class="row g-3 mb-4">
-
-                <div class="col">
-
-                    <div class="card bg-success text-white shadow h-100 attendance-card"
-                         data-status="Present"
-                         style="cursor:pointer;">
-
-                        <div class="card-body text-center">
-
-                            <i class="fa-solid fa-user-check fa-2x mb-2"></i>
-
-                            <h6>Present</h6>
-
-                            <h2>@Model.Count(x => x.Status != "Absent")</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="col">
-
-                    <div class="card bg-secondary text-white shadow h-100 attendance-card"
-                         data-status="Absent"
-                         style="cursor:pointer;">
-
-                        <div class="card-body text-center">
-
-                            <i class="fa-solid fa-user-xmark fa-2x mb-2"></i>
-
-                            <h6>Absent</h6>
-
-                            <h2>@Model.Count(x => x.Status == "Absent")</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="col">
-
-                    <div class="card bg-primary text-white shadow h-100 attendance-card"
-                         data-status="Working"
-                         style="cursor:pointer;">
-
-                        <div class="card-body text-center">
-
-                            <i class="fa-solid fa-briefcase fa-2x mb-2"></i>
-
-                            <h6>Working</h6>
-
-                            <h2>@Model.Count(x => x.Status == "Working")</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="col">
-
-                    <div class="card bg-warning shadow h-100 attendance-card"
-                         data-status="On Break"
-                         style="cursor:pointer;">
-
-                        <div class="card-body text-center">
-
-                            <i class="fa-solid fa-mug-hot fa-2x mb-2"></i>
-
-                            <h6>On Break</h6>
-
-                            <h2>@Model.Count(x => x.Status == "On Break")</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="col">
-
-                    <div class="card bg-danger text-white shadow h-100 attendance-card"
-                         data-status="Punched Out"
-                         style="cursor:pointer;">
-
-                        <div class="card-body text-center">
-
-                            <i class="fa-solid fa-door-open fa-2x mb-2"></i>
-
-                            <h6>Punched Out</h6>
-
-                            <h2>@Model.Count(x => x.Status == "Punched Out")</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- ================= SEARCH ================= -->
-
-            <div class="card shadow-sm border-0 mb-4">
-
-                <div class="card-body">
-
-                    <div class="row align-items-end">
-
-                        <div class="col-md-6">
-
-                            <label class="form-label fw-bold">
-
-                                <i class="fa-solid fa-magnifying-glass"></i>
-
-                                Search Employee
-
-                            </label>
-
-                            <input type="text"
-                                   id="txtSearch"
-                                   class="form-control"
-                                   placeholder="Employee Code / Employee Name" />
-
-                        </div>
-
-                        <div class="col-md-6 text-end">
-
-                            <button class="btn btn-primary me-2"
-                                    id="btnSearch">
-
-                                <i class="fa-solid fa-search"></i>
-
-                                Search
-
-                            </button>
-
-                            <button class="btn btn-secondary me-2"
-                                    id="btnClear">
-
-                                <i class="fa-solid fa-eraser"></i>
-
-                                Clear
-
-                            </button>
-
-                            <a asp-action="ExportTodayAttendanceExcel"
-                               asp-route-shift="@ViewBag.SelectedShift"
-                               class="btn btn-success">
-
-                                <i class="fa-solid fa-file-excel"></i>
-
-                                Excel
-
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="table-responsive">
-
-                <table class="table table-hover table-striped align-middle">
-
-                    <thead class="table-primary">
-
-                        <tr class="text-center">
-
-                            <th>#</th>
-
-                            <th>Employee Code</th>
-
-                            <th>Employee Name</th>
-
-                            <th>Department</th>
-
-                            <th>Shift</th>
-
-                            <th>Punch In</th>
-
-                            <th>Punch Out</th>
-
-                            <th>Worked</th>
-
-                            <th>Status</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @foreach (var item in Model)
-                        {
-                            <tr class="text-center">
-
-                                <td>@slNo</td>
-
-                                <td>@item.EmployeeCode</td>
-
-                                <td class="text-start">@item.EmployeeName</td>
-
-                                <td>@item.Department</td>
-
-                                <td>@item.Shift</td>
-
-                                <td>@item.PunchIn</td>
-
-                                <td>@item.PunchOut</td>
-
-                                <td>@item.WorkedTime</td>
-
-                                <td>
-
-                                    @if (item.Status == "Working")
-                                    {
-                                        <span class="badge bg-success rounded-pill px-3">
-                                            🟢 Working
-                                        </span>
-                                    }
-                                    else if (item.Status == "On Break")
-                                    {
-                                        <span class="badge bg-warning text-dark rounded-pill px-3">
-                                            ☕ On Break
-                                        </span>
-                                    }
-                                    else if (item.Status == "Punched Out")
-                                    {
-                                        <span class="badge bg-danger rounded-pill px-3">
-                                            🔴 Punched Out
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary rounded-pill px-3">
-                                            ⚪ Absent
-                                        </span>
-                                    }
-
-                                </td>
-
-                            </tr>
-
-                            slNo++;
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-calendar-day"></i> Today's Attendance</h1>
+        <p class="page-head__sub">Live attendance for <strong>@ViewBag.SelectedShift</strong></p>
     </div>
-
+    <div class="d-flex gap-2">
+        <a asp-action="TodayAttendance" asp-route-shift="General Shift"
+           class="btn @(ViewBag.SelectedShift == "General Shift" ? "btn-primary" : "btn-outline-primary")">General Shift</a>
+        <a asp-action="TodayAttendance" asp-route-shift="US Shift"
+           class="btn @(ViewBag.SelectedShift == "US Shift" ? "btn-primary" : "btn-outline-primary")">US Shift</a>
+        <button class="btn btn-outline-secondary" onclick="location.reload();" title="Refresh">
+            <i class="fa-solid fa-rotate"></i>
+        </button>
+    </div>
 </div>
+
+<!-- Summary (click a tile to filter) -->
+<div class="stat-grid">
+    <div class="stat stat--success attendance-card cursor-pointer" data-status="Present">
+        <span class="stat__icon"><i class="fa-solid fa-user-check"></i></span>
+        <div class="stat__body"><p class="stat__label">Present</p><p class="stat__value">@Model.Count(x => x.Status != "Absent")</p></div>
+    </div>
+    <div class="stat attendance-card cursor-pointer" data-status="Absent">
+        <span class="stat__icon"><i class="fa-solid fa-user-xmark"></i></span>
+        <div class="stat__body"><p class="stat__label">Absent</p><p class="stat__value">@Model.Count(x => x.Status == "Absent")</p></div>
+    </div>
+    <div class="stat stat--info attendance-card cursor-pointer" data-status="Working">
+        <span class="stat__icon"><i class="fa-solid fa-briefcase"></i></span>
+        <div class="stat__body"><p class="stat__label">Working</p><p class="stat__value">@Model.Count(x => x.Status == "Working")</p></div>
+    </div>
+    <div class="stat stat--warning attendance-card cursor-pointer" data-status="On Break">
+        <span class="stat__icon"><i class="fa-solid fa-mug-hot"></i></span>
+        <div class="stat__body"><p class="stat__label">On Break</p><p class="stat__value">@Model.Count(x => x.Status == "On Break")</p></div>
+    </div>
+    <div class="stat stat--danger attendance-card cursor-pointer" data-status="Punched Out">
+        <span class="stat__icon"><i class="fa-solid fa-door-open"></i></span>
+        <div class="stat__body"><p class="stat__label">Punched Out</p><p class="stat__value">@Model.Count(x => x.Status == "Punched Out")</p></div>
+    </div>
+</div>
+
+<!-- Search -->
+<form class="mb-3" onsubmit="return false;">
+    <div class="row g-2 align-items-center">
+        <div class="col-sm-6 col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" id="txtSearch" class="form-control" placeholder="Employee code / name" />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" id="btnSearch">Search</button>
+            <button class="btn btn-outline-secondary" id="btnClear">Clear</button>
+        </div>
+        <div class="col-auto ms-auto">
+            <a asp-action="ExportTodayAttendanceExcel" asp-route-shift="@ViewBag.SelectedShift" class="btn btn-outline-success">
+                <i class="fa-solid fa-file-excel me-1"></i> Export Excel
+            </a>
+        </div>
+    </div>
+</form>
+
+<!-- Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Code</th>
+                    <th>Employee Name</th>
+                    <th>Department</th>
+                    <th>Shift</th>
+                    <th>Punch In</th>
+                    <th>Punch Out</th>
+                    <th>Worked</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@slNo</td>
+                            <td><span class="fw-semibold">@item.EmployeeCode</span></td>
+                            <td>@item.EmployeeName</td>
+                            <td>@item.Department</td>
+                            <td>@item.Shift</td>
+                            <td>@item.PunchIn</td>
+                            <td>@item.PunchOut</td>
+                            <td>@item.WorkedTime</td>
+                            <td>
+                                @if (item.Status == "Working")
+                                {
+                                    <span class="badge badge-soft-success">Working</span>
+                                }
+                                else if (item.Status == "On Break")
+                                {
+                                    <span class="badge badge-soft-warning">On Break</span>
+                                }
+                                else if (item.Status == "Punched Out")
+                                {
+                                    <span class="badge badge-soft-danger">Punched Out</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary-emphasis">Absent</span>
+                                }
+                            </td>
+                        </tr>
+                        slNo++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+                            No attendance records for this shift.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
 @section Scripts
 {
     <script>
-
-        //==========================================
-        // Search Employee
-        //==========================================
-
+        // Search
         document.getElementById("btnSearch").addEventListener("click", function () {
-
             var value = document.getElementById("txtSearch").value.toLowerCase();
-
             document.querySelectorAll("tbody tr").forEach(function (row) {
-
-                row.style.display =
-                    row.innerText.toLowerCase().indexOf(value) > -1
-                        ? ""
-                        : "none";
-
+                row.style.display = row.innerText.toLowerCase().indexOf(value) > -1 ? "" : "none";
             });
-
         });
 
-                //==========================================
-        // Clear Search
-        //==========================================
-
+        // Clear
         document.getElementById("btnClear").addEventListener("click", function () {
-
             document.getElementById("txtSearch").value = "";
-
-            document.querySelectorAll("tbody tr").forEach(function (row) {
-
-                row.style.display = "";
-
-            });
-
+            document.querySelectorAll("tbody tr").forEach(function (row) { row.style.display = ""; });
         });
 
-                //==========================================
-        // Summary Card Filter (Toggle)
-        //==========================================
-
+        // Summary tile filter (toggle)
         let activeFilter = "";
-
         document.querySelectorAll(".attendance-card").forEach(function (card) {
-
             card.addEventListener("click", function () {
-
                 var filter = this.dataset.status.toLowerCase();
 
-                // Clicking the same card again removes the filter
                 if (activeFilter === filter) {
-
                     activeFilter = "";
-
-                    document.querySelectorAll(".attendance-card").forEach(function (c) {
-                        c.classList.remove("border-dark", "border-4");
-                    });
-
-                    document.querySelectorAll("tbody tr").forEach(function (row) {
-                        row.style.display = "";
-                    });
-
+                    document.querySelectorAll(".attendance-card").forEach(c => c.classList.remove("is-active"));
+                    document.querySelectorAll("tbody tr").forEach(row => row.style.display = "");
                     return;
                 }
 
                 activeFilter = filter;
-
-                document.querySelectorAll(".attendance-card").forEach(function (c) {
-                    c.classList.remove("border-dark", "border-4");
-                });
-
-                this.classList.add("border-dark", "border-4");
+                document.querySelectorAll(".attendance-card").forEach(c => c.classList.remove("is-active"));
+                this.classList.add("is-active");
 
                 document.querySelectorAll("tbody tr").forEach(function (row) {
-
-                    var rowStatus = row.cells[9].innerText.toLowerCase();
-
+                    if (!row.cells[8]) return;
+                    var rowStatus = row.cells[8].innerText.toLowerCase();
                     if (filter === "present") {
-
-                        row.style.display =
-                            rowStatus.indexOf("absent") === -1
-                                ? ""
-                                : "none";
+                        row.style.display = rowStatus.indexOf("absent") === -1 ? "" : "none";
+                    } else {
+                        row.style.display = rowStatus.indexOf(filter) > -1 ? "" : "none";
                     }
-                    else {
-
-                        row.style.display =
-                            rowStatus.indexOf(filter) > -1
-                                ? ""
-                                : "none";
-                    }
-
                 });
-
             });
-
         });
-
-
-    </script>
-}
-
     </script>
 }
