@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Permission Register";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-clock"></i> Permission Register</h1>
+        <p class="page-head__sub">Short-duration permission requests</p>
+    </div>
+</div>
+
+<div class="fh-card">
+    <div class="card-body text-center py-5">
+        <div class="stat__icon mx-auto mb-3" style="width:64px;height:64px;font-size:1.6rem;">
+            <i class="fa-solid fa-person-walking-arrow-right"></i>
+        </div>
+        <h2 class="h5 mb-2">Permission tracking is coming soon</h2>
+        <p class="text-muted mb-4" style="max-width:52ch;margin-inline:auto;">
+            This screen will let employees request short permissions (e.g. two hours) and let
+            managers approve them, with monthly limits per the attendance policy.
+        </p>
+        <a asp-controller="Leave" asp-action="ApplyLeave" class="btn btn-outline-primary">
+            <i class="fa-solid fa-plane-departure me-1"></i> Apply for Leave instead
+        </a>
+    </div>
+</div>
