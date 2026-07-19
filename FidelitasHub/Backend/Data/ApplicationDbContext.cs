@@ -20,6 +20,12 @@ namespace FidelitasHub.Data
 
         public DbSet<Shift> Shifts { get; set; }
 
+        public DbSet<Designation> Designations { get; set; }
+
+        public DbSet<LeaveType> LeaveTypes { get; set; }
+
+        public DbSet<Holiday> Holidays { get; set; }
+
         //==================================================
         // Attendance
         //==================================================

@@ -12,7 +12,7 @@
 
     <nav class="sidebar__nav">
 
-        <!-- Dashboards -->
+        <!-- Overview -->
         <div class="sidebar__section">Overview</div>
 
         <a class="sidebar__link" asp-controller="Attendance" asp-action="Dashboard">
@@ -52,8 +52,20 @@
             <a class="sidebar__link" asp-controller="LeaveApproval" asp-action="Index">
                 <i class="fa-solid fa-circle-check"></i><span>Leave Approval</span>
             </a>
+            <a class="sidebar__link" asp-controller="Leave" asp-action="LeaveRegister">
+                <i class="fa-solid fa-list-check"></i><span>Leave Register</span>
+            </a>
+            <a class="sidebar__link" asp-controller="Leave" asp-action="PermissionRegister">
+                <i class="fa-solid fa-clock"></i><span>Permission Register</span>
+            </a>
             <a class="sidebar__link" asp-controller="LeaveBalance" asp-action="Import">
                 <i class="fa-solid fa-file-import"></i><span>Balance Import</span>
+            </a>
+            <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
+                <i class="fa-solid fa-umbrella-beach"></i><span>Holiday Calendar</span>
+            </a>
+            <a class="sidebar__link" asp-controller="Payroll" asp-action="Index">
+                <i class="fa-solid fa-calendar-days"></i><span>Payroll Calendar</span>
             </a>
         }
 
@@ -68,11 +80,20 @@
             <a class="sidebar__link" asp-controller="Department" asp-action="Index">
                 <i class="fa-solid fa-sitemap"></i><span>Departments</span>
             </a>
+            <a class="sidebar__link" asp-controller="Designation" asp-action="Index">
+                <i class="fa-solid fa-briefcase"></i><span>Designations</span>
+            </a>
             <a class="sidebar__link" asp-controller="Shift" asp-action="Index">
                 <i class="fa-solid fa-business-time"></i><span>Shifts</span>
             </a>
+            <a class="sidebar__link" asp-controller="LeaveType" asp-action="Index">
+                <i class="fa-solid fa-tags"></i><span>Leave Types</span>
+            </a>
+            <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
+                <i class="fa-solid fa-umbrella-beach"></i><span>Holidays</span>
+            </a>
 
-            <!-- Reports -->
+            <!-- Reports & Admin -->
             <div class="sidebar__section">Reports &amp; Admin</div>
 
             <div class="sidebar__group">
@@ -81,9 +102,9 @@
                     <i class="fa-solid fa-chevron-right caret"></i>
                 </a>
                 <div class="sidebar__submenu">
-                    <a class="sidebar__link" href="#"><span>Attendance Report</span></a>
-                    <a class="sidebar__link" href="#"><span>Employee Report</span></a>
-                    <a class="sidebar__link" href="#"><span>Leave Report</span></a>
+                    <a class="sidebar__link" asp-controller="Reports" asp-action="Attendance"><span>Attendance Report</span></a>
+                    <a class="sidebar__link" asp-controller="Reports" asp-action="Employee"><span>Employee Report</span></a>
+                    <a class="sidebar__link" asp-controller="Reports" asp-action="Leave"><span>Leave Report</span></a>
                 </div>
             </div>
 
@@ -93,10 +114,10 @@
                     <i class="fa-solid fa-chevron-right caret"></i>
                 </a>
                 <div class="sidebar__submenu">
-                    <a class="sidebar__link" href="#"><span>Users</span></a>
-                    <a class="sidebar__link" href="#"><span>Roles</span></a>
-                    <a class="sidebar__link" href="#"><span>Company Settings</span></a>
-                    <a class="sidebar__link" href="#"><span>Audit Logs</span></a>
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="Users"><span>Users</span></a>
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="Roles"><span>Roles</span></a>
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="CompanySettings"><span>Company Settings</span></a>
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="AuditLogs"><span>Audit Logs</span></a>
                 </div>
             </div>
         }

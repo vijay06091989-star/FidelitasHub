@@ -69,9 +69,41 @@ namespace FidelitasHub.Controllers
             //     new SelectListItem{ Value="LOP", Text="Loss of Pay"},
             //     new SelectListItem{ Value="CO", Text="Comp Off"},
             //     new SelectListItem{ Value="ML", Text="Maternity Leave"}
-            // };   
+            // };
 
             return View(model);
+        }
+
+        //==================================================
+        // Leave Register (all applications)
+        //==================================================
+
+        public IActionResult LeaveRegister(string status)
+        {
+            var leaves = _context.LeaveApplications.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                leaves = leaves.Where(l => l.Status == status);
+            }
+
+            ViewBag.EmployeeNames = _context.Employees
+                .ToDictionary(e => e.EmployeeId, e => e.EmployeeName);
+            ViewBag.Status = status;
+            ViewBag.Total = _context.LeaveApplications.Count();
+            ViewBag.Pending = _context.LeaveApplications.Count(l => l.Status == "Pending");
+            ViewBag.Approved = _context.LeaveApplications.Count(l => l.Status == "Approved");
+
+            return View(leaves.OrderByDescending(l => l.AppliedOn).ToList());
+        }
+
+        //==================================================
+        // Permission Register (scaffold — awaiting entity)
+        //==================================================
+
+        public IActionResult PermissionRegister()
+        {
+            return View();
         }
     }
 }

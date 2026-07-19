@@ -1,0 +1,69 @@
+@model IEnumerable<FidelitasHub.Models.Employee>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-user-gear"></i> Users</h1>
+        <p class="page-head__sub">Login accounts (employee records)</p>
+    </div>
+    <a asp-controller="Employee" asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Add User</a>
+</div>
+
+<form asp-action="Users" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-sm-6 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchText" value="@ViewBag.SearchText" class="form-control" placeholder="Search by code, name or role..." />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Users" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th>Code</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var u in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@u.EmployeeCode</span></td>
+                            <td>@u.EmployeeName</td>
+                            <td class="text-muted">@u.Email</td>
+                            <td><span class="badge badge-soft">@u.Role</span></td>
+                            <td>
+                                @if (u.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-controller="Employee" asp-action="Edit" asp-route-id="@u.EmployeeId" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i></a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No users found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

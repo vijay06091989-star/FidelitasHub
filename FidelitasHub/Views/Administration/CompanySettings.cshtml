@@ -1,0 +1,58 @@
+@{
+    ViewData["Title"] = "Company Settings";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-building"></i> Company Settings</h1>
+        <p class="page-head__sub">Organization profile and defaults</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-9">
+        <div class="fh-card">
+            <div class="card-header d-flex align-items-center gap-2"><i class="fa-solid fa-sliders text-primary"></i> Organization Profile</div>
+            <div class="card-body">
+                <form onsubmit="return false;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Company Name</label>
+                            <input class="form-control" value="Fidelitas RCM Pvt. Ltd." />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Support Email</label>
+                            <input class="form-control" value="support@fidelitascrm.com" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Time Zone</label>
+                            <select class="form-select">
+                                <option selected>Asia/Kolkata (IST)</option>
+                                <option>UTC</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Week Start</label>
+                            <select class="form-select">
+                                <option selected>Monday</option>
+                                <option>Sunday</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Default Annual Leave</label>
+                            <input class="form-control" value="12" />
+                        </div>
+                    </div>
+
+                    <hr />
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Save Settings</button>
+                </form>
+
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="fa-solid fa-circle-info me-1"></i>
+                    This screen is a UI scaffold — persistence to a settings store is planned.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

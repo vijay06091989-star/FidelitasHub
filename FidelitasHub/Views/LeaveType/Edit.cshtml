@@ -1,0 +1,74 @@
+@model FidelitasHub.Models.LeaveType
+
+@{
+    ViewData["Title"] = "Edit Leave Type";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-pen-to-square"></i> Edit Leave Type</h1>
+        <p class="page-head__sub">Update leave category details</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Back</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 col-xl-7">
+        <div class="fh-card">
+            <div class="card-header d-flex align-items-center gap-2"><i class="fa-solid fa-tags text-primary"></i> Leave Type Information</div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="LeaveTypeId" type="hidden" />
+                    <input asp-for="LeaveTypeCode" type="hidden" />
+                    <input asp-for="CreatedDate" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Leave Type Code</label>
+                            <input class="form-control" value="@Model.LeaveTypeCode" readonly />
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="LeaveTypeName" class="form-label"></label>
+                            <input asp-for="LeaveTypeName" class="form-control" />
+                            <span asp-validation-for="LeaveTypeName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ShortCode" class="form-label"></label>
+                            <input asp-for="ShortCode" class="form-control" />
+                            <span asp-validation-for="ShortCode" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DefaultAnnualDays" class="form-label"></label>
+                            <input asp-for="DefaultAnnualDays" class="form-control" />
+                            <span asp-validation-for="DefaultAnnualDays" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input asp-for="IsPaid" class="form-check-input" />
+                                <label asp-for="IsPaid" class="form-check-label">Paid leave</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" rows="3" class="form-control"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label">Active Leave Type</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Update Leave Type</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

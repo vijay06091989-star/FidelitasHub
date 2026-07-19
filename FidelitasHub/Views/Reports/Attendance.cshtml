@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Attendance Report";
+    var maxDate = DateTime.Today.ToString("yyyy-MM-dd");
+    var minDate = DateTime.Today.AddDays(-90).ToString("yyyy-MM-dd");
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-calendar-check"></i> Attendance Report</h1>
+        <p class="page-head__sub">Filter and export attendance summaries</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Reports</a>
+</div>
+
+<div class="fh-card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="fromDate" class="form-control" min="@minDate" max="@maxDate" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="toDate" class="form-control" min="@minDate" max="@maxDate" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Shift</label>
+                    <select name="shift" class="form-select">
+                        <option value="All">All</option>
+                        <option value="General Shift">General Shift</option>
+                        <option value="US Shift">US Shift</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i> Generate</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Code</th><th>Employee</th><th>Present</th><th>Absent</th><th>Late</th><th>Half Day</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-5">
+                        <i class="fa-solid fa-chart-line fa-lg d-block mb-2"></i>
+                        Choose a date range and shift, then select <strong>Generate</strong> to build the report.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

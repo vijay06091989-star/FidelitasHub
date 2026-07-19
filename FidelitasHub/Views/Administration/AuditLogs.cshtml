@@ -1,0 +1,57 @@
+@model IEnumerable<FidelitasHub.Models.AuditLog>
+
+@{
+    ViewData["Title"] = "Audit Logs";
+    var names = ViewBag.EmployeeNames as Dictionary<int, string> ?? new Dictionary<int, string>();
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-clock-rotate-left"></i> Audit Logs</h1>
+        <p class="page-head__sub">Recent system activity (latest 500)</p>
+    </div>
+</div>
+
+<form asp-action="AuditLogs" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-sm-6 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchText" value="@ViewBag.SearchText" class="form-control" placeholder="Search action or remarks..." />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="AuditLogs" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th>When</th><th>User</th><th>Action</th><th>Remarks</th><th>IP</th></tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var a in Model)
+                    {
+                        <tr>
+                            <td class="text-muted">@a.ActionTime.ToString("dd-MMM-yyyy HH:mm")</td>
+                            <td>@(names.TryGetValue(a.EmployeeId, out var n) ? n : ("#" + a.EmployeeId))</td>
+                            <td><span class="badge badge-soft">@a.Action</span></td>
+                            <td class="text-muted">@a.Remarks</td>
+                            <td class="text-muted">@a.IPAddress</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No audit activity recorded yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
