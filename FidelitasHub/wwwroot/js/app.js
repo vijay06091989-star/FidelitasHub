@@ -73,14 +73,15 @@
 
     /* ---------- Clock -------------------------------------------------- */
     function initClock() {
-        var el = document.querySelector("[data-clock]");
-        if (!el) return;
+        var els = document.querySelectorAll("[data-clock]");
+        if (!els.length) return;
         function tick() {
-            el.textContent = new Date().toLocaleString("en-IN", {
+            var text = new Date().toLocaleString("en-IN", {
                 weekday: "short", day: "2-digit", month: "short",
                 hour: "2-digit", minute: "2-digit", second: "2-digit",
                 hour12: true, timeZone: "Asia/Kolkata"
             }) + " IST";
+            els.forEach(function (el) { el.textContent = text; });
         }
         tick();
         setInterval(tick, 1000);
