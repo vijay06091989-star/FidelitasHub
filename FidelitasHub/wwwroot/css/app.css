@@ -1,0 +1,500 @@
+/* ==========================================================================
+   Fidelitas Hub — Design System
+   Corporate teal / slate.  Light + dark.  Built on Bootstrap 5.3.
+   Loaded globally, so every page inherits the theme.  Page-specific
+   markup should prefer the component classes defined here.
+   ========================================================================== */
+
+/* ------------------------------------------------------------------ *
+ * 1. Design tokens
+ * ------------------------------------------------------------------ */
+:root {
+    /* Brand */
+    --fh-primary:        #0d9488; /* teal-600 */
+    --fh-primary-strong: #0f766e; /* teal-700 */
+    --fh-primary-soft:   #f0fdfa; /* teal-50  */
+    --fh-primary-rgb:    13, 148, 136;
+
+    /* Surfaces & text (light) */
+    --fh-bg:        #f1f5f9; /* slate-100 */
+    --fh-surface:   #ffffff;
+    --fh-surface-2: #f8fafc; /* slate-50  */
+    --fh-border:    #e2e8f0; /* slate-200 */
+    --fh-heading:   #0f172a; /* slate-900 */
+    --fh-text:      #1e293b; /* slate-800 */
+    --fh-muted:     #64748b; /* slate-500 */
+
+    /* Sidebar (dark in both themes for a stable brand rail) */
+    --fh-sidebar-bg:      #0f172a; /* slate-900 */
+    --fh-sidebar-fg:      #cbd5e1; /* slate-300 */
+    --fh-sidebar-muted:   #64748b; /* slate-500 */
+    --fh-sidebar-hover:   #1e293b; /* slate-800 */
+    --fh-sidebar-active:  rgba(13, 148, 136, .18);
+
+    /* Status */
+    --fh-success: #16a34a;
+    --fh-warning: #d97706;
+    --fh-danger:  #dc2626;
+    --fh-info:    #0891b2;
+
+    /* Shape & depth */
+    --fh-radius-sm: 8px;
+    --fh-radius:    12px;
+    --fh-radius-lg: 16px;
+    --fh-shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
+    --fh-shadow:    0 1px 3px rgba(15, 23, 42, .10), 0 1px 2px rgba(15, 23, 42, .06);
+    --fh-shadow-lg: 0 12px 28px -8px rgba(15, 23, 42, .18);
+
+    /* Metrics */
+    --fh-sidebar-w:  256px;
+    --fh-topbar-h:   62px;
+
+    /* Bootstrap retheme (blue -> teal) */
+    --bs-primary:            #0d9488;
+    --bs-primary-rgb:        13, 148, 136;
+    --bs-link-color:         #0d9488;
+    --bs-link-color-rgb:     13, 148, 136;
+    --bs-link-hover-color:   #0f766e;
+    --bs-link-hover-color-rgb: 15, 118, 110;
+}
+
+[data-bs-theme="dark"] {
+    --fh-bg:        #0b1220;
+    --fh-surface:   #111c30; /* slate-ish panel */
+    --fh-surface-2: #0f1a2c;
+    --fh-border:    #24344d;
+    --fh-heading:   #f1f5f9;
+    --fh-text:      #e2e8f0;
+    --fh-muted:     #94a3b8;
+
+    --fh-sidebar-bg:     #0a1120;
+    --fh-sidebar-hover:  #16233b;
+
+    --fh-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --fh-shadow:    0 1px 3px rgba(0, 0, 0, .5);
+    --fh-shadow-lg: 0 12px 28px -8px rgba(0, 0, 0, .6);
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. Base
+ * ------------------------------------------------------------------ */
+html { font-size: 15px; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--fh-bg);
+    color: var(--fh-text);
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 { color: var(--fh-heading); }
+
+a { text-decoration: none; }
+
+:focus-visible {
+    outline: 2px solid var(--fh-primary);
+    outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. App shell  (sidebar + topbar + content)
+ * ------------------------------------------------------------------ */
+.app-shell { display: flex; min-height: 100vh; }
+
+/* --- Sidebar --- */
+.sidebar {
+    width: var(--fh-sidebar-w);
+    flex: 0 0 var(--fh-sidebar-w);
+    background: var(--fh-sidebar-bg);
+    color: var(--fh-sidebar-fg);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1040;
+    transition: transform .25s ease;
+}
+
+.sidebar__brand {
+    height: var(--fh-topbar-h);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: .2px;
+    border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+
+.sidebar__brand-mark {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--fh-primary), var(--fh-primary-strong));
+    color: #fff;
+    font-size: 1rem;
+    flex: 0 0 auto;
+}
+
+.sidebar__nav {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 14px 12px 24px;
+}
+.sidebar__nav::-webkit-scrollbar { width: 6px; }
+.sidebar__nav::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+.sidebar__section {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--fh-sidebar-muted);
+    padding: 16px 12px 6px;
+    font-weight: 600;
+}
+
+.sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    margin: 2px 0;
+    border-radius: var(--fh-radius-sm);
+    color: var(--fh-sidebar-fg);
+    font-size: .9rem;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: background .15s, color .15s;
+}
+.sidebar__link:hover { background: var(--fh-sidebar-hover); color: #fff; }
+.sidebar__link.is-active {
+    background: var(--fh-sidebar-active);
+    color: #fff;
+    box-shadow: inset 3px 0 0 var(--fh-primary);
+}
+.sidebar__link i { width: 18px; text-align: center; font-size: .95rem; color: inherit; opacity: .85; }
+.sidebar__link.is-active i { color: var(--fh-primary); opacity: 1; }
+.sidebar__link .badge { margin-left: auto; }
+
+/* collapsible groups */
+.sidebar__group > .sidebar__link .caret { margin-left: auto; transition: transform .2s; font-size: .7rem; }
+.sidebar__group.open > .sidebar__link .caret { transform: rotate(90deg); }
+.sidebar__submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .25s ease;
+    padding-left: 12px;
+}
+.sidebar__group.open .sidebar__submenu { max-height: 480px; }
+.sidebar__submenu .sidebar__link { font-size: .85rem; padding: 7px 12px 7px 30px; color: #94a3b8; }
+.sidebar__submenu .sidebar__link:hover,
+.sidebar__submenu .sidebar__link.is-active { color: #fff; }
+
+/* --- Main column --- */
+.app-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: var(--fh-sidebar-w);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- Topbar --- */
+.topbar {
+    height: var(--fh-topbar-h);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 22px;
+    background: var(--fh-surface);
+    border-bottom: 1px solid var(--fh-border);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+.topbar__toggle {
+    border: 0;
+    background: transparent;
+    color: var(--fh-muted);
+    font-size: 1.15rem;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.topbar__toggle:hover { background: var(--fh-surface-2); color: var(--fh-text); }
+.topbar__title { font-weight: 600; color: var(--fh-heading); font-size: 1rem; }
+.topbar__spacer { flex: 1 1 auto; }
+.topbar__clock { color: var(--fh-muted); font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.topbar__icon-btn {
+    border: 0;
+    background: transparent;
+    color: var(--fh-muted);
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: grid; place-items: center;
+    font-size: 1rem;
+}
+.topbar__icon-btn:hover { background: var(--fh-surface-2); color: var(--fh-text); }
+
+.topbar__user { display: flex; align-items: center; gap: 10px; }
+.topbar__avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--fh-primary), var(--fh-primary-strong));
+    color: #fff;
+    display: grid; place-items: center;
+    font-weight: 600; font-size: .85rem;
+}
+.topbar__user-name { font-weight: 600; font-size: .88rem; color: var(--fh-text); line-height: 1.1; }
+.topbar__user-role { font-size: .72rem; color: var(--fh-muted); }
+
+/* --- Content --- */
+.app-content { flex: 1 1 auto; padding: 26px 26px 40px; }
+.app-footer {
+    padding: 16px 26px;
+    color: var(--fh-muted);
+    font-size: .8rem;
+    border-top: 1px solid var(--fh-border);
+    text-align: center;
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. Page header
+ * ------------------------------------------------------------------ */
+.page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+.page-head__title { font-size: 1.5rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 10px; }
+.page-head__title i { color: var(--fh-primary); }
+.page-head__sub { color: var(--fh-muted); margin: 4px 0 0; font-size: .9rem; }
+
+/* ------------------------------------------------------------------ *
+ * 5. Cards & surfaces  (also softens Bootstrap .card)
+ * ------------------------------------------------------------------ */
+.card,
+.fh-card {
+    background: var(--fh-surface);
+    border: 1px solid var(--fh-border);
+    border-radius: var(--fh-radius);
+    box-shadow: var(--fh-shadow-sm);
+}
+.card { color: var(--fh-text); }
+.card-header {
+    background: var(--fh-surface);
+    border-bottom: 1px solid var(--fh-border);
+    font-weight: 600;
+    color: var(--fh-heading);
+}
+
+/* ------------------------------------------------------------------ *
+ * 6. Stat cards
+ * ------------------------------------------------------------------ */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+.stat {
+    background: var(--fh-surface);
+    border: 1px solid var(--fh-border);
+    border-radius: var(--fh-radius);
+    padding: 18px 20px;
+    box-shadow: var(--fh-shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: box-shadow .18s, transform .18s;
+}
+a.stat, .stat--link { cursor: pointer; }
+a.stat:hover, .stat--link:hover { box-shadow: var(--fh-shadow-lg); transform: translateY(-2px); }
+.stat__icon {
+    width: 48px; height: 48px;
+    flex: 0 0 48px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 1.25rem;
+    background: var(--fh-primary-soft);
+    color: var(--fh-primary);
+}
+[data-bs-theme="dark"] .stat__icon { background: rgba(var(--fh-primary-rgb), .16); }
+.stat__body { min-width: 0; }
+.stat__label { color: var(--fh-muted); font-size: .82rem; font-weight: 500; margin: 0; }
+.stat__value { color: var(--fh-heading); font-size: 1.7rem; font-weight: 700; margin: 2px 0 0; line-height: 1; }
+.stat.is-active { border-color: var(--fh-primary); box-shadow: 0 0 0 1px var(--fh-primary), var(--fh-shadow-sm); }
+
+/* status accents for stat icons */
+.stat--success .stat__icon { background: rgba(22, 163, 74, .12);  color: var(--fh-success); }
+.stat--warning .stat__icon { background: rgba(217, 119, 6, .12);  color: var(--fh-warning); }
+.stat--danger  .stat__icon { background: rgba(220, 38, 38, .12);  color: var(--fh-danger); }
+.stat--info    .stat__icon { background: rgba(8, 145, 178, .12);  color: var(--fh-info); }
+
+/* ------------------------------------------------------------------ *
+ * 7. Buttons (retheme primary to teal)
+ * ------------------------------------------------------------------ */
+.btn { --bs-btn-font-weight: 500; border-radius: var(--fh-radius-sm); }
+.btn-primary {
+    --bs-btn-bg: var(--fh-primary);
+    --bs-btn-border-color: var(--fh-primary);
+    --bs-btn-hover-bg: var(--fh-primary-strong);
+    --bs-btn-hover-border-color: var(--fh-primary-strong);
+    --bs-btn-active-bg: var(--fh-primary-strong);
+    --bs-btn-active-border-color: var(--fh-primary-strong);
+    --bs-btn-disabled-bg: var(--fh-primary);
+    --bs-btn-disabled-border-color: var(--fh-primary);
+}
+.btn-outline-primary {
+    --bs-btn-color: var(--fh-primary);
+    --bs-btn-border-color: var(--fh-primary);
+    --bs-btn-hover-bg: var(--fh-primary);
+    --bs-btn-hover-border-color: var(--fh-primary);
+    --bs-btn-active-bg: var(--fh-primary);
+    --bs-btn-active-border-color: var(--fh-primary);
+}
+
+/* ------------------------------------------------------------------ *
+ * 8. Tables
+ * ------------------------------------------------------------------ */
+.table {
+    --bs-table-bg: var(--fh-surface);
+    --bs-table-color: var(--fh-text);
+    color: var(--fh-text);
+    margin: 0;
+}
+.table-primary { --bs-table-bg: #ccfbf1; --bs-table-color: #134e4a; }
+[data-bs-theme="dark"] .table-primary { --bs-table-bg: #123a37; --bs-table-color: #ccfbf1; }
+
+/* Wrap tables in .table-card for a modern framed look */
+.table-card {
+    background: var(--fh-surface);
+    border: 1px solid var(--fh-border);
+    border-radius: var(--fh-radius);
+    box-shadow: var(--fh-shadow-sm);
+    overflow: hidden;
+}
+.table-card .table { margin: 0; }
+.table-card .table > thead th {
+    background: var(--fh-surface-2);
+    color: var(--fh-muted);
+    text-transform: uppercase;
+    font-size: .74rem;
+    letter-spacing: .04em;
+    font-weight: 600;
+    border-bottom: 1px solid var(--fh-border);
+    padding: 12px 14px;
+    white-space: nowrap;
+}
+.table-card .table > tbody td { padding: 12px 14px; vertical-align: middle; border-color: var(--fh-border); }
+.table-card .table > tbody tr:hover td { background: var(--fh-surface-2); }
+
+/* ------------------------------------------------------------------ *
+ * 9. Forms
+ * ------------------------------------------------------------------ */
+.form-label { font-weight: 500; color: var(--fh-text); margin-bottom: .35rem; font-size: .88rem; }
+.form-control, .form-select {
+    background: var(--fh-surface);
+    border-color: var(--fh-border);
+    color: var(--fh-text);
+    border-radius: var(--fh-radius-sm);
+    padding: .55rem .8rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--fh-primary);
+    box-shadow: 0 0 0 .2rem rgba(var(--fh-primary-rgb), .18);
+}
+
+/* ------------------------------------------------------------------ *
+ * 10. Badges
+ * ------------------------------------------------------------------ */
+.badge { font-weight: 600; padding: .38em .7em; border-radius: 999px; }
+.badge-soft { background: var(--fh-primary-soft); color: var(--fh-primary-strong); }
+.badge-soft-success { background: rgba(22, 163, 74, .12);  color: var(--fh-success); }
+.badge-soft-danger  { background: rgba(220, 38, 38, .12);  color: var(--fh-danger); }
+.badge-soft-warning { background: rgba(217, 119, 6, .14);  color: var(--fh-warning); }
+
+/* ------------------------------------------------------------------ *
+ * 11. Login screen (no shell)
+ * ------------------------------------------------------------------ */
+.auth {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+        radial-gradient(1200px 500px at 100% 0, rgba(13, 148, 136, .10), transparent 60%),
+        radial-gradient(1000px 500px at 0 100%, rgba(15, 118, 110, .08), transparent 55%),
+        var(--fh-bg);
+}
+.auth__card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--fh-surface);
+    border: 1px solid var(--fh-border);
+    border-radius: var(--fh-radius-lg);
+    box-shadow: var(--fh-shadow-lg);
+    overflow: hidden;
+}
+.auth__head {
+    padding: 30px 32px 22px;
+    text-align: center;
+    border-bottom: 1px solid var(--fh-border);
+}
+.auth__mark {
+    width: 56px; height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 16px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--fh-primary), var(--fh-primary-strong));
+    color: #fff; font-size: 1.5rem;
+    box-shadow: var(--fh-shadow);
+}
+.auth__body { padding: 26px 32px 30px; }
+.auth__foot { padding: 16px; text-align: center; color: var(--fh-muted); font-size: .78rem; background: var(--fh-surface-2); }
+
+/* ------------------------------------------------------------------ *
+ * 12. Responsive
+ * ------------------------------------------------------------------ */
+.sidebar__backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, .5);
+    z-index: 1035;
+}
+
+@media (max-width: 991.98px) {
+    .sidebar { transform: translateX(-100%); }
+    body.sidebar-open .sidebar { transform: translateX(0); }
+    body.sidebar-open .sidebar__backdrop { display: block; }
+    .app-main { margin-left: 0; }
+}
+
+/* Desktop collapse (icon rail) */
+@media (min-width: 992px) {
+    body.sidebar-collapsed .sidebar { width: 74px; flex-basis: 74px; }
+    body.sidebar-collapsed .app-main { margin-left: 74px; }
+    body.sidebar-collapsed .sidebar__brand span,
+    body.sidebar-collapsed .sidebar__section,
+    body.sidebar-collapsed .sidebar__link span,
+    body.sidebar-collapsed .sidebar__link .caret,
+    body.sidebar-collapsed .sidebar__submenu { display: none; }
+    body.sidebar-collapsed .sidebar__link { justify-content: center; }
+}
+
+/* Utility */
+.text-primary { color: var(--fh-primary) !important; }
+.bg-primary   { background-color: var(--fh-primary) !important; }
+.cursor-pointer { cursor: pointer; }

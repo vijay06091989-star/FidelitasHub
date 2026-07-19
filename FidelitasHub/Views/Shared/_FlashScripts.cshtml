@@ -1,0 +1,32 @@
+@* Renders TempData flash messages as SweetAlert2 toasts/dialogs. *@
+@{
+    var flashSuccess = TempData["Success"] as string;
+    var flashError = TempData["Error"] as string;
+    var flashWarning = TempData["Warning"] as string;
+    var flashInfo = TempData["Info"] as string;
+}
+
+@if (flashSuccess != null)
+{
+    <script>
+        Swal.fire({ icon: 'success', title: 'Success', html: @Html.Raw(Json.Serialize(flashSuccess)), confirmButtonColor: '#0d9488' });
+    </script>
+}
+@if (flashError != null)
+{
+    <script>
+        Swal.fire({ icon: 'error', title: 'Operation Not Allowed', html: @Html.Raw(Json.Serialize(flashError)), confirmButtonColor: '#dc2626' });
+    </script>
+}
+@if (flashWarning != null)
+{
+    <script>
+        Swal.fire({ icon: 'warning', title: 'Warning', html: @Html.Raw(Json.Serialize(flashWarning)), confirmButtonColor: '#d97706' });
+    </script>
+}
+@if (flashInfo != null)
+{
+    <script>
+        Swal.fire({ icon: 'info', title: 'Information', html: @Html.Raw(Json.Serialize(flashInfo)), confirmButtonColor: '#0891b2' });
+    </script>
+}
