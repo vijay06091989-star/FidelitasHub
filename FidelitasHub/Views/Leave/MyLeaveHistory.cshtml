@@ -1,0 +1,158 @@
+﻿@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+
+@{
+    ViewData["Title"] = "My Leave History";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">📋 My Leave History</h3>
+        </div>
+
+        <div class="card-body">
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    No leave applications found.
+                </div>
+            }
+            else
+            {
+                <table class="table table-bordered table-hover">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Applied On</th>
+
+                            <th>From</th>
+
+                            <th>To</th>
+
+                            <th>Session</th>
+
+                            <th>Total Days</th>
+
+                            <th>CL</th>
+
+                            <th>LOP</th>
+
+                            <th>Reason</th>
+
+                            <th>Status</th>
+
+                            <th style="width:120px;">Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+
+                                <td>@item.AppliedOn.ToString("dd-MMM-yyyy")</td>
+
+                                <td>@item.FromDate.ToString("dd-MMM-yyyy")</td>
+
+                                <td>@item.ToDate.ToString("dd-MMM-yyyy")</td>
+
+                                <td>
+
+                                    @if (item.IsMorningHalf)
+                                    {
+                                        <span>Morning Half</span>
+                                    }
+                                    else if (item.IsAfternoonHalf)
+                                    {
+                                        <span>Afternoon Half</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Full Day</span>
+                                    }
+
+                                </td>
+
+                                <td>@item.TotalDays</td>
+
+                                <td>@item.CLDays</td>
+
+                                <td>@item.LOPDays</td>
+
+                                <td>@item.Reason</td>
+
+                                <td>
+
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+                                    }
+                                    else if (item.Status == "Pending Manager Approval")
+                                    {
+                                        <span class="badge bg-primary">
+                                            Pending Manager Approval
+                                        </span>
+                                    }
+                                    else if (item.Status == "Approved")
+                                    {
+                                        <span class="badge bg-success">
+                                            Approved
+                                        </span>
+                                    }
+                                    else if (item.Status == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Rejected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @item.Status
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <a asp-action="CancelLeave"
+                                           asp-route-id="@item.LeaveApplicationId"
+                                           class="btn btn-sm btn-danger">
+
+                                            <i class="fa-solid fa-trash"></i> Cancel
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+            }
+
+        </div>
+
+    </div>
+
+</div>

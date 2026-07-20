@@ -9,140 +9,184 @@
     <div class="card shadow">
 
         <div class="card-header bg-success text-white">
-
-            <h3 class="mb-0">
-                📝 Leave Application
-            </h3>
-
+            <h3 class="mb-0">📝 Leave Application</h3>
         </div>
 
         <div class="card-body">
 
-            <form>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            }
+
+            <form method="post">
+
+                <input asp-for="EmployeeId" type="hidden" />
 
                 <div class="row">
 
                     <div class="col-md-6">
-
-                        <label class="fw-bold">
-                            Employee
-                        </label>
-
-                        <select asp-for="EmployeeId"
-                                asp-items="Model.Employees"
-                                class="form-select">
-
-                            <option value="">
-                                -- Select Employee --
-                            </option>
-
-                        </select>
-
+                        <label class="fw-bold">Employee</label>
+                        <input class="form-control"
+                               value="@Model.Employees.FirstOrDefault()?.Text"
+                               readonly />
                     </div>
 
                     <div class="col-md-6">
-
-                        <label class="fw-bold">
-                            Leave Balance
-                        </label>
-
-                        <input class="form-control"
-                               value="@Model.LeaveBalance"
+                        <label class="fw-bold">Leave Balance</label>
+                        <input asp-for="LeaveBalance"
+                               class="form-control"
                                readonly />
-
                     </div>
 
                 </div>
 
-                <br />
+                <hr />
 
                 <div class="row">
 
                     <div class="col-md-3">
-
-                        <label class="fw-bold">
-                            From Date
-                        </label>
-
+                        <label asp-for="FromDate" class="fw-bold"></label>
                         <input asp-for="FromDate"
                                type="date"
                                class="form-control" />
-
                     </div>
 
                     <div class="col-md-3">
-
-                        <label class="fw-bold">
-                            To Date
-                        </label>
-
+                        <label asp-for="ToDate" class="fw-bold"></label>
                         <input asp-for="ToDate"
                                type="date"
                                class="form-control" />
-
                     </div>
 
                     <div class="col-md-3">
 
-                        <label class="fw-bold">
-                            Half Day
+                        <label class="fw-bold d-block mb-2">
+                            Leave Session
                         </label>
 
-                        <select class="form-select">
-
-                            <option>
+                        <div class="form-check">
+                            <input asp-for="LeaveSession"
+                                   class="form-check-input"
+                                   type="radio"
+                                   id="FullDay"
+                                   value="Full" />
+                            <label class="form-check-label" for="FullDay">
                                 Full Day
-                            </option>
+                            </label>
+                        </div>
 
-                            <option>
+                        <div class="form-check">
+                            <input asp-for="LeaveSession"
+                                   class="form-check-input"
+                                   type="radio"
+                                   id="MorningHalf"
+                                   value="Morning" />
+                            <label class="form-check-label" for="MorningHalf">
                                 Morning Half
-                            </option>
+                            </label>
+                        </div>
 
-                            <option>
+                        <div class="form-check">
+                            <input asp-for="LeaveSession"
+                                   class="form-check-input"
+                                   type="radio"
+                                   id="AfternoonHalf"
+                                   value="Afternoon" />
+                            <label class="form-check-label" for="AfternoonHalf">
                                 Afternoon Half
-                            </option>
-
-                        </select>
+                            </label>
+                        </div>
 
                     </div>
 
                     <div class="col-md-3">
-
-                        <label class="fw-bold">
-                            Total Days
-                        </label>
-
-                        <input class="form-control"
-                               value="@Model.TotalDays"
+                        <label asp-for="TotalDays" class="fw-bold"></label>
+                        <input asp-for="TotalDays"
+                               class="form-control"
                                readonly />
-
                     </div>
 
                 </div>
 
                 <br />
 
-                <label class="fw-bold">
-                    Reason
-                </label>
+                <div class="row">
 
-                <textarea asp-for="Reason"
-                          rows="4"
-                          class="form-control">
-                </textarea>
+                    <div class="col-md-6">
+                        <label asp-for="CLDays" class="fw-bold"></label>
+                        <input asp-for="CLDays"
+                               class="form-control"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="LOPDays" class="fw-bold"></label>
+                        <input asp-for="LOPDays"
+                               class="form-control"
+                               readonly />
+                    </div>
+
+                </div>
 
                 <br />
 
-                <button class="btn btn-success">
+                <div class="row">
 
-                    Calculate Leave
+                    <div class="col-md-12">
 
-                </button>
+                        <label asp-for="Reason" class="fw-bold"></label>
+
+                        <textarea asp-for="Reason"
+                                  rows="4"
+                                  class="form-control"></textarea>
+
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            formaction="@Url.Action("CalculateLeave", "Leave")">
+                        <i class="bi bi-calculator"></i> Calculate Leave
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-success"
+                            formaction="@Url.Action("ApplyLeaveSave", "Leave")">
+                        <i class="bi bi-check-circle"></i> Apply Leave
+                    </button>
+
+                    <a asp-action="ApplyLeave"
+                       class="btn btn-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Clear
+                    </a>
+
+                </div>
 
             </form>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Success"]
+                </div>
+            }
 
         </div>
 
     </div>
 
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

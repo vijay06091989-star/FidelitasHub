@@ -94,9 +94,9 @@
 
         bool isAdmin = role == "Admin" || role == "SuperAdmin";
         bool isManager = role == "Manager";
+        bool isTeamLeader = role == "Team Leader";
         bool isHR = role == "HR";
         bool isEmployee = role == "Employee";
-
     }
 
     <!-- =================== TOP BAR =================== -->
@@ -308,17 +308,45 @@
 
                                 </li>
 
-                                @if (isAdmin)
+                                <li>
+
+                                    <a asp-controller="Leave"
+                                       asp-action="MyLeaveHistory"
+                                       class="dropdown-item">
+
+                                        📋 My Leave History
+
+                                    </a>
+
+                                </li>
+
+                                @if (isAdmin || isTeamLeader || isManager)
                                 {
                                     <li><hr class="dropdown-divider"></li>
 
-                                    <li>
-                                        <a asp-controller="LeaveApproval"
-                                           asp-action="Index"
-                                           class="dropdown-item">
-                                            ✔ Leave Approval
-                                        </a>
-                                    </li>
+                                    @* Team Leader Approval *@
+                                    @if (isAdmin || isTeamLeader)
+                                    {
+                                        <li>
+                                            <a asp-controller="LeaveApproval"
+                                               asp-action="Index"
+                                               class="dropdown-item">
+                                                ✔ Team Leader Leave Approval
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @* Manager Approval *@
+                                    @if (isAdmin || isManager)
+                                    {
+                                        <li>
+                                            <a asp-controller="ManagerApproval"
+                                               asp-action="Index"
+                                               class="dropdown-item">
+                                                ✔ Manager Leave Approval
+                                            </a>
+                                        </li>
+                                    }
 
                                     <li>
                                         <a class="dropdown-item disabled" href="#">
@@ -327,15 +355,11 @@
                                     </li>
 
                                     <li>
-
                                         <a asp-controller="LeaveBalance"
                                            asp-action="Import"
                                            class="dropdown-item">
-
                                             💰 Leave Balance Import
-
                                         </a>
-
                                     </li>
 
                                     <li><hr class="dropdown-divider"></li>

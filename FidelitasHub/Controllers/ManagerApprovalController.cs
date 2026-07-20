@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FidelitasHub.Controllers
 {
-    public class LeaveApprovalController : Controller
+    public class ManagerApprovalController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public LeaveApprovalController(ApplicationDbContext context)
+        public ManagerApprovalController(ApplicationDbContext context)
         {
             _context = context;
         }
 
         //==================================================
-        // Leave Approval List
+        // Manager Approval List
         //==================================================
         public async Task<IActionResult> Index()
         {
@@ -27,7 +27,7 @@ namespace FidelitasHub.Controllers
         }
 
         //==================================================
-        // Team Leader Approve
+        // Manager Approve
         //==================================================
         public async Task<IActionResult> Approve(int id)
         {
@@ -37,20 +37,19 @@ namespace FidelitasHub.Controllers
             if (leave == null)
                 return NotFound();
 
-            leave.TeamLeaderStatus = "Approved";
-            leave.TeamLeaderApprovalDate = DateTime.Now;
-
-            leave.Status = "Pending Manager Approval";
+            leave.ManagerStatus = "Approved";
+            leave.ManagerApprovalDate = DateTime.Now;
+            leave.Status = "Approved";
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Leave approved successfully and forwarded to Manager.";
+            TempData["Success"] = "Leave approved successfully.";
 
             return RedirectToAction(nameof(Index));
         }
 
         //==================================================
-        // Team Leader Reject
+        // Manager Reject
         //==================================================
         public async Task<IActionResult> Reject(int id)
         {
@@ -60,14 +59,13 @@ namespace FidelitasHub.Controllers
             if (leave == null)
                 return NotFound();
 
-            leave.TeamLeaderStatus = "Rejected";
-            leave.TeamLeaderApprovalDate = DateTime.Now;
-
+            leave.ManagerStatus = "Rejected";
+            leave.ManagerApprovalDate = DateTime.Now;
             leave.Status = "Rejected";
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Leave rejected successfully.";
+            TempData["Success"] = "Leave rejected.";
 
             return RedirectToAction(nameof(Index));
         }
