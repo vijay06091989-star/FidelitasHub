@@ -23,11 +23,9 @@ namespace FidelitasHub.Models
         [Required]
         public DateTime ToDate { get; set; } = DateTime.Today;
 
-        public bool IsMorningHalf { get; set; }
+        public string LeaveSession { get; set; } = "Full";
 
-        public bool IsAfternoonHalf { get; set; }
-
-        public string Reason { get; set; } = "";
+        public string? Reason { get; set; }
 
         // Calculated
         public decimal TotalDays { get; set; }

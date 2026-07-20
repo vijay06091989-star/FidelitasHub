@@ -56,7 +56,7 @@ namespace FidelitasHub.Controllers
                 case "SuperAdmin":
                 case "HR":
                 case "Manager":
-                case "TeamLead":
+                case "TeamLeader":
                 default:
                     return RedirectToAction("Index", "Home");
             }

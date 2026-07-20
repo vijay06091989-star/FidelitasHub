@@ -29,7 +29,7 @@ namespace FidelitasHub.Models
 
         public decimal LOPDays { get; set; }
 
-        public string Reason { get; set; } = "";
+        public string? Reason { get; set; }
 
         public string Status { get; set; } = "Pending";
 
@@ -55,5 +55,10 @@ namespace FidelitasHub.Models
         public string EmployeeRemarks { get; set; } = "";
 
         public DateTime AppliedOn { get; set; } = DateTime.Now;
+
+        // Navigation Property
+        public Employee? Employee { get; set; }
+
     }
+
 }

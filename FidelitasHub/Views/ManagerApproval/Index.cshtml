@@ -1,0 +1,215 @@
+﻿@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+
+@{
+    ViewData["Title"] = "Manager Approval";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">✔ Manager Leave Approval</h3>
+        </div>
+
+        <div class="card-body">
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    No leave applications pending Manager approval.
+                </div>
+            }
+            else
+            {
+                <table class="table table-bordered table-hover">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Employee</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Total Days</th>
+                            <th>CL</th>
+                            <th>LOP</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Team Leader</th>
+                            <th>Manager</th>
+                            <th style="width:180px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    @item.Employee?.EmployeeCode - @item.Employee?.EmployeeName
+                                </td>
+
+                                <td>@item.FromDate.ToString("dd-MMM-yyyy")</td>
+
+                                <td>@item.ToDate.ToString("dd-MMM-yyyy")</td>
+
+                                <td>@item.TotalDays</td>
+
+                                <td>@item.CLDays</td>
+
+                                <td>@item.LOPDays</td>
+
+                                <td>@item.Reason</td>
+
+                                <!-- Status -->
+                                <td>
+
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+                                    }
+                                    else if (item.Status == "Pending Manager Approval")
+                                    {
+                                        <span class="badge bg-primary">
+                                            Pending Manager Approval
+                                        </span>
+                                    }
+                                    else if (item.Status == "Approved")
+                                    {
+                                        <span class="badge bg-success">
+                                            Approved
+                                        </span>
+                                    }
+                                    else if (item.Status == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Rejected
+                                        </span>
+                                    }
+                                    else if (item.Status == "Cancelled")
+                                    {
+                                        <span class="badge bg-secondary">
+                                            Cancelled
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-dark">
+                                            @item.Status
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- Team Leader -->
+                                <td>
+
+                                    @if (item.TeamLeaderStatus == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+                                    }
+                                    else if (item.TeamLeaderStatus == "Approved")
+                                    {
+                                        <span class="badge bg-success">
+                                            Approved
+                                        </span>
+                                    }
+                                    else if (item.TeamLeaderStatus == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Rejected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @item.TeamLeaderStatus
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- Manager -->
+                                <td>
+
+                                    @if (item.ManagerStatus == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+                                    }
+                                    else if (item.ManagerStatus == "Approved")
+                                    {
+                                        <span class="badge bg-success">
+                                            Approved
+                                        </span>
+                                    }
+                                    else if (item.ManagerStatus == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Rejected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @item.ManagerStatus
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- Action -->
+                                <td>
+
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <span class="badge bg-secondary">
+                                            Waiting for Team Leader
+                                        </span>
+                                    }
+                                    else if (item.Status == "Pending Manager Approval")
+                                    {
+                                        <a asp-action="Approve"
+                                           asp-route-id="@item.LeaveApplicationId"
+                                           class="btn btn-success btn-sm">
+
+                                            <i class="fa-solid fa-check"></i> Approve
+
+                                        </a>
+
+                                        <a asp-action="Reject"
+                                           asp-route-id="@item.LeaveApplicationId"
+                                           class="btn btn-danger btn-sm">
+
+                                            <i class="fa-solid fa-xmark"></i> Reject
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success fw-bold">
+                                            ✔ Action Completed
+                                        </span>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+            }
+
+        </div>
+
+    </div>
+
+</div>
