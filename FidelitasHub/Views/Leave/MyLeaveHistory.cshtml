@@ -126,16 +126,16 @@
 
                                 <td>
 
-                                    @if (item.Status == "Pending")
+                                    @if (item.Status == "Pending" ||
+     item.Status == "Pending - Next Payroll Cycle")
                                     {
                                         <a asp-action="CancelLeave"
                                            asp-route-id="@item.LeaveApplicationId"
-                                           class="btn btn-sm btn-danger">
-
-                                            <i class="fa-solid fa-trash"></i> Cancel
-
+                                           class="btn btn-danger btn-sm">
+                                            Cancel
                                         </a>
                                     }
+
                                     else
                                     {
                                         <span class="text-muted">-</span>

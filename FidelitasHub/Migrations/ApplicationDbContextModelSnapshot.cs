@@ -33,6 +33,11 @@ namespace FidelitasHub.Migrations
                     b.Property<DateTime>("AttendanceDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("AttendanceStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
@@ -210,6 +215,9 @@ namespace FidelitasHub.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -307,7 +315,6 @@ namespace FidelitasHub.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Reason")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
@@ -334,6 +341,8 @@ namespace FidelitasHub.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("LeaveApplicationId");
+
+                    b.HasIndex("EmployeeId");
 
                     b.ToTable("LeaveApplications");
                 });
@@ -477,6 +486,17 @@ namespace FidelitasHub.Migrations
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.EmployeeLeaveBalance", b =>
+                {
+                    b.HasOne("FidelitasHub.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("FidelitasHub.Models.LeaveApplication", b =>
                 {
                     b.HasOne("FidelitasHub.Models.Employee", "Employee")
                         .WithMany()
