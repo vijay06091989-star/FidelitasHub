@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FidelitasHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260717071452_AddMustChangePassword")]
+    [Migration("20260721124445_AddMustChangePassword")]
     partial class AddMustChangePassword
     {
         /// <inheritdoc />
@@ -35,6 +35,11 @@ namespace FidelitasHub.Migrations
 
                     b.Property<DateTime>("AttendanceDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("AttendanceStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
@@ -213,6 +218,9 @@ namespace FidelitasHub.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -276,6 +284,10 @@ namespace FidelitasHub.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<string>("EmployeeRemarks")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime2");
 
@@ -298,12 +310,14 @@ namespace FidelitasHub.Migrations
                     b.Property<int?>("ManagerId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Reason")
+                    b.Property<string>("ManagerRemarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ManagerStatus")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Remarks")
-                        .IsRequired()
+                    b.Property<string>("Reason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
@@ -316,6 +330,13 @@ namespace FidelitasHub.Migrations
                     b.Property<int?>("TeamLeaderId")
                         .HasColumnType("int");
 
+                    b.Property<string>("TeamLeaderRemarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TeamLeaderStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("ToDate")
                         .HasColumnType("datetime2");
 
@@ -323,6 +344,8 @@ namespace FidelitasHub.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("LeaveApplicationId");
+
+                    b.HasIndex("EmployeeId");
 
                     b.ToTable("LeaveApplications");
                 });
@@ -466,6 +489,17 @@ namespace FidelitasHub.Migrations
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.EmployeeLeaveBalance", b =>
+                {
+                    b.HasOne("FidelitasHub.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("FidelitasHub.Models.LeaveApplication", b =>
                 {
                     b.HasOne("FidelitasHub.Models.Employee", "Employee")
                         .WithMany()

@@ -22,6 +22,9 @@ namespace FidelitasHub.Models
         [StringLength(100)]
         public string Password { get; set; }
 
+        // NEW: Force user to change password on first login
+        public bool MustChangePassword { get; set; } = true;
+
         [Display(Name = "Department")]
         [StringLength(100)]
         public string Department { get; set; }

@@ -20,6 +20,7 @@ namespace FidelitasHub.Controllers
         {
             var leaves = await _context.LeaveApplications
                 .Include(x => x.Employee)
+                .Where(x => x.Status == "Pending")
                 .OrderByDescending(x => x.AppliedOn)
                 .ToListAsync();
 

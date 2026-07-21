@@ -138,10 +138,45 @@ namespace FidelitasHub.Controllers
                 model.LOPDays = model.TotalDays - model.LeaveBalance;
             }
 
+            //========================================
+            // Verify Leave Balance Exists
+            //========================================
+
+            bool leaveBalanceExists = _context.EmployeeLeaveBalances
+                .Any(x => x.EmployeeId == model.EmployeeId);
+
+            if (!leaveBalanceExists)
+            {
+                TempData["Error"] =
+                    "Your leave balance for the current payroll period has not been uploaded. Please contact HR.";
+
+                return RedirectToAction(nameof(ApplyLeave));
+            }
+
+            // Check if employee already has an active leave request
+            bool hasPendingLeave = _context.LeaveApplications.Any(x =>
+                x.EmployeeId == model.EmployeeId &&
+                (
+                    x.Status == "Pending" ||
+                    x.Status == "Pending Manager Approval" ||
+                    x.Status == "Pending - Next Payroll Cycle"
+                ));
+
+
+
+            if (hasPendingLeave)
+            {
+                TempData["Error"] =
+                    "You already have a leave request awaiting approval. Please wait until it is approved, rejected, or cancelled before applying for another leave.";
+
+                return RedirectToAction(nameof(ApplyLeave));
+            }
+
             // Check for overlapping leave application
             bool overlapExists = _context.LeaveApplications.Any(x =>
                 x.EmployeeId == model.EmployeeId &&
                 x.Status != "Rejected" &&
+                x.Status != "Cancelled" &&
                 model.FromDate <= x.ToDate &&
                 model.ToDate >= x.FromDate);
 
@@ -150,6 +185,22 @@ namespace FidelitasHub.Controllers
                 TempData["Error"] = "A leave application already exists for one or more of the selected dates.";
 
                 return RedirectToAction(nameof(ApplyLeave));
+            }
+
+            // Determine Leave Status based on Payroll Cycle
+            DateTime currentPayroll = GetPayrollStart(DateTime.Today);
+
+            DateTime leavePayroll = GetPayrollStart(model.FromDate);
+
+            string leaveStatus;
+
+            if (leavePayroll == currentPayroll)
+            {
+                leaveStatus = "Pending";
+            }
+            else
+            {
+                leaveStatus = "Pending - Next Payroll Cycle";
             }
 
             // Create Entity
@@ -173,7 +224,7 @@ namespace FidelitasHub.Controllers
 
                 EmployeeRemarks = "",
 
-                Status = "Pending",
+                Status = leaveStatus,
 
                 TeamLeaderStatus = "Pending",
 
@@ -244,7 +295,8 @@ namespace FidelitasHub.Controllers
                 return RedirectToAction(nameof(MyLeaveHistory));
             }
 
-            if (leave.Status != "Pending")
+            if (leave.Status != "Pending" &&
+    leave.Status != "Pending - Next Payroll Cycle")
             {
                 TempData["Error"] = "Only pending leave applications can be cancelled.";
 
@@ -292,5 +344,21 @@ namespace FidelitasHub.Controllers
 
             model.LeaveBalance = balance?.CurrentLeaveBalance ?? 0;
         }
+
+        //==================================================
+        // Get Payroll Start Date
+        //==================================================
+        private DateTime GetPayrollStart(DateTime leaveDate)
+        {
+            if (leaveDate.Day >= 22)
+            {
+                return new DateTime(leaveDate.Year, leaveDate.Month, 22);
+            }
+
+            DateTime previousMonth = leaveDate.AddMonths(-1);
+
+            return new DateTime(previousMonth.Year, previousMonth.Month, 22);
+        }
+
     }
 }

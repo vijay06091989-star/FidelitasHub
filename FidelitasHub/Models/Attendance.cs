@@ -35,5 +35,10 @@ namespace FidelitasHub.Models
         // Manual / Auto
         [StringLength(20)]
         public string PunchOutMode { get; set; } = "Manual";
+
+        // Present / Approved Leave / LOP / Absent / Holiday
+        [StringLength(30)]
+        public string AttendanceStatus { get; set; } = "Present";
+
     }
 }

@@ -207,6 +207,19 @@ namespace FidelitasHub.Services.Attendance
                 return "Absent";
 
             //====================================
+            // Leave Status
+            //====================================
+
+            if (!string.IsNullOrWhiteSpace(attendance.AttendanceStatus))
+            {
+                if (attendance.AttendanceStatus == "Approved Leave" ||
+                    attendance.AttendanceStatus == "LOP")
+                {
+                    return attendance.AttendanceStatus;
+                }
+            }
+
+            //====================================
             // Today's Attendance - Live Status
             //====================================
 

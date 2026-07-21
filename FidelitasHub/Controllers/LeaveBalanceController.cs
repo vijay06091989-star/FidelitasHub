@@ -218,10 +218,45 @@ namespace FidelitasHub.Controllers
 
             _context.SaveChanges();
 
+            //========================================
+            // Release Next Payroll Leave Requests
+            //========================================
+
+            DateTime currentPayroll = GetPayrollStart(DateTime.Today);
+
+            var queuedLeaves = _context.LeaveApplications
+                .Where(x => x.Status == "Pending - Next Payroll Cycle")
+                .ToList();
+
+            foreach (var leave in queuedLeaves)
+            {
+                if (GetPayrollStart(leave.FromDate) == currentPayroll)
+                {
+                    leave.Status = "Pending";
+                }
+            }
+
+            _context.SaveChanges();
+
             TempData["Success"] =
                 $"Import Completed. Imported : {imported}, Updated : {updated}, Skipped : {skipped}";
 
             return RedirectToAction(nameof(Import));
+        }
+
+        //==================================================
+        // Get Payroll Start Date
+        //==================================================
+        private DateTime GetPayrollStart(DateTime leaveDate)
+        {
+            if (leaveDate.Day >= 22)
+            {
+                return new DateTime(leaveDate.Year, leaveDate.Month, 22);
+            }
+
+            DateTime previousMonth = leaveDate.AddMonths(-1);
+
+            return new DateTime(previousMonth.Year, previousMonth.Month, 22);
         }
     }
 }
