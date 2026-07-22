@@ -360,5 +360,89 @@ namespace FidelitasHub.Controllers
             return new DateTime(previousMonth.Year, previousMonth.Month, 22);
         }
 
+        //==================================================
+        // Leave Register (all applications)
+        //==================================================
+
+        public IActionResult LeaveRegister(
+            string status,
+            int? employeeId,
+            DateTime? fromDate,
+            DateTime? toDate)
+        {
+            var leaves = _context.LeaveApplications
+                .AsQueryable();
+
+
+            // Status Filter
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                leaves = leaves.Where(l => l.Status == status);
+            }
+
+
+            // Employee Filter
+            if (employeeId.HasValue)
+            {
+                leaves = leaves.Where(l => l.EmployeeId == employeeId.Value);
+            }
+
+
+            // From Date Filter
+            if (fromDate.HasValue)
+            {
+                leaves = leaves.Where(l => l.FromDate >= fromDate.Value);
+            }
+
+
+            // To Date Filter
+            if (toDate.HasValue)
+            {
+                leaves = leaves.Where(l => l.ToDate <= toDate.Value);
+            }
+
+
+            // Employee dropdown
+            ViewBag.Employees = _context.Employees
+                .Select(e => new SelectListItem
+                {
+                    Value = e.EmployeeId.ToString(),
+                    Text = e.EmployeeCode + " - " + e.EmployeeName
+                })
+                .OrderBy(e => e.Text)
+                .ToList();
+
+
+            ViewBag.EmployeeNames = _context.Employees
+                .ToDictionary(e => e.EmployeeId, e => e.EmployeeName);
+
+
+            // Keep existing cards
+            ViewBag.Status = status;
+
+            ViewBag.Total = _context.LeaveApplications.Count();
+
+            ViewBag.Pending =
+                _context.LeaveApplications.Count(l => l.Status == "Pending");
+
+            ViewBag.Approved =
+                _context.LeaveApplications.Count(l => l.Status == "Approved");
+
+            ViewBag.Cancelled =
+                _context.LeaveApplications.Count(l => l.Status == "Cancelled");
+
+
+            // Preserve search values
+            ViewBag.SelectedEmployee = employeeId;
+            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+
+
+            return View(
+                leaves
+                .OrderByDescending(l => l.AppliedOn)
+                .ToList()
+            );
+        }
     }
 }

@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = ViewBag.Title ?? "Coming Soon";
+
+    string title = ViewBag.Title ?? "Coming Soon";
+    string subtitle = ViewBag.SubTitle ?? "";
+    string description = ViewBag.Description ?? "";
+    string icon = ViewBag.Icon ?? "fa-solid fa-clock";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title">
+            <i class="@icon"></i>
+            @title
+        </h1>
+
+        <p class="page-head__sub">
+            @subtitle
+        </p>
+    </div>
+</div>
+
+<div class="table-card">
+
+    <div class="text-center py-5">
+
+        <div class="mb-4">
+
+            <span class="stat__icon"
+                  style="width:72px;height:72px;font-size:28px;display:inline-flex;align-items:center;justify-content:center;">
+
+                <i class="@icon"></i>
+
+            </span>
+
+        </div>
+
+        <h3 class="mb-3">
+            @title will be available in the next update
+        </h3>
+
+        <p class="text-muted mx-auto"
+           style="max-width:650px;font-size:16px;">
+
+            @description
+
+        </p>
+
+        <div class="mt-4">
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="btn btn-outline-info">
+
+                <i class="fa-solid fa-house"></i>
+
+                Return to Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>

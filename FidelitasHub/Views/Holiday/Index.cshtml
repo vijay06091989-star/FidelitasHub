@@ -1,0 +1,93 @@
+@model IEnumerable<FidelitasHub.Models.Holiday>
+
+@{
+    ViewData["Title"] = "Holiday Calendar";
+    var years = ViewBag.Years as List<int> ?? new List<int>();
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-umbrella-beach"></i> Holiday Calendar</h1>
+        <p class="page-head__sub">Company holidays for @ViewBag.Year</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Add Holiday</a>
+</div>
+
+<div class="stat-grid">
+    <div class="stat">
+        <span class="stat__icon"><i class="fa-solid fa-umbrella-beach"></i></span>
+        <div class="stat__body"><p class="stat__label">Holidays in @ViewBag.Year</p><p class="stat__value">@ViewBag.TotalHolidays</p></div>
+    </div>
+    <div class="stat stat--info">
+        <span class="stat__icon"><i class="fa-solid fa-hourglass-half"></i></span>
+        <div class="stat__body"><p class="stat__label">Upcoming</p><p class="stat__value">@ViewBag.UpcomingHolidays</p></div>
+    </div>
+</div>
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-auto">
+            <select name="year" class="form-select" onchange="this.form.submit()">
+                @foreach (var y in years)
+                {
+                    <option value="@y" selected="@(y == (int)ViewBag.Year)">@y</option>
+                }
+            </select>
+        </div>
+    </div>
+</form>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Date</th><th>Day</th><th>Holiday</th><th>Type</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@item.HolidayDate.ToString("dd-MMM-yyyy")</span></td>
+                            <td class="text-muted">@item.HolidayDate.ToString("dddd")</td>
+                            <td>@item.HolidayName</td>
+                            <td><span class="badge badge-soft">@item.HolidayType</span></td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.HolidayId" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i></a>
+                                @if (item.IsActive)
+                                {
+                                    <form asp-action="Disable" asp-route-id="@item.HolidayId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-ban"></i></button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Enable" asp-route-id="@item.HolidayId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No holidays defined for @ViewBag.Year.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

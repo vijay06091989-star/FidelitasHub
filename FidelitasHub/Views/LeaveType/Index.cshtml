@@ -1,0 +1,111 @@
+@model IEnumerable<FidelitasHub.Models.LeaveType>
+
+@{
+    ViewData["Title"] = "Leave Type Master";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-tags"></i> Leave Type Master</h1>
+        <p class="page-head__sub">Configure leave categories and entitlements</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Add Leave Type</a>
+</div>
+
+<div class="stat-grid">
+    <a class="stat @(string.IsNullOrEmpty(ViewBag.Status as string) ? "is-active" : "")"
+       asp-action="Index" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-tags"></i></span>
+        <div class="stat__body"><p class="stat__label">Total</p><p class="stat__value">@ViewBag.TotalLeaveTypes</p></div>
+    </a>
+    <a class="stat stat--success @(ViewBag.Status == "Active" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Active" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-circle-check"></i></span>
+        <div class="stat__body"><p class="stat__label">Active</p><p class="stat__value">@ViewBag.ActiveLeaveTypes</p></div>
+    </a>
+    <a class="stat stat--danger @(ViewBag.Status == "Inactive" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Inactive" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-circle-xmark"></i></span>
+        <div class="stat__body"><p class="stat__label">Inactive</p><p class="stat__value">@ViewBag.InactiveLeaveTypes</p></div>
+    </a>
+</div>
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-sm-6 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchText" value="@ViewBag.SearchText" class="form-control" placeholder="Search leave type..." />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Code</th><th>Name</th><th>Short</th><th class="text-end">Annual Days</th><th>Paid</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@item.LeaveTypeCode</span></td>
+                            <td>@item.LeaveTypeName</td>
+                            <td><span class="badge badge-soft">@item.ShortCode</span></td>
+                            <td class="text-end">@item.DefaultAnnualDays</td>
+                            <td>
+                                @if (item.IsPaid)
+                                {
+                                    <span class="badge badge-soft-success">Paid</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary-emphasis">Unpaid</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.LeaveTypeId" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i></a>
+                                @if (item.IsActive)
+                                {
+                                    <form asp-action="Disable" asp-route-id="@item.LeaveTypeId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-ban"></i></button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Enable" asp-route-id="@item.LeaveTypeId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No leave types found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

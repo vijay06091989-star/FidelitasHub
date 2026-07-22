@@ -1,4 +1,4 @@
-﻿@model List<FidelitasHub.Models.AttendanceRegisterViewModel>
+@model List<FidelitasHub.Models.AttendanceRegisterViewModel>
 
 @{
     ViewData["Title"] = "Attendance Register";
@@ -7,369 +7,152 @@
     var maxDate = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
-<div class="container-fluid mt-4">
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-clipboard-list"></i> Attendance Register</h1>
+        <p class="page-head__sub">Filter and export attendance records</p>
+    </div>
+    <span class="badge badge-soft fs-6 px-3 py-2">Total Records: @Model.Count</span>
+</div>
 
-    <div class="card shadow-lg">
-
-        <div class="card-header bg-primary text-white">
-
-            <h3 class="mb-0">
-                📅 Attendance Register
-            </h3>
-
-        </div>
-
-        <div class="card-body">
-
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-
-                    <i class="fa-solid fa-circle-exclamation me-2"></i>
-
-                    @TempData["Error"]
-
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert">
-                    </button>
-
+<!-- Filters -->
+<div class="fh-card mb-4">
+    <div class="card-body">
+        <form asp-action="Register" method="get">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">From Date</label>
+                    <input type="date" class="form-control" id="fromDate" name="fromDate"
+                           value="@(((DateTime?)ViewBag.FromDate)?.ToString("yyyy-MM-dd"))" min="@minDate" max="@maxDate" />
                 </div>
-            }
-
-            <form asp-action="Register" method="get">
-
-                <div class="row g-3">
-
-                    <div class="col-md-2">
-
-                        <label class="form-label fw-bold">
-                            From Date
-                        </label>
-
-                        <input type="date"
-                               class="form-control"
-                               id="fromDate"
-                               name="fromDate"
-                               value="@(((DateTime?)ViewBag.FromDate)?.ToString("yyyy-MM-dd"))"
-                               min="@minDate"
-                               max="@maxDate" />
-
-                    </div>
-
-                    <div class="col-md-2">
-
-                        <label class="form-label fw-bold">
-                            To Date
-                        </label>
-
-                        <input type="date"
-                               class="form-control"
-                               id="toDate"
-                               name="toDate"
-                               value="@(((DateTime?)ViewBag.ToDate)?.ToString("yyyy-MM-dd"))"
-                               min="@minDate"
-                               max="@maxDate" />
-
-                    </div>
-
-                    <div class="col-md-2">
-
-                        <label class="form-label fw-bold">
-                            Shift
-                        </label>
-
-                        <select class="form-select"
-                                id="shift"
-                                name="shift">
-
-                            <option value="All"
-                                    selected="@(ViewBag.Shift == "All")">
-                                All
-                            </option>
-
-                            <option value="General Shift"
-                                    selected="@(ViewBag.Shift == "General Shift")">
-                                General Shift
-                            </option>
-
-                            <option value="US Shift"
-                                    selected="@(ViewBag.Shift == "US Shift")">
-                                US Shift
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="form-label fw-bold">
-                            Employee
-                        </label>
-
-                        <input type="text"
-                               class="form-control"
-                               id="employee"
-                               name="employee"
-                               value="@ViewBag.Employee"
-                               placeholder="Employee Code / Employee Name" />
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="form-label fw-bold">
-                            Status
-                        </label>
-
-                        <select class="form-select"
-                                id="status"
-                                name="status">
-
-                            <option value="All"
-                                    selected="@(ViewBag.Status == "All")">
-                                All
-                            </option>
-
-                            <option value="Present"
-                                    selected="@(ViewBag.Status == "Present")">
-                                Present
-                            </option>
-
-                            <option value="Present - Late Entry"
-                                    selected="@(ViewBag.Status == "Present - Late Entry")">
-                                Present - Late Entry
-                            </option>
-
-                            <option value="Half Day"
-                                    selected="@(ViewBag.Status == "Half Day")">
-                                Half Day
-                            </option>
-
-                            <option value="Absent"
-                                    selected="@(ViewBag.Status == "Absent")">
-                                Absent
-                            </option>
-
-                        </select>
-
-                    </div>
-
+                <div class="col-md-2">
+                    <label class="form-label">To Date</label>
+                    <input type="date" class="form-control" id="toDate" name="toDate"
+                           value="@(((DateTime?)ViewBag.ToDate)?.ToString("yyyy-MM-dd"))" min="@minDate" max="@maxDate" />
                 </div>
-
-                <hr />
-
-                <div class="text-end">
-
-                    <button type="submit" class="btn btn-primary">
-
-                        <i class="fa fa-search"></i>
-
-                        Search
-
-                    </button>
-
-                    <a asp-controller="Attendance"
-                       asp-action="Register"
-                       class="btn btn-secondary">
-
-                        <i class="fa fa-eraser"></i>
-
-                        Clear
-
-                    </a>
-
-                    <button type="submit"
-                            class="btn btn-success"
-                            formaction="@Url.Action("ExportAttendanceRegisterExcel", "Attendance")"
-                            formmethod="get">
-
-                        <i class="fa fa-file-excel"></i>
-
-                        Excel
-
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-danger"
-                            disabled
-                            title="Coming in Version 2">
-
-                        <i class="fa fa-file-pdf"></i>
-
-                        PDF (Coming Soon)
-
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-dark"
-                            disabled
-                            title="Coming in Version 2">
-
-                        <i class="fa fa-print"></i>
-
-                        Print (Coming Soon)
-
-                    </button>
-
+                <div class="col-md-2">
+                    <label class="form-label">Shift</label>
+                    <select class="form-select" id="shift" name="shift">
+                        <option value="All" selected="@(ViewBag.Shift == "All")">All</option>
+                        <option value="General Shift" selected="@(ViewBag.Shift == "General Shift")">General Shift</option>
+                        <option value="US Shift" selected="@(ViewBag.Shift == "US Shift")">US Shift</option>
+                    </select>
                 </div>
-
-            </form>
+                <div class="col-md-3">
+                    <label class="form-label">Employee</label>
+                    <input type="text" class="form-control" id="employee" name="employee"
+                           value="@ViewBag.Employee" placeholder="Employee code / name" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="All" selected="@(ViewBag.Status == "All")">All</option>
+                        <option value="Present" selected="@(ViewBag.Status == "Present")">Present</option>
+                        <option value="Present - Late Entry" selected="@(ViewBag.Status == "Present - Late Entry")">Present - Late Entry</option>
+                        <option value="Half Day" selected="@(ViewBag.Status == "Half Day")">Half Day</option>
+                        <option value="Absent" selected="@(ViewBag.Status == "Absent")">Absent</option>
+                    </select>
+                </div>
+            </div>
 
             <hr />
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-
-                <div>
-
-                    <span class="badge bg-primary fs-6">
-
-                        Total Records : @Model.Count
-
-                    </span>
-
-                </div>
-
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                </button>
+                <a asp-controller="Attendance" asp-action="Register" class="btn btn-outline-secondary">
+                    <i class="fa-solid fa-eraser me-1"></i> Clear
+                </a>
+                <button type="submit" class="btn btn-outline-success"
+                        formaction="@Url.Action("ExportAttendanceRegisterExcel", "Attendance")" formmethod="get">
+                    <i class="fa-solid fa-file-excel me-1"></i> Excel
+                </button>
+                <button type="button" class="btn btn-outline-secondary" disabled title="Coming in Version 2">
+                    <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                </button>
+                <button type="button" class="btn btn-outline-secondary" disabled title="Coming in Version 2">
+                    <i class="fa-solid fa-print me-1"></i> Print
+                </button>
             </div>
-
-            <div class="table-responsive">
-
-                <table class="table table-bordered table-hover table-striped align-middle">
-
-                    <thead class="table-primary">
-
-                        <tr class="text-center">
-
-                            <th>Sl No</th>
-
-                            <th>Employee Code</th>
-
-                            <th>Employee Name</th>
-
-                            <th>Date</th>
-
-                            <th>Shift</th>
-
-                            <th>Punch In</th>
-
-                            <th>Punch Out</th>
-
-                            <th>Worked</th>
-
-                            <th>Break</th>
-
-                            <th>Attendance Status</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @if (Model.Any())
-                        {
-                            int slNo = 1;
-
-                            foreach (var item in Model)
-                            {
-                                <tr>
-
-                                    <td class="text-center">@slNo</td>
-
-                                    <td>@item.EmployeeCode</td>
-
-                                    <td>@item.EmployeeName</td>
-
-                                    <td>
-                                        @(item.AttendanceDate == DateTime.MinValue
-                                            ? "--"
-                                            : item.AttendanceDate.ToString("dd-MMM-yyyy"))
-                                    </td>
-
-                                    <td>@item.Shift</td>
-
-                                    <td>@item.PunchIn</td>
-
-                                    <td>@item.PunchOut</td>
-
-                                    <td>@item.WorkedTime</td>
-
-                                    <td>@item.BreakTime</td>
-
-                                    <td class="text-center">
-
-                                        @if (item.AttendanceStatus == "Working")
-                                        {
-                                            <span class="badge bg-success">
-                                                🟢 Working
-                                            </span>
-                                        }
-                                        else if (item.AttendanceStatus == "On Break")
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                                ☕ On Break
-                                            </span>
-                                        }
-                                        else if (item.AttendanceStatus == "Present")
-                                        {
-                                            <span class="badge bg-success">
-                                                ✅ Present
-                                            </span>
-                                        }
-                                        else if (item.AttendanceStatus == "Present - Late Entry")
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                                ⏰ Present - Late Entry
-                                            </span>
-                                        }
-                                        else if (item.AttendanceStatus == "Half Day")
-                                        {
-                                            <span class="badge bg-info text-dark">
-                                                🌓 Half Day
-                                            </span>
-                                        }
-                                        else if (item.AttendanceStatus == "Absent")
-                                        {
-                                            <span class="badge bg-danger">
-                                                ❌ Absent
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">
-                                                @item.AttendanceStatus
-                                            </span>
-                                        }
-
-                                    </td>
-
-                                </tr>
-
-                                slNo++;
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-
-                                <td colspan="11" class="text-center text-muted">
-
-                                    No attendance records found.
-
-                                </td>
-
-                            </tr>
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
+        </form>
     </div>
+</div>
 
+<!-- Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Code</th>
+                    <th>Employee Name</th>
+                    <th>Date</th>
+                    <th>Shift</th>
+                    <th>Punch In</th>
+                    <th>Punch Out</th>
+                    <th>Worked</th>
+                    <th>Break</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    int slNo = 1;
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@slNo</td>
+                            <td><span class="fw-semibold">@item.EmployeeCode</span></td>
+                            <td>@item.EmployeeName</td>
+                            <td>@(item.AttendanceDate == DateTime.MinValue ? "--" : item.AttendanceDate.ToString("dd-MMM-yyyy"))</td>
+                            <td>@item.Shift</td>
+                            <td>@item.PunchIn</td>
+                            <td>@item.PunchOut</td>
+                            <td>@item.WorkedTime</td>
+                            <td>@item.BreakTime</td>
+                            <td>
+                                @switch (item.AttendanceStatus)
+                                {
+                                    case "Working":
+                                        <span class="badge badge-soft-success">Working</span>
+                                        break;
+                                    case "On Break":
+                                        <span class="badge badge-soft-warning">On Break</span>
+                                        break;
+                                    case "Present":
+                                        <span class="badge badge-soft-success">Present</span>
+                                        break;
+                                    case "Present - Late Entry":
+                                        <span class="badge badge-soft-warning">Late Entry</span>
+                                        break;
+                                    case "Half Day":
+                                        <span class="badge badge-soft">Half Day</span>
+                                        break;
+                                    case "Absent":
+                                        <span class="badge badge-soft-danger">Absent</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary-subtle text-secondary-emphasis">@item.AttendanceStatus</span>
+                                        break;
+                                }
+                            </td>
+                        </tr>
+                        slNo++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+                            No attendance records found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>

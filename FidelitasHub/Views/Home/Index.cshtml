@@ -1,45 +1,65 @@
-﻿@{
+@{
     ViewData["Title"] = "Home";
-
     var employeeName = Context.Session.GetString("EmployeeName");
+    var role = Context.Session.GetString("Role");
+    bool isAdmin = role == "Admin" || role == "SuperAdmin";
+    var hour = FidelitasHub.Helpers.DateTimeHelper.GetIST().Hour;
+    var greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 }
 
-<div class="container mt-5">
-
-    <div class="text-center">
-
-        <h1 class="display-3 fw-bold text-primary">
-            Welcome to Fidelitas Hub
-        </h1>
-
-        <h3 class="text-secondary mt-3">
-            Integrated Human Resource Management System
-        </h3>
-
-        <hr class="w-50 mx-auto my-4" />
-
-        <h2 class="mt-4">
-            Welcome,
-            <span class="text-primary">
-                @employeeName
-            </span>
-        </h2>
-
-        <p class="lead mt-4">
-            Empowering People. Simplifying HR.
-        </p>
-
-        <div class="mt-5">
-
-            <i class="fa-solid fa-building fa-6x text-primary"></i>
-
+<div class="fh-card p-4 p-md-5 mb-4" style="background:linear-gradient(120deg, var(--fh-primary), var(--fh-primary-strong)); border:0; color:#fff;">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <p class="mb-1" style="opacity:.85;">@greeting,</p>
+            <h1 class="h2 fw-bold mb-2" style="color:#fff;">@employeeName</h1>
+            <p class="mb-0" style="opacity:.9; max-width:46ch;">
+                Welcome back to Fidelitas Hub — your integrated hub for attendance,
+                leave and HR operations.
+            </p>
         </div>
-
-        <p class="text-muted mt-5">
-            Use the navigation menu above to access Attendance,
-            Leave Management and other modules.
-        </p>
-
+        <div class="d-none d-md-block" style="font-size:4.5rem; opacity:.25;">
+            <i class="fa-solid fa-building-shield"></i>
+        </div>
     </div>
+</div>
+
+<h2 class="h6 text-uppercase mb-3" style="color:var(--fh-muted); letter-spacing:.05em;">Quick actions</h2>
+
+<div class="stat-grid">
+
+    <a class="stat" asp-controller="Attendance" asp-action="Dashboard">
+        <span class="stat__icon"><i class="fa-solid fa-gauge-high"></i></span>
+        <span class="stat__body">
+            <span class="stat__value" style="font-size:1.05rem;">My Dashboard</span>
+            <span class="stat__label">Punch in / out &amp; status</span>
+        </span>
+    </a>
+
+    <a class="stat stat--info" asp-controller="Attendance" asp-action="TodayAttendance">
+        <span class="stat__icon"><i class="fa-solid fa-calendar-day"></i></span>
+        <span class="stat__body">
+            <span class="stat__value" style="font-size:1.05rem;">Today's Attendance</span>
+            <span class="stat__label">Live attendance view</span>
+        </span>
+    </a>
+
+    <a class="stat stat--success" asp-controller="Leave" asp-action="ApplyLeave">
+        <span class="stat__icon"><i class="fa-solid fa-plane-departure"></i></span>
+        <span class="stat__body">
+            <span class="stat__value" style="font-size:1.05rem;">Apply Leave</span>
+            <span class="stat__label">Request time off</span>
+        </span>
+    </a>
+
+    @if (isAdmin)
+    {
+        <a class="stat stat--warning" asp-controller="Employee" asp-action="Index">
+            <span class="stat__icon"><i class="fa-solid fa-users"></i></span>
+            <span class="stat__body">
+                <span class="stat__value" style="font-size:1.05rem;">Employees</span>
+                <span class="stat__label">Manage employee master</span>
+            </span>
+        </a>
+    }
 
 </div>

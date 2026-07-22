@@ -82,9 +82,38 @@ namespace FidelitasHub.Utilities
 
         public string GenerateDesignationCode()
         {
-            // Will be used when we create Designation Master
+            var last = _context.Designations
+                               .OrderByDescending(d => d.DesignationId)
+                               .FirstOrDefault();
 
-            return "DES001";
+            if (last == null || string.IsNullOrWhiteSpace(last.DesignationCode))
+                return "DES001";
+
+            int number = int.Parse(last.DesignationCode.Substring(3));
+
+            number++;
+
+            return $"DES{number:000}";
+        }
+
+        //====================================================
+        // Leave Type Code
+        //====================================================
+
+        public string GenerateLeaveTypeCode()
+        {
+            var last = _context.LeaveTypes
+                               .OrderByDescending(l => l.LeaveTypeId)
+                               .FirstOrDefault();
+
+            if (last == null || string.IsNullOrWhiteSpace(last.LeaveTypeCode))
+                return "LT001";
+
+            int number = int.Parse(last.LeaveTypeCode.Substring(2));
+
+            number++;
+
+            return $"LT{number:000}";
         }
     }
 }

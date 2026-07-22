@@ -1,210 +1,274 @@
-﻿@model FidelitasHub.Models.Employee
+@model FidelitasHub.Models.Employee
 
 @{
     ViewData["Title"] = "Add Employee";
 }
 
-<div class="container-fluid mt-4">
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title">
+            <i class="fa-solid fa-user-plus"></i> Add Employee
+        </h1>
+        <p class="page-head__sub">
+            Create a new employee record
+        </p>
+    </div>
 
-    <h2 class="text-success fw-bold">
-        ➕ Add Employee
-    </h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back
+    </a>
+</div>
 
-    <hr />
 
-    <div class="card shadow">
+<div class="row">
 
-        <div class="card-header bg-success text-white">
-            Employee Information
-        </div>
+    <div class="col-xl-10">
 
-        <div class="card-body">
+        <div class="fh-card">
 
-            <form asp-action="Create" method="post">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="fa-solid fa-id-card text-primary"></i>
+                Employee Information
+            </div>
 
-                @Html.AntiForgeryToken()
 
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
-                </div>
+            <div class="card-body">
 
-                <div class="row">
+                <form asp-action="Create" method="post">
 
-                    <div class="col-md-6 mb-3">
+                    @Html.AntiForgeryToken()
 
-                        <label asp-for="EmployeeCode" class="form-label"></label>
 
-                        <input asp-for="EmployeeCode"
-                               class="form-control"
-                               placeholder="e.g. F0040" />
-
-                        <span asp-validation-for="EmployeeCode"
-                              class="text-danger"></span>
-
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3">
                     </div>
 
-                    <div class="col-md-6 mb-3">
 
-                        <label asp-for="EmployeeName" class="form-label"></label>
+                    <div class="row g-3">
 
-                        <input asp-for="EmployeeName"
-                               class="form-control"
-                               placeholder="Enter full employee name" />
 
-                        <span asp-validation-for="EmployeeName"
-                              class="text-danger"></span>
+                        <div class="col-md-6">
+                            <label asp-for="EmployeeCode" class="form-label"></label>
+                            <input asp-for="EmployeeCode"
+                                   class="form-control"
+                                   placeholder="e.g. F0040" />
 
-                    </div>
+                            <span asp-validation-for="EmployeeCode"
+                                  class="text-danger"></span>
+                        </div>
 
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
 
-                        <label asp-for="Department" class="form-label"></label>
+                        <div class="col-md-6">
+                            <label asp-for="EmployeeName" class="form-label"></label>
 
-                        <select asp-for="Department"
-                                asp-items="ViewBag.Departments"
-                                class="form-select">
+                            <input asp-for="EmployeeName"
+                                   class="form-control"
+                                   placeholder="Enter full employee name" />
 
-                            <option value="">-- Select Department --</option>
+                            <span asp-validation-for="EmployeeName"
+                                  class="text-danger"></span>
+                        </div>
 
-                        </select>
 
-                        <span asp-validation-for="Department"
-                              class="text-danger"></span>
 
-                    </div>
+                        <div class="col-md-6">
 
-                    <div class="col-md-6 mb-3">
+                            <label asp-for="Department" class="form-label"></label>
 
-                        <label asp-for="Designation" class="form-label"></label>
+                            <select asp-for="Department"
+                                    asp-items="ViewBag.Departments"
+                                    class="form-select">
 
-                        <input asp-for="Designation"
-                               class="form-control"
-                               placeholder="e.g. Assistant Manager" />
+                                <option value="">
+                                    -- Select Department --
+                                </option>
 
-                        <span asp-validation-for="Designation"
-                              class="text-danger"></span>
+                            </select>
 
-                    </div>
+                            <span asp-validation-for="Department"
+                                  class="text-danger"></span>
 
-                </div>
+                        </div>
 
-                <div class="row">
 
-                    <div class="col-md-6 mb-3">
 
-                        <label asp-for="Email" class="form-label"></label>
+                        <div class="col-md-6">
 
-                        <input asp-for="Email"
-                               class="form-control"
-                               placeholder="name@fidelitascrm.com" />
+                            <label asp-for="Designation" class="form-label"></label>
 
-                        <span asp-validation-for="Email"
-                              class="text-danger"></span>
+                            <input asp-for="Designation"
+                                   class="form-control"
+                                   placeholder="e.g. Assistant Manager" />
 
-                    </div>
+                            <span asp-validation-for="Designation"
+                                  class="text-danger"></span>
 
-                    <div class="col-md-6 mb-3">
+                        </div>
 
-                        <label asp-for="Mobile" class="form-label"></label>
 
-                        <input asp-for="Mobile"
-                               class="form-control"
-                               placeholder="10-digit mobile number" />
 
-                        <span asp-validation-for="Mobile"
-                              class="text-danger"></span>
 
-                    </div>
+                        <div class="col-md-6">
 
-                </div>
+                            <label asp-for="Email" class="form-label"></label>
 
-                <div class="row">
+                            <input asp-for="Email"
+                                   class="form-control"
+                                   placeholder="name@fidelitascrm.com" />
 
-                    <div class="col-md-6 mb-3">
+                            <span asp-validation-for="Email"
+                                  class="text-danger"></span>
 
-                        <div class="col-md-6 mb-3">
+                        </div>
+
+
+
+
+                        <div class="col-md-6">
+
+                            <label asp-for="Mobile" class="form-label"></label>
+
+                            <input asp-for="Mobile"
+                                   class="form-control"
+                                   placeholder="10-digit mobile number" />
+
+                            <span asp-validation-for="Mobile"
+                                  class="text-danger"></span>
+
+                        </div>
+
+
+
+
+                        <!-- SHIFT -->
+
+                        <div class="col-md-6">
 
                             <label asp-for="ShiftId"
                                    class="form-label">
-
                                 Shift
-
                             </label>
+
 
                             <select asp-for="ShiftId"
                                     asp-items="ViewBag.Shifts"
                                     class="form-select">
 
-                                <option value="">-- Select Shift --</option>
+                                <option value="">
+                                    -- Select Shift --
+                                </option>
 
                             </select>
+
 
                             <span asp-validation-for="ShiftId"
                                   class="text-danger"></span>
 
                         </div>
 
-                        <label asp-for="Role" class="form-label"></label>
 
-                        <select asp-for="Role" class="form-select">
 
-                            <option value="">-- Select Role --</option>
 
-                            <option value="Employee">Employee</option>
+                        <!-- ROLE -->
 
-                            <option value="Team Leader">Team Leader</option>
+                        <div class="col-md-6">
 
-                            <option value="Manager">Manager</option>
+                            <label asp-for="Role"
+                                   class="form-label">
+                            </label>
 
-                            <option value="Admin">Admin</option>
 
-                        </select>
+                            <select asp-for="Role"
+                                    class="form-select">
 
-                        <span asp-validation-for="Role"
-                              class="text-danger"></span>
+                                <option value="">
+                                    -- Select Role --
+                                </option>
+
+                                <option value="Employee">
+                                    Employee
+                                </option>
+
+                                <option value="Team Leader">
+                                    Team Leader
+                                </option>
+
+                                <option value="Manager">
+                                    Manager
+                                </option>
+
+                                <option value="Admin">
+                                    Admin
+                                </option>
+
+
+                            </select>
+
+
+                            <span asp-validation-for="Role"
+                                  class="text-danger"></span>
+
+                        </div>
+
+
+
+
+
+                        <div class="col-md-6">
+
+                            <label asp-for="DateJoined"
+                                   class="form-label">
+                            </label>
+
+
+                            <input asp-for="DateJoined"
+                                   type="date"
+                                   class="form-control" />
+
+
+                            <span asp-validation-for="DateJoined"
+                                  class="text-danger"></span>
+
+                        </div>
+
+
 
                     </div>
 
-                    <div class="col-md-6 mb-3">
 
-                        <label asp-for="DateJoined" class="form-label"></label>
 
-                        <input asp-for="DateJoined"
-                               type="date"
-                               class="form-control" />
+                    <hr />
 
-                        <span asp-validation-for="DateJoined"
-                              class="text-danger"></span>
 
-                    </div>
+                    <button type="submit"
+                            class="btn btn-primary">
 
-                </div>
+                        <i class="fa-solid fa-floppy-disk me-1"></i>
+                        Save Employee
 
-                <hr />
+                    </button>
 
-                <button type="submit" class="btn btn-success">
 
-                    💾 Save Employee
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
 
-                </button>
+                        Cancel
 
-                <a asp-action="Index"
-                   class="btn btn-secondary">
+                    </a>
 
-                    Cancel
 
-                </a>
+                </form>
 
-            </form>
+            </div>
 
         </div>
 
     </div>
 
 </div>
+
+
 
 @section Scripts
 {

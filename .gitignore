@@ -361,3 +361,21 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Temporary Excel uploads
+FidelitasHub/wwwroot/TempImports/
+
+# Visual Studio temporary files
+.vs/
+bin/
+obj/
+
+# User settings
+*.user
+*.suo
+
+FidelitasHub.zip

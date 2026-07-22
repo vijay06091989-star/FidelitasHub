@@ -1,540 +1,132 @@
-﻿@{
-    ViewData["Title"] = "Attendance Dashboard";
-}
 @{
+    ViewData["Title"] = "Attendance Dashboard";
+
     bool canPunchIn = ViewBag.AttendanceStatus == "Not Punched In";
-
     bool canBreak = ViewBag.AttendanceStatus == "Working";
-
     bool canResume = ViewBag.AttendanceStatus == "On Break";
-
     bool canPunchOut = ViewBag.AttendanceStatus == "Working";
+
+    string status = ViewBag.AttendanceStatus as string ?? "Not Punched In";
+    string statusBadge = status switch
+    {
+        "Working" => "badge-soft-success",
+        "On Break" => "badge-soft-warning",
+        "Punched Out" => "badge-soft-danger",
+        _ => "bg-secondary-subtle text-secondary-emphasis"
+    };
+    string statusIcon = status switch
+    {
+        "Working" => "fa-circle-play",
+        "On Break" => "fa-mug-hot",
+        "Punched Out" => "fa-circle-stop",
+        _ => "fa-circle"
+    };
 }
 
-<div class="container-fluid mt-4">
-
-    <div class="card shadow-lg border-0">
-
-        <div class="card-header bg-primary text-white">
-
-            <h3 class="mb-0">
-                🕒 Attendance Dashboard
-            </h3>
-
-        </div>
-
-        <div class="card-body">
-
-            <div class="row">
-
-                <div class="col-md-6">
-
-                    <h4 class="text-primary">
-
-                        Welcome,
-
-                        <span class="text-success">
-
-                            @ViewBag.EmployeeName
-
-                        </span>
-
-                    </h4>
-
-                    <hr />
-
-                    <table class="table table-borderless">
-
-                        <tr>
-
-                            <th width="180">
-
-                                Today's Date
-
-                            </th>
-
-                            <td>
-
-                                @DateTime.Now.ToString("dd-MMM-yyyy")
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Shift
-
-                            </th>
-
-                            <td>
-
-                                @ViewBag.ShiftName
-
-                            </td>
-
-                        </tr>
-                        <tr>
-
-                            <th>
-
-                                Current IST Time
-
-                            </th>
-
-                            <td>
-
-                                <span id="istClock"
-                                      class="fw-bold text-primary fs-5">
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Shift Timing
-
-                            </th>
-
-                            <td>
-
-                                @ViewBag.ShiftTiming
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Status
-
-                            </th>
-
-                            <td>
-
-                                @if (ViewBag.AttendanceStatus == "Working")
-                                {
-                                    <span class="badge bg-success rounded-pill fs-6 px-3 py-2">
-                                        🟢 Working
-                                    </span>
-                                }
-                                else if (ViewBag.AttendanceStatus == "On Break")
-                                {
-                                    <span class="badge bg-warning text-dark rounded-pill fs-6 px-3 py-2">
-                                        ☕ On Break
-                                    </span>
-                                }
-                                else if (ViewBag.AttendanceStatus == "Punched Out")
-                                {
-                                    <span class="badge bg-danger rounded-pill fs-6 px-3 py-2">
-                                        🔴 Punched Out
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary rounded-pill fs-6 px-3 py-2">
-                                        ⚪ Not Punched In
-                                    </span>
-                                }
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Punch In Time
-
-                            </th>
-
-                            <td>
-
-                                <span class="fw-bold text-success">
-
-                                    @ViewBag.PunchInTime
-
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Break Started
-
-                            </th>
-
-                            <td>
-
-                                <span class="fw-bold text-warning">
-
-                                    @ViewBag.BreakStartTime
-
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Break Ended
-
-                            </th>
-
-                            <td>
-
-                                <span class="fw-bold text-info">
-
-                                    @ViewBag.BreakEndTime
-
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Total Break
-
-                            </th>
-
-                            <td>
-
-                                <span class="fw-bold text-warning">
-
-                                    @ViewBag.TotalBreakTime
-
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Worked Time
-
-                            </th>
-
-                            <td>
-
-                                <span class="fw-bold text-primary">
-
-                                    @ViewBag.WorkedTime
-
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-
-                        <tr>
-
-                            <th>
-
-                                Punch Out Time
-
-                            </th>
-
-                            <td>
-
-                                <span class="fw-bold text-danger">
-
-                                    @ViewBag.PunchOutTime
-
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-                    </table>
-
-                </div>
-
-                <div class="col-md-6 text-center">
-
-                    <h5>
-
-                        Today's Actions
-
-                    </h5>
-
-                    <hr />
-
-                    <button id="btnPunchIn"
-                            class="btn btn-success btn-lg m-2"
-                        @(canPunchIn ? "" : "disabled")>
-
-                        🟢 Punch In
-
-                    </button>
-
-                    <button id="btnBreak"
-                            class="btn btn-warning btn-lg m-2"
-                        @(canBreak ? "" : "disabled")>
-
-                        ☕ Break
-
-                    </button>
-
-                    <button id="btnResume"
-                            class="btn btn-info btn-lg m-2"
-                        @(canResume ? "" : "disabled")>
-
-                        ▶ Resume
-
-                    </button>
-
-                    <button id="btnPunchOut"
-                            class="btn btn-danger btn-lg m-2"
-                        @(canPunchOut ? "" : "disabled")>
-
-                        🔴 Punch Out
-
-                    </button>
-
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-gauge-high"></i> My Dashboard</h1>
+        <p class="page-head__sub">Welcome, <strong>@ViewBag.EmployeeName</strong></p>
+    </div>
+    <span class="badge @statusBadge fs-6 px-3 py-2">
+        <i class="fa-solid @statusIcon me-1"></i> @status
+    </span>
+</div>
+
+<div class="row g-3">
+
+    <!-- Live clock + actions -->
+    <div class="col-lg-5">
+        <div class="fh-card h-100">
+            <div class="card-body text-center d-flex flex-column">
+
+                <p class="stat__label mb-1">Current IST Time</p>
+                <div id="istClock" class="fw-bold text-primary" style="font-size:2.6rem; line-height:1.1; font-variant-numeric:tabular-nums;"></div>
+                <p class="text-muted mb-4">@DateTime.Now.ToString("dddd, dd MMM yyyy")</p>
+
+                <div class="mt-auto">
+                    <p class="stat__label mb-2">Today's Actions</p>
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center flex-wrap">
+                        <button id="btnPunchIn" class="btn btn-success btn-lg" @(canPunchIn ? "" : "disabled")>
+                            <i class="fa-solid fa-circle-play me-1"></i> Punch In
+                        </button>
+                        <button id="btnBreak" class="btn btn-warning btn-lg" @(canBreak ? "" : "disabled")>
+                            <i class="fa-solid fa-mug-hot me-1"></i> Break
+                        </button>
+                        <button id="btnResume" class="btn btn-info btn-lg" @(canResume ? "" : "disabled")>
+                            <i class="fa-solid fa-play me-1"></i> Resume
+                        </button>
+                        <button id="btnPunchOut" class="btn btn-danger btn-lg" @(canPunchOut ? "" : "disabled")>
+                            <i class="fa-solid fa-circle-stop me-1"></i> Punch Out
+                        </button>
+                    </div>
                 </div>
 
             </div>
-
         </div>
+    </div>
 
+    <!-- Details -->
+    <div class="col-lg-7">
+        <div class="fh-card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="fa-solid fa-clipboard-list text-primary"></i> Today's Summary
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless align-middle mb-0">
+                    <tbody>
+                        <tr><td class="text-muted ps-0" style="width:45%;">Shift</td><td class="fw-semibold">@ViewBag.ShiftName</td></tr>
+                        <tr><td class="text-muted ps-0">Shift Timing</td><td>@ViewBag.ShiftTiming</td></tr>
+                        <tr><td class="text-muted ps-0">Punch In</td><td class="fw-semibold text-success">@ViewBag.PunchInTime</td></tr>
+                        <tr><td class="text-muted ps-0">Break Started</td><td class="fw-semibold text-warning">@ViewBag.BreakStartTime</td></tr>
+                        <tr><td class="text-muted ps-0">Break Ended</td><td class="fw-semibold text-info">@ViewBag.BreakEndTime</td></tr>
+                        <tr><td class="text-muted ps-0">Total Break</td><td class="fw-semibold text-warning">@ViewBag.TotalBreakTime</td></tr>
+                        <tr><td class="text-muted ps-0">Worked Time</td><td class="fw-semibold text-primary">@ViewBag.WorkedTime</td></tr>
+                        <tr><td class="text-muted ps-0">Punch Out</td><td class="fw-semibold text-danger">@ViewBag.PunchOutTime</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
 </div>
+
 @section Scripts
 {
     <script>
-
         document.addEventListener("DOMContentLoaded", function () {
-
             const btnPunchIn = document.getElementById("btnPunchIn");
             const btnBreak = document.getElementById("btnBreak");
             const btnResume = document.getElementById("btnResume");
             const btnPunchOut = document.getElementById("btnPunchOut");
 
-            //==========================================
-            // Live IST Clock
-            //==========================================
-
             function updateISTClock() {
-
                 const now = new Date();
-
                 const istTime = now.toLocaleTimeString("en-IN", {
-
-                    timeZone: "Asia/Kolkata",
-
-                    hour: "2-digit",
-
-                    minute: "2-digit",
-
-                    second: "2-digit",
-
-                    hour12: true
-
+                    timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
                 });
-
                 document.getElementById("istClock").innerText = istTime;
-
             }
-
             updateISTClock();
-
             setInterval(updateISTClock, 1000);
 
-            //==========================================
-            // Punch In
-            //==========================================
-
-            if (btnPunchIn) {
-
-                btnPunchIn.addEventListener("click", function () {
-
-                    fetch('@Url.Action("PunchIn", "Attendance")', {
-
-                        method: "POST"
-
-                    })
+            function doAction(url, color) {
+                fetch(url, { method: "POST" })
                     .then(response => response.json())
                     .then(result => {
-
                         Swal.fire({
-
                             icon: result.success ? "success" : "error",
-
                             title: result.title,
-
                             html: result.message.replace(/\n/g, "<br>"),
-
-                            confirmButtonColor: "#198754"
-
-                        }).then(() => {
-
-                            if (result.success) {
-
-                                location.reload();
-
-                            }
-
-                        });
-
+                            confirmButtonColor: color
+                        }).then(() => { if (result.success) { location.reload(); } });
                     });
-
-                });
-
             }
 
-            //==========================================
-            // Break
-            //==========================================
-
-            if (btnBreak) {
-
-                btnBreak.addEventListener("click", function () {
-
-                    fetch('@Url.Action("Break", "Attendance")', {
-
-                        method: "POST"
-
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-
-                        Swal.fire({
-
-                            icon: result.success ? "success" : "error",
-
-                            title: result.title,
-
-                            html: result.message.replace(/\n/g, "<br>"),
-
-                            confirmButtonColor: "#ffc107"
-
-                        }).then(() => {
-
-                            if (result.success) {
-
-                                location.reload();
-
-                            }
-
-                        });
-
-                    });
-
-                });
-
-            }
-
-            //==========================================
-            // Resume
-            //==========================================
-
-            if (btnResume) {
-
-                btnResume.addEventListener("click", function () {
-
-                    fetch('@Url.Action("Resume", "Attendance")', {
-
-                        method: "POST"
-
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-
-                        Swal.fire({
-
-                            icon: result.success ? "success" : "error",
-
-                            title: result.title,
-
-                            html: result.message.replace(/\n/g, "<br>"),
-
-                            confirmButtonColor: "#0dcaf0"
-
-                        }).then(() => {
-
-                            if (result.success) {
-
-                                location.reload();
-
-                            }
-
-                        });
-
-                    });
-
-                });
-
-            }
-
-            //==========================================
-            // Punch Out
-            //==========================================
-
-            if (btnPunchOut) {
-
-                btnPunchOut.addEventListener("click", function () {
-
-                    fetch('@Url.Action("PunchOut", "Attendance")', {
-
-                        method: "POST"
-
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-
-                        Swal.fire({
-
-                            icon: result.success ? "success" : "error",
-
-                            title: result.title,
-
-                            html: result.message.replace(/\n/g, "<br>"),
-
-                            confirmButtonColor: "#dc3545"
-
-                        }).then(() => {
-
-                            if (result.success) {
-
-                                location.reload();
-
-                            }
-
-                        });
-
-                    });
-
-                });
-
-            }
-
+            if (btnPunchIn) btnPunchIn.addEventListener("click", () => doAction('@Url.Action("PunchIn", "Attendance")', "#16a34a"));
+            if (btnBreak) btnBreak.addEventListener("click", () => doAction('@Url.Action("Break", "Attendance")', "#d97706"));
+            if (btnResume) btnResume.addEventListener("click", () => doAction('@Url.Action("Resume", "Attendance")', "#0891b2"));
+            if (btnPunchOut) btnPunchOut.addEventListener("click", () => doAction('@Url.Action("PunchOut", "Attendance")', "#dc2626"));
         });
-
     </script>
 }

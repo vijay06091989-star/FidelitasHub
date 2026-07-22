@@ -1,14 +1,22 @@
-﻿@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+@model IEnumerable<FidelitasHub.Models.LeaveApplication>
 
 @{
     ViewData["Title"] = "Leave Approval";
+
+    Func<string, string> statusBadge = status =>
+    {
+        var s = (status ?? "").ToLower();
+        if (s.Contains("approve")) return "badge-soft-success";
+        if (s.Contains("reject")) return "badge-soft-danger";
+        return "badge-soft-warning";
+    };
 }
 
 <div class="container-fluid mt-4">
 
     <div class="card shadow">
 
-        <div class="card-header bg-primary text-white">
+        <div class="card-header">
             <h3 class="mb-0">✔ Leave Approval</h3>
         </div>
 
@@ -22,7 +30,7 @@
             }
             else
             {
-                <table class="table table-bordered table-hover">
+                <table class="table table-hover">
 
                     <thead class="table-light">
 
@@ -171,21 +179,23 @@
 
                                     @if (item.Status == "Pending")
                                     {
-                                        <a asp-action="Approve"
-                                           asp-route-id="@item.LeaveApplicationId"
-                                           class="btn btn-success btn-sm">
+                                        <div class="d-flex gap-2">
 
-                                            <i class="fa-solid fa-check"></i> Approve
+                                            <a asp-action="Approve"
+                                               asp-route-id="@item.LeaveApplicationId"
+                                               class="btn btn-success btn-sm">
+                                                <i class="fa-solid fa-check"></i>
+                                                Approve
+                                            </a>
 
-                                        </a>
+                                            <a asp-action="Reject"
+                                               asp-route-id="@item.LeaveApplicationId"
+                                               class="btn btn-danger btn-sm">
+                                                <i class="fa-solid fa-xmark"></i>
+                                                Reject
+                                            </a>
 
-                                        <a asp-action="Reject"
-                                           asp-route-id="@item.LeaveApplicationId"
-                                           class="btn btn-danger btn-sm">
-
-                                            <i class="fa-solid fa-xmark"></i> Reject
-
-                                        </a>
+                                        </div>
                                     }
                                     else
                                     {
