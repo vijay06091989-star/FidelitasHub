@@ -1,251 +1,130 @@
-﻿@{
+@{
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container-fluid mt-4">
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-chart-pie"></i> Admin Dashboard</h1>
+        <p class="page-head__sub">Welcome back, <strong>@ViewBag.EmployeeName</strong></p>
+    </div>
+    <span class="topbar__clock" data-clock></span>
+</div>
 
-    <!-- Header -->
+<!-- KPI stats -->
+<div class="stat-grid">
 
-    <div class="row mb-4">
-
-        <div class="col-md-8">
-
-            <h2 class="fw-bold text-primary">
-                Admin Dashboard
-            </h2>
-
-            <p class="text-muted mb-0">
-                Welcome,
-                <strong>@ViewBag.EmployeeName</strong>
-            </p>
-
+    <div class="stat">
+        <span class="stat__icon"><i class="fa-solid fa-users"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Total Employees</p>
+            <p class="stat__value">@ViewBag.TotalEmployees</p>
         </div>
-
-        <div class="col-md-4 text-end">
-
-            <h5 id="clock" class="text-secondary"></h5>
-
-        </div>
-
     </div>
 
-    <!-- KPI Cards -->
-
-    <div class="row g-3">
-
-        <div class="col-lg-3 col-md-6">
-
-            <div class="card shadow-sm border-0">
-
-                <div class="card-body text-center">
-
-                    <h6 class="text-muted">Total Employees</h6>
-
-                    <h1 class="text-primary">168</h1>
-
-                </div>
-
-            </div>
-
+    <div class="stat stat--success">
+        <span class="stat__icon"><i class="fa-solid fa-user-check"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Active Employees</p>
+            <p class="stat__value">@ViewBag.ActiveEmployees</p>
         </div>
-
-        <div class="col-lg-3 col-md-6">
-
-            <div class="card shadow-sm border-0">
-
-                <div class="card-body text-center">
-
-                    <h6 class="text-muted">Present Today</h6>
-
-                    <h1 class="text-success">0</h1>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-
-            <div class="card shadow-sm border-0">
-
-                <div class="card-body text-center">
-
-                    <h6 class="text-muted">On Leave</h6>
-
-                    <h1 class="text-warning">0</h1>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-
-            <div class="card shadow-sm border-0">
-
-                <div class="card-body text-center">
-
-                    <h6 class="text-muted">Late Arrivals</h6>
-
-                    <h1 class="text-danger">0</h1>
-
-                </div>
-
-            </div>
-
-        </div>
-
     </div>
 
-    <br />
-
-    <div class="row">
-
-        <!-- Quick Actions -->
-
-        <div class="col-lg-6">
-
-            <div class="card shadow-sm">
-
-                <div class="card-header bg-primary text-white">
-
-                    Quick Actions
-
-                </div>
-
-                <div class="card-body">
-
-                    <div class="d-grid gap-2">
-
-                        <a asp-controller="Employee"
-                           asp-action="Index"
-                           class="btn btn-outline-primary">
-
-                            👨 Employee Master
-
-                        </a>
-
-                        <a asp-controller="Department"
-                           asp-action="Index"
-                           class="btn btn-outline-success">
-
-                            🏢 Department Master
-
-                        </a>
-
-                        <a asp-controller="Shift"
-                           asp-action="Index"
-                           class="btn btn-outline-secondary">
-
-                            🕒 Shift Master
-
-                        </a>
-
-                        <a asp-controller="LeaveBalance"
-                           asp-action="Import"
-                           class="btn btn-outline-warning">
-
-                            💰 Leave Balance Import
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+    <div class="stat stat--info">
+        <span class="stat__icon"><i class="fa-solid fa-clock"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Present Today</p>
+            <p class="stat__value">@ViewBag.PresentToday</p>
         </div>
+    </div>
 
-        <!-- System Status -->
-
-        <div class="col-lg-6">
-
-            <div class="card shadow-sm">
-
-                <div class="card-header bg-success text-white">
-
-                    System Status
-
-                </div>
-
-                <div class="card-body">
-
-                    <table class="table table-borderless">
-
-                        <tr>
-
-                            <td>Attendance Module</td>
-
-                            <td><span class="badge bg-success">Active</span></td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>Leave Module</td>
-
-                            <td><span class="badge bg-warning text-dark">In Progress</span></td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>Employee Master</td>
-
-                            <td><span class="badge bg-success">Completed</span></td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>Shift Master</td>
-
-                            <td><span class="badge bg-success">Completed</span></td>
-
-                        </tr>
-
-                    </table>
-
-                </div>
-
-            </div>
-
+    <div class="stat stat--warning">
+        <span class="stat__icon"><i class="fa-solid fa-plane-departure"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">On Leave Today</p>
+            <p class="stat__value">—</p>
         </div>
-
     </div>
 
 </div>
 
-<script>
+<div class="row g-3">
 
-    function updateClock() {
+    <!-- Quick actions -->
+    <div class="col-lg-6">
+        <div class="fh-card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="fa-solid fa-bolt text-primary"></i> Quick Actions
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-primary w-100 text-start">
+                            <i class="fa-solid fa-users me-2"></i>Employees
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a asp-controller="Department" asp-action="Index" class="btn btn-outline-primary w-100 text-start">
+                            <i class="fa-solid fa-sitemap me-2"></i>Departments
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a asp-controller="Shift" asp-action="Index" class="btn btn-outline-primary w-100 text-start">
+                            <i class="fa-solid fa-business-time me-2"></i>Shifts
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a asp-controller="LeaveBalance" asp-action="Import" class="btn btn-outline-primary w-100 text-start">
+                            <i class="fa-solid fa-file-import me-2"></i>Balance Import
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a asp-controller="Attendance" asp-action="Register" class="btn btn-outline-primary w-100 text-start">
+                            <i class="fa-solid fa-clipboard-list me-2"></i>Att. Register
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a asp-controller="LeaveApproval" asp-action="Index" class="btn btn-outline-primary w-100 text-start">
+                            <i class="fa-solid fa-circle-check me-2"></i>Leave Approval
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        const now = new Date();
+    <!-- System status -->
+    <div class="col-lg-6">
+        <div class="fh-card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="fa-solid fa-signal text-primary"></i> Module Status
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless align-middle mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="ps-0">Attendance</td>
+                            <td class="text-end pe-0"><span class="badge badge-soft-success">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-0">Leave Management</td>
+                            <td class="text-end pe-0"><span class="badge badge-soft-warning">In Progress</span></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-0">Employee Master</td>
+                            <td class="text-end pe-0"><span class="badge badge-soft-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-0">Shift Master</td>
+                            <td class="text-end pe-0"><span class="badge badge-soft-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-0">Payroll</td>
+                            <td class="text-end pe-0"><span class="badge badge-soft">Planned</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-        const options = {
-
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: true,
-            timeZone: "Asia/Kolkata"
-
-        };
-
-        document.getElementById("clock").innerHTML =
-            now.toLocaleString("en-IN", options) + " IST";
-
-    }
-
-    updateClock();
-
-    setInterval(updateClock,1000);
-
-</script>
+</div>

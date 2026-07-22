@@ -1,0 +1,367 @@
+@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+
+@{
+    ViewData["Title"] = "Leave Register";
+
+    var names = ViewBag.EmployeeNames as Dictionary<int, string>
+                ?? new Dictionary<int, string>();
+
+    Func<string, string> badge = s =>
+    {
+        var v = (s ?? "").ToLower();
+
+        if (v.Contains("approve"))
+            return "badge-soft-success";
+
+        if (v.Contains("reject"))
+            return "badge-soft-danger";
+
+        if (v.Contains("cancel"))
+            return "badge-soft-secondary";
+
+        return "badge-soft-warning";
+    };
+}
+
+
+<div class="page-head">
+
+    <div>
+        <h1 class="page-head__title">
+            <i class="fa-solid fa-list-check"></i>
+            Leave Register
+        </h1>
+
+        <p class="page-head__sub">
+            All leave applications
+        </p>
+    </div>
+
+</div>
+
+
+<!-- ================= SUMMARY CARDS ================= -->
+
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3 mb-4">
+
+
+    <div class="col">
+
+        <a class="stat @(string.IsNullOrEmpty(ViewBag.Status as string) ? "is-active" : "")"
+           asp-action="LeaveRegister">
+
+            <span class="stat__icon">
+                <i class="fa-solid fa-list"></i>
+            </span>
+
+            <div class="stat__body">
+                <p class="stat__label">Total</p>
+                <p class="stat__value">@ViewBag.Total</p>
+            </div>
+
+        </a>
+
+    </div>
+
+
+
+    <div class="col">
+
+        <a class="stat stat--warning @(ViewBag.Status == "Pending" ? "is-active" : "")"
+           asp-action="LeaveRegister"
+           asp-route-status="Pending">
+
+            <span class="stat__icon">
+                <i class="fa-solid fa-hourglass-half"></i>
+            </span>
+
+            <div class="stat__body">
+                <p class="stat__label">Pending</p>
+                <p class="stat__value">@ViewBag.Pending</p>
+            </div>
+
+        </a>
+
+    </div>
+
+
+
+    <div class="col">
+
+        <a class="stat stat--success @(ViewBag.Status == "Approved" ? "is-active" : "")"
+           asp-action="LeaveRegister"
+           asp-route-status="Approved">
+
+            <span class="stat__icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </span>
+
+            <div class="stat__body">
+                <p class="stat__label">Approved</p>
+                <p class="stat__value">@ViewBag.Approved</p>
+            </div>
+
+        </a>
+
+    </div>
+
+
+
+    <div class="col">
+
+        <a class="stat stat--secondary @(ViewBag.Status == "Cancelled" ? "is-active" : "")"
+           asp-action="LeaveRegister"
+           asp-route-status="Cancelled">
+
+            <span class="stat__icon">
+                <i class="fa-solid fa-ban"></i>
+            </span>
+
+            <div class="stat__body">
+                <p class="stat__label">Cancelled</p>
+                <p class="stat__value">@ViewBag.Cancelled</p>
+            </div>
+
+        </a>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ================= SEARCH FILTER ================= -->
+
+
+<div class="table-card mb-4">
+
+    <div class="card-body">
+
+        <form method="get" asp-action="LeaveRegister">
+
+
+            <div class="row g-3 align-items-end">
+
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Employee
+                    </label>
+
+                    <select name="employeeId"
+                            class="form-select">
+
+                        <option value="">
+                            -- All Employees --
+                        </option>
+
+
+                        @foreach (var emp in ViewBag.Employees)
+                        {
+                            <option value="@emp.Value"
+                                    selected="@(ViewBag.SelectedEmployee?.ToString() == emp.Value)">
+                                @emp.Text
+                            </option>
+                        }
+
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="col-md-3">
+
+                    <label class="form-label">
+                        From Date
+                    </label>
+
+                    <input type="date"
+                           name="fromDate"
+                           class="form-control"
+                           value="@ViewBag.FromDate" />
+
+                </div>
+
+
+
+                <div class="col-md-3">
+
+                    <label class="form-label">
+                        To Date
+                    </label>
+
+                    <input type="date"
+                           name="toDate"
+                           class="form-control"
+                           value="@ViewBag.ToDate" />
+
+                </div>
+
+
+
+                <div class="col-md-2">
+
+                    <button type="submit"
+                            class="btn btn-primary w-100">
+
+                        <i class="fa-solid fa-search"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="mt-3">
+
+                <a asp-action="LeaveRegister"
+                   class="btn btn-outline-secondary btn-sm">
+
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Clear Filter
+
+                </a>
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+<!-- ================= TABLE ================= -->
+
+
+<div class="table-card">
+
+
+    <div class="table-responsive">
+
+
+        <table class="table table-hover align-middle mb-0">
+
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+                    <th>Type</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Days</th>
+                    <th>Applied</th>
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+
+
+            <tbody>
+
+
+                @if (Model.Any())
+                {
+
+                    foreach (var l in Model)
+                    {
+
+                        <tr>
+
+
+                            <td class="fw-semibold">
+
+                                @(names.TryGetValue(l.EmployeeId, out var n)
+                                ? n
+                                : "#" + l.EmployeeId)
+
+                            </td>
+
+
+
+                            <td>
+                                @l.LeaveType
+                            </td>
+
+
+                            <td>
+                                @l.FromDate.ToString("dd-MMM-yyyy")
+                            </td>
+
+
+                            <td>
+                                @l.ToDate.ToString("dd-MMM-yyyy")
+                            </td>
+
+
+                            <td>
+                                @l.TotalDays
+                            </td>
+
+
+                            <td>
+                                @l.AppliedOn.ToString("dd-MMM-yyyy")
+                            </td>
+
+
+                            <td>
+
+                                <span class="badge @badge(l.Status)">
+                                    @l.Status
+                                </span>
+
+                            </td>
+
+
+                        </tr>
+
+                    }
+
+                }
+
+                else
+                {
+
+                    <tr>
+
+                        <td colspan="7"
+                            class="text-center text-muted py-4">
+
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+
+                            No leave applications found.
+
+                        </td>
+
+                    </tr>
+
+                }
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+</div>

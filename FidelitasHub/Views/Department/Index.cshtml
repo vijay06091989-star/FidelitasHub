@@ -1,336 +1,177 @@
-﻿@model IEnumerable<FidelitasHub.Models.Department>
+@model IEnumerable<FidelitasHub.Models.Department>
 
 @{
     ViewData["Title"] = "Department Master";
 }
 
-<div class="container-fluid mt-4">
-
-    <div class="d-flex justify-content-between align-items-center">
-
-        <h2 class="text-success fw-bold">
-            🏢 Department Master
-        </h2>
-
-        <a asp-action="Create"
-           class="btn btn-success">
-
-            <i class="fa-solid fa-plus"></i>
-
-            Add Department
-
-        </a>
-
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-sitemap"></i> Department Master</h1>
+        <p class="page-head__sub">Organize departments and their status</p>
     </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Add Department
+    </a>
+</div>
 
-    <hr />
+<!-- Filter stats -->
+<div class="stat-grid">
 
-    <!-- ================= Dashboard Cards ================= -->
-    <!-- ================= Dashboard Cards ================= -->
-
-    <div class="row mb-4">
-
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(string.IsNullOrEmpty(ViewBag.Status) ? "border-4 border-primary" : "border-primary")">
-
-                    <div class="card-body text-center">
-
-                        <i class="fa-solid fa-building fa-2x text-primary mb-2"></i>
-
-                        <h6 class="text-muted">
-                            Total Departments
-                        </h6>
-
-                        <h2 class="text-primary fw-bold">
-                            @ViewBag.TotalDepartments
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat @(string.IsNullOrEmpty(ViewBag.Status as string) ? "is-active" : "")"
+       asp-action="Index" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-building"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Total Departments</p>
+            <p class="stat__value">@ViewBag.TotalDepartments</p>
         </div>
+    </a>
 
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               asp-route-status="Active"
-               asp-route-searchText="@ViewBag.SearchText"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(ViewBag.Status == "Active" ? "border-4 border-success" : "border-success")">
-
-                    <div class="card-body text-center">
-
-                        <i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i>
-
-                        <h6 class="text-muted">
-                            Active Departments
-                        </h6>
-
-                        <h2 class="text-success fw-bold">
-                            @ViewBag.ActiveDepartments
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat stat--success @(ViewBag.Status == "Active" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Active" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-circle-check"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Active</p>
+            <p class="stat__value">@ViewBag.ActiveDepartments</p>
         </div>
+    </a>
 
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               asp-route-status="Inactive"
-               asp-route-searchText="@ViewBag.SearchText"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(ViewBag.Status == "Inactive" ? "border-4 border-danger" : "border-danger")">
-
-                    <div class="card-body text-center">
-
-                        <i class="fa-solid fa-circle-xmark fa-2x text-danger mb-2"></i>
-
-                        <h6 class="text-muted">
-                            Inactive Departments
-                        </h6>
-
-                        <h2 class="text-danger fw-bold">
-                            @ViewBag.InactiveDepartments
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat stat--danger @(ViewBag.Status == "Inactive" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Inactive" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-circle-xmark"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Inactive</p>
+            <p class="stat__value">@ViewBag.InactiveDepartments</p>
         </div>
+    </a>
 
+</div>
+
+<!-- Search -->
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-sm-6 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchText" value="@ViewBag.SearchText"
+                       class="form-control" placeholder="Search department..." />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
     </div>
-    <!-- ================= Search ================= -->
+</form>
 
-    <form asp-action="Index" method="get" class="row mb-4">
+<!-- List -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Department Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@item.DepartmentCode</span></td>
+                            <td>@item.DepartmentName</td>
+                            <td class="text-muted">@item.Description</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.DepartmentId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
 
-        <div class="col-md-4">
-
-            <input type="text"
-                   name="searchText"
-                   value="@ViewBag.SearchText"
-                   class="form-control"
-                   placeholder="Search Department..." />
-
-        </div>
-
-        <div class="col-md-3">
-
-            <button type="submit"
-                    class="btn btn-primary">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                Search
-
-            </button>
-
-            <a asp-action="Index"
-               class="btn btn-secondary">
-
-                Clear
-
-            </a>
-
-        </div>
-
-    </form>
-
-    <!-- ================= Department List ================= -->
-
-    <table class="table table-bordered table-hover table-striped">
-
-        <thead class="table-success">
-
-            <tr>
-
-                <th width="120">Code</th>
-
-                <th>Department Name</th>
-
-                <th>Description</th>
-
-                <th width="120">Status</th>
-
-                <th width="260">Action</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @if (Model.Any())
-            {
-                foreach (var item in Model)
+                                @if (item.IsActive)
+                                {
+                                    <form id="disableForm_@item.DepartmentId" asp-action="Disable"
+                                          asp-route-id="@item.DepartmentId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDisable('@item.DepartmentId','@item.DepartmentName')">
+                                            <i class="fa-solid fa-ban"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form id="enableForm_@item.DepartmentId" asp-action="Enable"
+                                          asp-route-id="@item.DepartmentId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                onclick="confirmEnable('@item.DepartmentId','@item.DepartmentName')">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-
-                        <td>@item.DepartmentCode</td>
-
-                        <td>@item.DepartmentName</td>
-
-                        <td>@item.Description</td>
-
-                        <td>
-
-                            @if (item.IsActive)
-                            {
-                                <span class="badge bg-success">
-                                    Active
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">
-                                    Inactive
-                                </span>
-                            }
-
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+                            No matching departments found.
                         </td>
-
-                        <td>
-
-                            <a asp-action="Edit"
-                               asp-route-id="@item.DepartmentId"
-                               class="btn btn-primary btn-sm">
-
-                                <i class="fa-solid fa-pen"></i>
-
-                                Edit
-
-                            </a>
-
-                            @if (item.IsActive)
-                            {
-                                <form id="disableForm_@item.DepartmentId"
-                                      asp-action="Disable"
-                                      asp-route-id="@item.DepartmentId"
-                                      method="post"
-                                      style="display:inline;">
-
-                                    @Html.AntiForgeryToken()
-
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="confirmDisable('@item.DepartmentId','@item.DepartmentName')">
-
-                                        <i class="fa-solid fa-ban"></i>
-
-                                        Disable
-
-                                    </button>
-
-                                </form>
-                            }
-                            else
-                            {
-                                <form id="enableForm_@item.DepartmentId"
-                                      asp-action="Enable"
-                                      asp-route-id="@item.DepartmentId"
-                                      method="post"
-                                      style="display:inline;">
-
-                                    @Html.AntiForgeryToken()
-
-                                    <button type="button"
-                                            class="btn btn-success btn-sm"
-                                            onclick="confirmEnable('@item.DepartmentId','@item.DepartmentName')">
-
-                                        <i class="fa-solid fa-check"></i>
-
-                                        Enable
-
-                                    </button>
-
-                                </form>
-                            }
-
-                        </td>
-
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-
-                    <td colspan="5"
-                        class="text-center text-danger fw-bold">
-
-                        No matching departments found.
-
-                    </td>
-
-                </tr>
-            }
-
-        </tbody>
-
-    </table>
-
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @section Scripts
 {
     <script>
-
-        function confirmDisable(id, name)
-        {
+        function confirmDisable(id, name) {
             Swal.fire({
                 title: 'Disable Department?',
-                html:
-                    '<b>' + name + '</b><br><br>' +
-                    'This department will become inactive.<br>' +
-                    'Existing employee records will not be affected.',
+                html: '<b>' + name + '</b><br><br>This department will become inactive.<br>Existing employee records will not be affected.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Disable',
                 cancelButtonText: 'Cancel'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('disableForm_' + id).submit();
-                }
+                if (result.isConfirmed) { document.getElementById('disableForm_' + id).submit(); }
             });
         }
 
-        function confirmEnable(id, name)
-        {
+        function confirmEnable(id, name) {
             Swal.fire({
                 title: 'Enable Department?',
-                html:
-                    '<b>' + name + '</b><br><br>' +
-                    'This department will become active again.',
+                html: '<b>' + name + '</b><br><br>This department will become active again.',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#198754',
-                cancelButtonColor: '#6c757d',
+                confirmButtonColor: '#0d9488',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Enable',
                 cancelButtonText: 'Cancel'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('enableForm_' + id).submit();
-                }
+                if (result.isConfirmed) { document.getElementById('enableForm_' + id).submit(); }
             });
         }
-
     </script>
 }

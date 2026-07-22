@@ -1,118 +1,67 @@
-﻿@model FidelitasHub.Models.Department
+@model FidelitasHub.Models.Department
 
 @{
     ViewData["Title"] = "Edit Department";
 }
 
-<div class="container-fluid mt-4">
-
-    <h2 class="text-primary fw-bold">
-
-        ✏️ Edit Department
-
-    </h2>
-
-    <hr />
-
-    <div class="card shadow">
-
-        <div class="card-header bg-primary text-white">
-
-            Department Information
-
-        </div>
-
-        <div class="card-body">
-
-            <form asp-action="Edit" method="post">
-
-                @Html.AntiForgeryToken()
-
-                <input asp-for="DepartmentId" type="hidden" />
-                <input asp-for="DepartmentCode" type="hidden" />
-                <input asp-for="CreatedDate" type="hidden" />
-
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-
-                        Department Code
-
-                    </label>
-
-                    <input class="form-control"
-                           value="@Model.DepartmentCode"
-                           readonly />
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label asp-for="DepartmentName"
-                           class="form-label"></label>
-
-                    <input asp-for="DepartmentName"
-                           class="form-control" />
-
-                    <span asp-validation-for="DepartmentName"
-                          class="text-danger"></span>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label asp-for="Description"
-                           class="form-label"></label>
-
-                    <textarea asp-for="Description"
-                              rows="3"
-                              class="form-control"></textarea>
-
-                    <span asp-validation-for="Description"
-                          class="text-danger"></span>
-
-                </div>
-
-                <div class="form-check mb-4">
-
-                    <input asp-for="IsActive"
-                           class="form-check-input" />
-
-                    <label asp-for="IsActive"
-                           class="form-check-label">
-
-                        Active Department
-
-                    </label>
-
-                </div>
-
-                <button type="submit"
-                        class="btn btn-primary">
-
-                    <i class="fa-solid fa-floppy-disk"></i>
-
-                    Update Department
-
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-
-                    Cancel
-
-                </a>
-
-            </form>
-
-        </div>
-
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-pen-to-square"></i> Edit Department</h1>
+        <p class="page-head__sub">Update department details</p>
     </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back
+    </a>
+</div>
 
+<div class="row">
+    <div class="col-lg-7 col-xl-6">
+        <div class="fh-card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="fa-solid fa-sitemap text-primary"></i> Department Information
+            </div>
+            <div class="card-body">
+
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input asp-for="DepartmentId" type="hidden" />
+                    <input asp-for="DepartmentCode" type="hidden" />
+                    <input asp-for="CreatedDate" type="hidden" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Department Code</label>
+                        <input class="form-control" value="@Model.DepartmentCode" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DepartmentName" class="form-label"></label>
+                        <input asp-for="DepartmentName" class="form-control" />
+                        <span asp-validation-for="DepartmentName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" rows="3" class="form-control"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label">Active Department</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Update Department
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts

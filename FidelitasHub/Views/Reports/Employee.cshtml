@@ -1,0 +1,83 @@
+@model IEnumerable<FidelitasHub.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employee Report";
+    var departments = ViewBag.Departments as List<string> ?? new List<string>();
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-users"></i> Employee Report</h1>
+        <p class="page-head__sub">@Model.Count() employee(s) matched</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Reports</a>
+</div>
+
+<div class="fh-card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Department</label>
+                    <select name="department" class="form-select">
+                        <option value="">All Departments</option>
+                        @foreach (var d in departments)
+                        {
+                            <option value="@d" selected="@(d == (string)ViewBag.Department)">@d</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="Active" selected="@(ViewBag.Status == "Active")">Active</option>
+                        <option value="Inactive" selected="@(ViewBag.Status == "Inactive")">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i> Generate</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Code</th><th>Employee Name</th><th>Department</th><th>Designation</th><th>Role</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var e in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@e.EmployeeCode</span></td>
+                            <td>@e.EmployeeName</td>
+                            <td>@e.Department</td>
+                            <td>@e.Designation</td>
+                            <td>@e.Role</td>
+                            <td>
+                                @if (e.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">Inactive</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No employees matched the filters.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

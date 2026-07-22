@@ -1,0 +1,228 @@
+@{
+    var role = (Context.Session.GetString("Role") ?? "").Trim();
+
+    bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                || role.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase);
+
+    bool isManager = role.Equals("Manager", StringComparison.OrdinalIgnoreCase);
+
+    bool isTeamLeader = role.Equals("Team Leader", StringComparison.OrdinalIgnoreCase);
+
+    bool isHR = role.Equals("HR", StringComparison.OrdinalIgnoreCase);
+
+    bool isEmployee =
+        role.Equals("Employee", StringComparison.OrdinalIgnoreCase) ||
+        role.Equals("Employees", StringComparison.OrdinalIgnoreCase);
+}
+
+<aside class="sidebar">
+
+    <div class="sidebar__brand">
+        <span class="sidebar__brand-mark">
+            <i class="fa-solid fa-building-shield"></i>
+        </span>
+        <span>Fidelitas&nbsp;Hub</span>
+    </div>
+
+    <nav class="sidebar__nav">
+
+        <!-- ================= OVERVIEW ================= -->
+
+        <div class="sidebar__section">Overview</div>
+
+        <a class="sidebar__link" asp-controller="Attendance" asp-action="Dashboard">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>My Dashboard</span>
+        </a>
+
+        @if (isAdmin)
+        {
+            <a class="sidebar__link" asp-controller="Admin" asp-action="Dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Admin Dashboard</span>
+            </a>
+        }
+
+        <!-- ================= ATTENDANCE ================= -->
+
+        <div class="sidebar__section">Attendance</div>
+
+        @if (!isEmployee)
+        {
+            <a class="sidebar__link" asp-controller="Attendance" asp-action="TodayAttendance">
+                <i class="fa-solid fa-calendar-day"></i>
+                <span>Today's Attendance</span>
+            </a>
+        }
+
+        @if (isAdmin)
+        {
+            <a class="sidebar__link" asp-controller="Attendance" asp-action="Register">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Attendance Register</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Attendance" asp-action="AttendanceCorrection">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>Attendance Correction</span>
+            </a>
+        }
+
+        <!-- ================= LEAVE ================= -->
+
+        <div class="sidebar__section">Leave</div>
+
+        <a class="sidebar__link" asp-controller="Leave" asp-action="ApplyLeave">
+            <i class="fa-solid fa-plane-departure"></i>
+            <span>Apply Leave</span>
+        </a>
+
+        <a class="sidebar__link" asp-controller="Leave" asp-action="MyLeaveHistory">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>My Leave History</span>
+        </a>
+
+        @if (isAdmin || isTeamLeader)
+        {
+            <a class="sidebar__link" asp-controller="LeaveApproval" asp-action="Index">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Leave Approval</span>
+            </a>
+        }
+
+        @if (isAdmin || isManager)
+        {
+            <a class="sidebar__link" asp-controller="ManagerApproval" asp-action="Index">
+                <i class="fa-solid fa-user-check"></i>
+                <span>Manager Approval</span>
+            </a>
+        }
+
+        @if (isAdmin || isManager || isTeamLeader)
+        {
+            <a class="sidebar__link" asp-controller="Leave" asp-action="LeaveRegister">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Leave Register</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Leave" asp-action="PermissionRegister">
+                <i class="fa-solid fa-clock"></i>
+                <span>Permission Register</span>
+            </a>
+        }
+
+        @if (isAdmin)
+        {
+            <a class="sidebar__link" asp-controller="LeaveBalance" asp-action="Import">
+                <i class="fa-solid fa-file-import"></i>
+                <span>Balance Import</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
+                <i class="fa-solid fa-umbrella-beach"></i>
+                <span>Holiday Calendar</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Payroll" asp-action="Index">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Payroll Calendar</span>
+            </a>
+        }
+
+        <!-- ================= MASTERS ================= -->
+        @if (isAdmin)
+        {
+            <div class="sidebar__section">Masters</div>
+
+            <a class="sidebar__link" asp-controller="Employee" asp-action="Index">
+                <i class="fa-solid fa-users"></i>
+                <span>Employees</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Department" asp-action="Index">
+                <i class="fa-solid fa-sitemap"></i>
+                <span>Departments</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Designation" asp-action="Index">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>Designations</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Shift" asp-action="Index">
+                <i class="fa-solid fa-business-time"></i>
+                <span>Shifts</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="LeaveType" asp-action="Index">
+                <i class="fa-solid fa-tags"></i>
+                <span>Leave Types</span>
+            </a>
+
+            <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
+                <i class="fa-solid fa-umbrella-beach"></i>
+                <span>Holidays</span>
+            </a>
+
+            <div class="sidebar__section">Reports &amp; Admin</div>
+
+            <div class="sidebar__group">
+
+                <a class="sidebar__link" href="#">
+                    <i class="fa-solid fa-chart-column"></i>
+                    <span>Reports</span>
+                    <i class="fa-solid fa-chevron-right caret"></i>
+                </a>
+
+                <div class="sidebar__submenu">
+                    <a class="sidebar__link" asp-controller="Reports" asp-action="Attendance">
+                        <span>Attendance Report</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Reports" asp-action="Employee">
+                        <span>Employee Report</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Reports" asp-action="Leave">
+                        <span>Leave Report</span>
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="sidebar__group">
+
+                <a class="sidebar__link" href="#">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Administration</span>
+                    <i class="fa-solid fa-chevron-right caret"></i>
+                </a>
+
+                <div class="sidebar__submenu">
+
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="Users">
+                        <span>Users</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="Roles">
+                        <span>Roles</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="CompanySettings">
+                        <span>Company Settings</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Administration" asp-action="AuditLogs">
+                        <span>Audit Logs</span>
+                    </a>
+
+                </div>
+
+            </div>
+        }
+
+    </nav>
+
+</aside>
+
+<div class="sidebar__backdrop"></div>

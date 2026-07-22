@@ -1,0 +1,34 @@
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-chart-column"></i> Reports</h1>
+        <p class="page-head__sub">Generate and export HR reports</p>
+    </div>
+</div>
+
+<div class="stat-grid">
+    <a class="stat stat--info" asp-action="Attendance">
+        <span class="stat__icon"><i class="fa-solid fa-calendar-check"></i></span>
+        <div class="stat__body">
+            <span class="stat__value" style="font-size:1.05rem;">Attendance Report</span>
+            <span class="stat__label">Daily / range attendance</span>
+        </div>
+    </a>
+    <a class="stat stat--success" asp-action="Employee">
+        <span class="stat__icon"><i class="fa-solid fa-users"></i></span>
+        <div class="stat__body">
+            <span class="stat__value" style="font-size:1.05rem;">Employee Report</span>
+            <span class="stat__label">Headcount by department</span>
+        </div>
+    </a>
+    <a class="stat stat--warning" asp-action="Leave">
+        <span class="stat__icon"><i class="fa-solid fa-plane-departure"></i></span>
+        <div class="stat__body">
+            <span class="stat__value" style="font-size:1.05rem;">Leave Report</span>
+            <span class="stat__label">Applications by status</span>
+        </div>
+    </a>
+</div>

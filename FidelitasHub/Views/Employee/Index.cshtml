@@ -1,378 +1,192 @@
-﻿@model IEnumerable<FidelitasHub.Models.Employee>
+@model IEnumerable<FidelitasHub.Models.Employee>
 
 @{
     ViewData["Title"] = "Employee Master";
 }
 
-<div class="container-fluid mt-4">
-
-    <div class="d-flex justify-content-between align-items-center">
-
-        <h2 class="text-primary fw-bold">
-            👥 Employee Master
-        </h2>
-
-        <a asp-action="Create"
-           class="btn btn-success">
-
-            <i class="fa-solid fa-plus"></i>
-
-            Add Employee
-
-        </a>
-
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-users"></i> Employee Master</h1>
+        <p class="page-head__sub">Manage employee records, roles and status</p>
     </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Add Employee
+    </a>
+</div>
 
-    <hr />
+<!-- Filter stats -->
+<div class="stat-grid">
 
-    <!-- ================= Dashboard Cards ================= -->
-
-    <div class="row mb-4">
-
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(string.IsNullOrEmpty(ViewBag.Status) ? "border-4 border-primary" : "border-primary")">
-
-                    <div class="card-body text-center">
-
-                        <i class="fa-solid fa-users fa-2x text-primary mb-2"></i>
-
-                        <h6 class="text-muted">
-                            Total Employees
-                        </h6>
-
-                        <h2 class="text-primary fw-bold">
-                            @ViewBag.TotalEmployees
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat @(string.IsNullOrEmpty(ViewBag.Status as string) ? "is-active" : "")"
+       asp-action="Index" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-users"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Total Employees</p>
+            <p class="stat__value">@ViewBag.TotalEmployees</p>
         </div>
+    </a>
 
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               asp-route-status="Active"
-               asp-route-searchText="@ViewBag.SearchText"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(ViewBag.Status == "Active" ? "border-4 border-success" : "border-success")">
-
-                    <div class="card-body text-center">
-
-                        <i class="fa-solid fa-user-check fa-2x text-success mb-2"></i>
-
-                        <h6 class="text-muted">
-                            Active Employees
-                        </h6>
-
-                        <h2 class="text-success fw-bold">
-                            @ViewBag.ActiveEmployees
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat stat--success @(ViewBag.Status == "Active" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Active" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-user-check"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Active</p>
+            <p class="stat__value">@ViewBag.ActiveEmployees</p>
         </div>
+    </a>
 
-        <div class="col-md-4">
-
-            <a asp-action="Index"
-               asp-route-status="Inactive"
-               asp-route-searchText="@ViewBag.SearchText"
-               class="text-decoration-none">
-
-                <div class="card shadow h-100 @(ViewBag.Status == "Inactive" ? "border-4 border-danger" : "border-danger")">
-
-                    <div class="card-body text-center">
-
-                        <i class="fa-solid fa-user-slash fa-2x text-danger mb-2"></i>
-
-                        <h6 class="text-muted">
-                            Inactive Employees
-                        </h6>
-
-                        <h2 class="text-danger fw-bold">
-                            @ViewBag.InactiveEmployees
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </a>
-
+    <a class="stat stat--danger @(ViewBag.Status == "Inactive" ? "is-active" : "")"
+       asp-action="Index" asp-route-status="Inactive" asp-route-searchText="@ViewBag.SearchText">
+        <span class="stat__icon"><i class="fa-solid fa-user-slash"></i></span>
+        <div class="stat__body">
+            <p class="stat__label">Inactive</p>
+            <p class="stat__value">@ViewBag.InactiveEmployees</p>
         </div>
+    </a>
 
+</div>
+
+<!-- Search -->
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-sm-6 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchText" value="@ViewBag.SearchText"
+                       class="form-control" placeholder="Search employee by name or code..." />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
     </div>
+</form>
 
-    <!-- ================= Search ================= -->
+<!-- List -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Employee Name</th>
+                    <th>Department</th>
+                    <th>Shift</th>
+                    <th>Designation</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@item.EmployeeCode</span></td>
+                            <td>@item.EmployeeName</td>
+                            <td>@item.Department</td>
+                            <td>
+                                @{
+                                    var shiftName = "";
+                                    if (item.ShiftId > 0)
+                                    {
+                                        shiftName = ViewBag.ShiftNames[item.ShiftId] ?? "";
+                                    }
+                                }
+                                @shiftName
+                            </td>
+                            <td>@item.Designation</td>
+                            <td>@item.Role</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.EmployeeId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
 
-    <form asp-action="Index" method="get" class="row mb-4">
-
-        <div class="col-md-4">
-
-            <input type="text"
-                   name="searchText"
-                   value="@ViewBag.SearchText"
-                   class="form-control"
-                   placeholder="Search Employee..." />
-
-        </div>
-
-        <div class="col-md-3">
-
-            <button type="submit"
-                    class="btn btn-primary">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                Search
-
-            </button>
-
-            <a asp-action="Index"
-               class="btn btn-secondary">
-
-                Clear
-
-            </a>
-
-        </div>
-
-    </form>
-
-    <!-- ================= Employee List ================= -->
-
-    <table class="table table-bordered table-hover table-striped">
-
-        <thead class="table-primary">
-
-            <tr>
-
-                <th width="120">Employee Code</th>
-                <th>Employee Name</th>
-                <th>Department</th>
-                <th>Shift</th>
-                <th>Designation</th>
-                <th>Role</th>
-                <th width="100">Status</th>
-                <th width="220">Action</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @if (Model.Any())
-            {
-                foreach (var item in Model)
+                                @if (item.IsActive)
+                                {
+                                    <form id="disableForm_@item.EmployeeId" asp-action="Disable"
+                                          asp-route-id="@item.EmployeeId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDisable('@item.EmployeeId','@item.EmployeeName')">
+                                            <i class="fa-solid fa-ban"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form id="enableForm_@item.EmployeeId" asp-action="Enable"
+                                          asp-route-id="@item.EmployeeId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                onclick="confirmEnable('@item.EmployeeId','@item.EmployeeName')">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-
-                        <td>@item.EmployeeCode</td>
-
-                        <td>@item.EmployeeName</td>
-
-                        <td>@item.Department</td>
-
-                        <td>
-
-                            @{
-                                var shiftName = "";
-                            }
-
-                            @if (item.ShiftId > 0)
-                            {
-                                shiftName = ViewBag.ShiftNames[item.ShiftId] ?? "";
-                            }
-
-                            @shiftName
-
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+                            No employees found.
                         </td>
-
-                        <td>@item.Designation</td>
-
-                        <td>@item.Role</td>
-
-                        <td>
-
-                            @if (item.IsActive)
-                            {
-                                <span class="badge bg-success">
-                                    Active
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">
-                                    Inactive
-                                </span>
-                            }
-
-                        </td>
-
-                        <td>
-
-                            <a asp-action="Edit"
-                               asp-route-id="@item.EmployeeId"
-                               class="btn btn-primary btn-sm">
-
-                                <i class="fa-solid fa-pen"></i>
-
-                                Edit
-
-                            </a>
-
-                            @if (item.IsActive)
-                            {
-                                <form id="disableForm_@item.EmployeeId"
-                                      asp-action="Disable"
-                                      asp-route-id="@item.EmployeeId"
-                                      method="post"
-                                      style="display:inline;">
-
-                                    @Html.AntiForgeryToken()
-
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="confirmDisable('@item.EmployeeId','@item.EmployeeName')">
-
-                                        <i class="fa-solid fa-ban"></i>
-
-                                        Disable
-
-                                    </button>
-
-                                </form>
-                            }
-                            else
-                            {
-                                <form id="enableForm_@item.EmployeeId"
-                                      asp-action="Enable"
-                                      asp-route-id="@item.EmployeeId"
-                                      method="post"
-                                      style="display:inline;">
-
-                                    @Html.AntiForgeryToken()
-
-                                    <button type="button"
-                                            class="btn btn-success btn-sm"
-                                            onclick="confirmEnable('@item.EmployeeId','@item.EmployeeName')">
-
-                                        <i class="fa-solid fa-check"></i>
-
-                                        Enable
-
-                                    </button>
-
-                                </form>
-                            }
-
-                        </td>
-
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-
-                    <td colspan="7"
-                        class="text-center text-danger fw-bold">
-
-                        No Employees Found.
-
-                    </td>
-
-                </tr>
-            }
-
-        </tbody>
-
-    </table>
-
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @section Scripts
 {
     <script>
-
-        function confirmDisable(id, name)
-        {
+        function confirmDisable(id, name) {
             Swal.fire({
-
                 title: 'Disable Employee?',
-
-                html:
-                    '<b>' + name + '</b><br><br>' +
-                    'This employee will become inactive.<br>' +
-                    'Attendance history will remain intact.',
-
+                html: '<b>' + name + '</b><br><br>This employee will become inactive.<br>Attendance history will remain intact.',
                 icon: 'warning',
-
                 showCancelButton: true,
-
-                confirmButtonColor: '#dc3545',
-
-                cancelButtonColor: '#6c757d',
-
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Disable',
-
                 cancelButtonText: 'Cancel'
-
             }).then((result) => {
-
-                if (result.isConfirmed)
-                {
-                    document.getElementById('disableForm_' + id).submit();
-                }
-
+                if (result.isConfirmed) { document.getElementById('disableForm_' + id).submit(); }
             });
         }
 
-        function confirmEnable(id, name)
-        {
+        function confirmEnable(id, name) {
             Swal.fire({
-
                 title: 'Enable Employee?',
-
-                html:
-                    '<b>' + name + '</b><br><br>' +
-                    'This employee will become active again.',
-
+                html: '<b>' + name + '</b><br><br>This employee will become active again.',
                 icon: 'question',
-
                 showCancelButton: true,
-
-                confirmButtonColor: '#198754',
-
-                cancelButtonColor: '#6c757d',
-
+                confirmButtonColor: '#0d9488',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Enable',
-
                 cancelButtonText: 'Cancel'
-
             }).then((result) => {
-
-                if (result.isConfirmed)
-                {
-                    document.getElementById('enableForm_' + id).submit();
-                }
-
+                if (result.isConfirmed) { document.getElementById('enableForm_' + id).submit(); }
             });
         }
-
     </script>
 }

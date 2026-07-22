@@ -1,0 +1,67 @@
+@model IEnumerable<FidelitasHub.Models.PayrollCalendar>
+
+@{
+    ViewData["Title"] = "Payroll Calendar";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-calendar-days"></i> Payroll Calendar</h1>
+        <p class="page-head__sub">Salary periods and processing schedule</p>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Payroll Month</th>
+                    <th>Period Start</th>
+                    <th>Period End</th>
+                    <th>Salary Processing</th>
+                    <th>Leave Credit</th>
+                    <th>Carry Forward</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var p in Model)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@p.PayrollMonth</span></td>
+                            <td>@p.PeriodStart.ToString("dd-MMM-yyyy")</td>
+                            <td>@p.PeriodEnd.ToString("dd-MMM-yyyy")</td>
+                            <td>@p.SalaryProcessingDate.ToString("dd-MMM-yyyy")</td>
+                            <td>
+                                @if (p.IsLeaveCreditProcessed)
+                                {
+                                    <span class="badge badge-soft-success">Done</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-warning">Pending</span>
+                                }
+                            </td>
+                            <td>
+                                @if (p.IsCarryForwardProcessed)
+                                {
+                                    <span class="badge badge-soft-success">Done</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-warning">Pending</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No payroll periods defined yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

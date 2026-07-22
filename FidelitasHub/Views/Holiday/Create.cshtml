@@ -1,0 +1,58 @@
+@model FidelitasHub.Models.Holiday
+
+@{
+    ViewData["Title"] = "Add Holiday";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-plus"></i> Add Holiday</h1>
+        <p class="page-head__sub">Add a company holiday</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Back</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-7 col-xl-6">
+        <div class="fh-card">
+            <div class="card-header d-flex align-items-center gap-2"><i class="fa-solid fa-umbrella-beach text-primary"></i> Holiday Information</div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="HolidayName" class="form-label"></label>
+                        <input asp-for="HolidayName" class="form-control" placeholder="e.g. Independence Day" />
+                        <span asp-validation-for="HolidayName" class="text-danger"></span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="HolidayDate" class="form-label"></label>
+                            <input asp-for="HolidayDate" type="date" class="form-control" />
+                            <span asp-validation-for="HolidayDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="HolidayType" class="form-label"></label>
+                            <select asp-for="HolidayType" class="form-select">
+                                <option value="National">National</option>
+                                <option value="Regional">Regional</option>
+                                <option value="Optional">Optional</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" rows="2" class="form-control" placeholder="Optional description"></textarea>
+                    </div>
+
+                    <hr />
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Save Holiday</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

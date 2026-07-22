@@ -1,0 +1,74 @@
+@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+
+@{
+    ViewData["Title"] = "Leave Report";
+    var names = ViewBag.EmployeeNames as Dictionary<int, string> ?? new Dictionary<int, string>();
+
+    Func<string, string> badge = s =>
+    {
+        var v = (s ?? "").ToLower();
+        if (v.Contains("approve")) return "badge-soft-success";
+        if (v.Contains("reject")) return "badge-soft-danger";
+        return "badge-soft-warning";
+    };
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-plane-departure"></i> Leave Report</h1>
+        <p class="page-head__sub">@Model.Count() application(s) matched</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Reports</a>
+</div>
+
+<div class="fh-card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending</option>
+                        <option value="Approved" selected="@(ViewBag.Status == "Approved")">Approved</option>
+                        <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i> Generate</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Applied</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var l in Model)
+                    {
+                        <tr>
+                            <td>@(names.TryGetValue(l.EmployeeId, out var n) ? n : ("#" + l.EmployeeId))</td>
+                            <td>@l.LeaveType</td>
+                            <td>@l.FromDate.ToString("dd-MMM-yyyy")</td>
+                            <td>@l.ToDate.ToString("dd-MMM-yyyy")</td>
+                            <td>@l.TotalDays</td>
+                            <td>@l.AppliedOn.ToString("dd-MMM-yyyy")</td>
+                            <td><span class="badge @badge(l.Status)">@l.Status</span></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No leave applications matched.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
