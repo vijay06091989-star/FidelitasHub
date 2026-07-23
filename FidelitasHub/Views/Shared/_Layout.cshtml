@@ -30,6 +30,8 @@
         var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
 
         bool isLoginPage = currentAction == "Login";
+        bool isChangePasswordPage = currentAction == "ChangePassword";
+        bool hideShell = isLoginPage || isChangePasswordPage;
 
         var employeeName = Context.Session.GetString("EmployeeName");
         var role = Context.Session.GetString("Role");
@@ -41,12 +43,12 @@
         bool isEmployee = role == "Employee";
     }
 
-    @if (isLoginPage)
-        {
-            @RenderBody()
-        }
-        else
-        {
+    @if (hideShell)
+{
+    @RenderBody()
+}
+else
+{
             <div class="app-shell">
 
                 @await Html.PartialAsync("_Sidebar")
@@ -89,8 +91,8 @@
             </div>
 
             <!-- =================== MENU =================== -->
-            @if (!isLoginPage)
-            {
+            @if (!hideShell)
+{
                 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
 
                     <div class="container-fluid">
