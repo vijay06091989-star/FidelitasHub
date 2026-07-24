@@ -641,17 +641,45 @@ into shiftGroup
                                                 : "--",
 
                                       PunchOut = a != null && a.PunchOut != null
-                                                ? a.PunchOut.Value.ToString("hh:mm tt")
-                                                : "--",
+            ? a.PunchOut.Value.ToString("hh:mm tt")
+            : "--",
 
-                                      WorkedTime = a != null
-                                                ? TimeSpan.FromMinutes(a.WorkedMinutes)
-                                                    .ToString(@"hh\:mm")
-                                                : "--",
+                                      BreakStart =
+    a != null
+        ? _context.AttendanceBreaks
+            .Where(b => b.AttendanceId == a.AttendanceId)
+            .OrderByDescending(b => b.BreakStart)
+            .Select(b => b.BreakStart.ToString("hh:mm tt"))
+            .FirstOrDefault() ?? "--"
+        : "--",
 
-                                      Status = a != null
-                                                ? a.Status
-                                                : "Absent"
+                                      BreakEnd =
+    a != null
+        ? _context.AttendanceBreaks
+            .Where(b => b.AttendanceId == a.AttendanceId)
+            .OrderByDescending(b => b.BreakStart)
+            .Select(b => b.BreakEnd != null
+                ? b.BreakEnd.Value.ToString("hh:mm tt")
+                : "--")
+            .FirstOrDefault() ?? "--"
+        : "--",
+
+                                      TotalBreak =
+    a != null
+        ? TimeSpan.FromMinutes(a.TotalBreakMinutes)
+            .ToString(@"hh\:mm")
+        : "--",
+
+                                      WorkedTime =
+    a != null
+        ? TimeSpan.FromMinutes(a.WorkedMinutes)
+            .ToString(@"hh\:mm")
+        : "--",
+
+                                      Status =
+    a != null
+        ? a.Status
+        : "Absent"
                                   }).ToList();
 
             ViewBag.SelectedShift = shift;
@@ -671,6 +699,11 @@ into shiftGroup
             string employee = "",
             string status = "All")
         {
+            var today = DateTimeHelper.GetIST().Date;
+
+            fromDate ??= today;
+            toDate ??= today;
+
             ViewBag.FromDate = fromDate;
             ViewBag.ToDate = toDate;
             ViewBag.Shift = shift;
@@ -890,7 +923,7 @@ into shiftGroup
                 // Report Title
                 //==========================================
 
-                ws.Range("A1:I1").Merge();
+                ws.Range("A1:L1").Merge();
                 ws.Cell("A1").Value = "FIDELITAS HUB";
                 ws.Cell("A1").Style.Font.Bold = true;
                 ws.Cell("A1").Style.Font.FontSize = 20;
@@ -898,7 +931,7 @@ into shiftGroup
                 ws.Cell("A1").Style.Fill.BackgroundColor = XLColor.RoyalBlue;
                 ws.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                ws.Range("A2:I2").Merge();
+                ws.Range("A2:L2").Merge();
                 ws.Cell("A2").Value = "TODAY'S ATTENDANCE REPORT";
                 ws.Cell("A2").Style.Font.Bold = true;
                 ws.Cell("A2").Style.Font.FontSize = 16;
@@ -920,8 +953,11 @@ into shiftGroup
                 ws.Cell("D6").Value = "Shift";
                 ws.Cell("E6").Value = "Punch In";
                 ws.Cell("F6").Value = "Punch Out";
-                ws.Cell("G6").Value = "Worked";
-                ws.Cell("I6").Value = "Status";
+                ws.Cell("G6").Value = "Break In";
+                ws.Cell("H6").Value = "Break Out";
+                ws.Cell("I6").Value = "Total Break";
+                ws.Cell("J6").Value = "Worked";
+                ws.Cell("K6").Value = "Status";
 
                 //==========================================
                 // Get Today's Attendance
@@ -957,22 +993,48 @@ into shiftGroup
                                           Shift = s.ShiftName,
 
                                           PunchIn = a != null && a.PunchIn != null
-                                                    ? a.PunchIn.Value.ToString("hh:mm tt")
-                                                    : "--",
+            ? a.PunchIn.Value.ToString("hh:mm tt")
+            : "--",
 
                                           PunchOut = a != null && a.PunchOut != null
-                                                    ? a.PunchOut.Value.ToString("hh:mm tt")
-                                                    : "--",
+            ? a.PunchOut.Value.ToString("hh:mm tt")
+            : "--",
+
+                                          BreakStart =
+    a != null
+        ? _context.AttendanceBreaks
+            .Where(b => b.AttendanceId == a.AttendanceId)
+            .OrderByDescending(b => b.BreakStart)
+            .Select(b => b.BreakStart.ToString("hh:mm tt"))
+            .FirstOrDefault() ?? "--"
+        : "--",
+
+                                          BreakEnd =
+    a != null
+        ? _context.AttendanceBreaks
+            .Where(b => b.AttendanceId == a.AttendanceId)
+            .OrderByDescending(b => b.BreakStart)
+            .Select(b => b.BreakEnd != null
+                ? b.BreakEnd.Value.ToString("hh:mm tt")
+                : "--")
+            .FirstOrDefault() ?? "--"
+        : "--",
+
+                                          TotalBreak =
+    a != null
+        ? TimeSpan.FromMinutes(a.TotalBreakMinutes)
+            .ToString(@"hh\:mm")
+        : "--",
 
                                           Worked =
-                                              a != null
-                                              ? TimeSpan.FromMinutes(a.WorkedMinutes)
-                                                      .ToString(@"hh\:mm")
-                                              : "--",
+    a != null
+        ? TimeSpan.FromMinutes(a.WorkedMinutes)
+            .ToString(@"hh\:mm")
+        : "--",
 
                                           Status = a != null
-                                                    ? a.Status
-                                                    : "Absent"
+            ? a.Status
+            : "Absent"
 
                                       }).ToList();
 
@@ -990,8 +1052,11 @@ into shiftGroup
                     ws.Cell(row, 4).Value = item.Shift;
                     ws.Cell(row, 5).Value = item.PunchIn;
                     ws.Cell(row, 6).Value = item.PunchOut;
-                    ws.Cell(row, 7).Value = item.Worked;
-                    ws.Cell(row, 8).Value = item.Status;
+                    ws.Cell(row, 7).Value = item.BreakStart;
+                    ws.Cell(row, 8).Value = item.BreakEnd;
+                    ws.Cell(row, 9).Value = item.TotalBreak;
+                    ws.Cell(row, 10).Value = item.Worked;
+                    ws.Cell(row, 11).Value = item.Status;
 
                     row++;
                 }

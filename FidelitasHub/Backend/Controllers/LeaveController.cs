@@ -444,5 +444,15 @@ namespace FidelitasHub.Controllers
                 .ToList()
             );
         }
+
+        //==================================================
+        // Permission Register
+        //==================================================
+
+        [HttpGet]
+        public IActionResult PermissionRegister()
+        {
+            return View();
+        }
     }
 }
