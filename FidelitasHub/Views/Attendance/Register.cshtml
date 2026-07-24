@@ -3,8 +3,10 @@
 @{
     ViewData["Title"] = "Attendance Register";
 
-    var minDate = DateTime.Today.AddDays(-90).ToString("yyyy-MM-dd");
-    var maxDate = DateTime.Today.ToString("yyyy-MM-dd");
+    var today = FidelitasHub.Helpers.DateTimeHelper.GetIST().Date;
+
+    var minDate = today.AddDays(-90).ToString("yyyy-MM-dd");
+    var maxDate = today.ToString("yyyy-MM-dd");
 }
 
 <div class="page-head">
