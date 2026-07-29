@@ -1,0 +1,538 @@
+﻿@model FidelitasHub.ViewModels.Email.EmailTemplateEditorViewModel
+
+@{
+    ViewData["Title"] = "Email Templates";
+}
+
+<div class="container-fluid">
+
+    <div class="row">
+
+        <!-- ========================================= -->
+        <!-- LEFT PANEL -->
+        <!-- ========================================= -->
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+                    <strong>Email Templates</strong>
+                </div>
+
+                <div class="list-group list-group-flush">
+
+                    @if (!Model.Templates.Any())
+                    {
+                        <div class="p-3 text-muted">
+                            No templates found.
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var template in Model.Templates)
+                        {
+                            var active =
+                                Model.SelectedTemplate?.Id == template.Id
+                                ? "active"
+                                : "";
+
+                            <a asp-action="Index"
+                               asp-route-id="@template.Id"
+                               class="list-group-item list-group-item-action @active">
+
+                                <strong>@template.TemplateName</strong>
+                                <br />
+                                <small class="text-muted">
+                                    @template.TemplateCode
+                                </small>
+
+                            </a>
+                        }
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- RIGHT PANEL -->
+        <!-- ========================================= -->
+
+        <div class="col-md-9">
+
+            @if (Model.SelectedTemplate != null)
+            {
+
+                <input type="hidden"
+                       id="TemplateId"
+                       value="@Model.SelectedTemplate.Id" />
+
+                <div class="card shadow-sm">
+
+                    <div class="card-header">
+                        <strong id="editorTitle">Template Editor</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Category
+                            </label>
+
+                            <select id="Category" class="form-select">
+
+                                @if (Model.SelectedTemplate.Category == "Authentication")
+                                {
+                                    <option value="Authentication" selected>Authentication</option>
+                                }
+                                else
+                                {
+                                    <option value="Authentication">Authentication</option>
+                                }
+
+                                @if (Model.SelectedTemplate.Category == "Attendance")
+                                {
+                                    <option value="Attendance" selected>Attendance</option>
+                                }
+                                else
+                                {
+                                    <option value="Attendance">Attendance</option>
+                                }
+
+                                @if (Model.SelectedTemplate.Category == "Leave")
+                                {
+                                    <option value="Leave" selected>Leave</option>
+                                }
+                                else
+                                {
+                                    <option value="Leave">Leave</option>
+                                }
+
+                                @if (Model.SelectedTemplate.Category == "HR")
+                                {
+                                    <option value="HR" selected>HR</option>
+                                }
+                                else
+                                {
+                                    <option value="HR">HR</option>
+                                }
+
+                                @if (Model.SelectedTemplate.Category == "Payroll")
+                                {
+                                    <option value="Payroll" selected>Payroll</option>
+                                }
+                                else
+                                {
+                                    <option value="Payroll">Payroll</option>
+                                }
+
+                                @if (Model.SelectedTemplate.Category == "General")
+                                {
+                                    <option value="General" selected>General</option>
+                                }
+                                else
+                                {
+                                    <option value="General">General</option>
+                                }
+
+                            </select>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Subject
+                            </label>
+
+                            <input id="Subject"
+                                   class="form-control"
+                                   value="@Model.SelectedTemplate.Subject" />
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Body
+                            </label>
+
+                            <textarea id="Body"
+                                      class="form-control"
+                                      rows="18">@Model.SelectedTemplate.Body</textarea>
+
+                        </div>
+
+                        <hr />
+
+                        <h6>Available Placeholders</h6>
+
+                        <div class="mb-4">
+
+                            @foreach (var placeholder in Model.Placeholders)
+                            {
+                                <span class="badge bg-primary me-1 mb-1 placeholder-badge"
+                                      data-placeholder="@("{" + placeholder + "}")"
+                                      style="cursor:pointer;">
+                                    @("{" + placeholder + "}")
+                                </span>
+                            }
+
+                        </div>
+
+                        <div id="saveMessage"
+                             class="alert d-none mb-3"
+                             role="alert">
+                        </div>
+
+                        <button id="btnSave" class="btn btn-primary">
+                            Save
+                        </button>
+
+                        <form asp-action="Preview"
+                              asp-controller="EmailTemplate"
+                              method="post"
+                              target="_blank"
+                              style="display:inline;">
+
+                            <input type="hidden" id="PreviewSubject" name="subject" />
+                            <input type="hidden" id="PreviewBody" name="body" />
+
+                            <button type="submit"
+                                    id="btnPreview"
+                                    class="btn btn-secondary">
+                                Preview
+                            </button>
+
+                        </form>
+
+                        <button id="btnSendTest"
+                                class="btn btn-success">
+                            Send Test
+                        </button>
+
+                    </div>
+
+                </div>
+            }
+
+            <div class="modal fade"
+                 id="previewModal"
+                 tabindex="-1"
+                 aria-labelledby="previewModalLabel"
+                 aria-hidden="true">
+
+                <div class="modal-dialog modal-xl">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h5 class="modal-title"
+                                id="previewModalLabel">
+                                Email Preview
+                            </h5>
+
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal">
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <iframe id="previewFrame"
+                                    style="width:100%;
+                                height:600px;
+                                border:none;">
+                            </iframe>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            @section Scripts
+            {
+                <script>
+
+                                let hasUnsavedChanges = false;
+
+                                function markUnsaved() {
+
+                                    if (hasUnsavedChanges)
+                                        return;
+
+                                    hasUnsavedChanges = true;
+
+                                    document.getElementById("editorTitle").innerText =
+                                        "Template Editor *";
+
+                                }
+
+                                //==========================================
+                                // Insert Placeholder
+                                //==========================================
+
+                                document.querySelectorAll(".placeholder-badge").forEach(function(badge) {
+
+                                    badge.addEventListener("click", function() {
+
+                                        const textarea = document.getElementById("Body");
+
+                                        if (!textarea)
+                                            return;
+
+                                        const token = this.dataset.placeholder;
+
+                                        const start = textarea.selectionStart;
+                                        const end = textarea.selectionEnd;
+
+                                        textarea.value =
+                                            textarea.value.substring(0, start) +
+                                            token +
+                                            textarea.value.substring(end);
+
+                                        textarea.focus();
+
+                                        textarea.selectionStart =
+                                            textarea.selectionEnd =
+                                            start + token.length;
+
+                                    });
+
+                                });
+
+                                //==========================================
+                                // Subject Changed
+                                //==========================================
+
+                                document.getElementById("Subject").addEventListener("input", function() {
+
+                                    markUnsaved();
+
+                                });
+
+                                //==========================================
+                                // Body Changed
+                                //==========================================
+
+                                document.getElementById("Body").addEventListener("input", function() {
+
+                                    markUnsaved();
+
+                                });
+
+
+                                //==========================================
+                                // Category Changed
+                                //==========================================
+
+                                document.getElementById("Category").addEventListener("change", function() {
+
+                                    markUnsaved();
+
+                                });
+
+                                //==========================================
+                                // Prepare Preview Form
+                                //==========================================
+
+                                    document.getElementById("btnPreview").closest("form").addEventListener("submit", function() {
+
+                                        document.getElementById("PreviewSubject").value =
+                                            document.getElementById("Subject").value;
+
+                                        document.getElementById("PreviewBody").value =
+                                            document.getElementById("Body").value;
+
+                                    });
+
+                                //==========================================
+                                // Send Test Email
+                                //==========================================
+
+                                document.getElementById("btnSendTest").addEventListener("click", async function() {
+
+                                    const result = await Swal.fire({
+
+                                        title: "Send Test Email",
+
+                                        input: "email",
+
+                                        inputLabel: "Recipient Email Address",
+
+                                        inputPlaceholder: "name@example.com",
+
+                                        showCancelButton: true,
+
+                                        confirmButtonText: "Send",
+
+                                        cancelButtonText: "Cancel",
+
+                                        inputValidator: (value) => {
+
+                                            if (!value) {
+                                                return "Please enter an email address.";
+                                            }
+
+                                        }
+
+                                    });
+
+                                    if (!result.isConfirmed)
+                                        return;
+
+                                    const data = {
+
+                                        templateId: parseInt(document.getElementById("TemplateId").value),
+
+                                        email: result.value
+
+                                    };
+
+                                    const response = await fetch("/EmailTemplate/SendTest", {
+
+                                        method: "POST",
+
+                                        headers: {
+                                            "Content-Type": "application/json"
+                                        },
+
+                                        body: JSON.stringify(data)
+
+                                    });
+
+                                    if (!response.ok) {
+
+                                        Swal.fire(
+                                            "Error",
+                                            "Unable to contact the server.",
+                                            "error"
+                                        );
+
+                                        return;
+                                    }
+
+                                    const json = await response.json();
+
+                                    Swal.fire(
+                                        "Success",
+                                        json.message,
+                                        "success"
+                                    );
+
+                                });
+
+
+                                //==========================================
+                                // Save Template
+                                //==========================================
+
+                                document.getElementById("btnSave").addEventListener("click", async function() {
+
+                                    const btn = this;
+
+                                    const message = document.getElementById("saveMessage");
+
+                                    message.className = "alert d-none mb-3";
+                                    message.innerText = "";
+
+                                    btn.disabled = true;
+                                    btn.innerText = "Saving...";
+
+                                    const data = {
+
+                                        id: parseInt(document.getElementById("TemplateId").value),
+
+                                        category: document.getElementById("Category").value,
+
+                                        subject: document.getElementById("Subject").value,
+
+                                        body: document.getElementById("Body").value
+
+                                    };
+
+                                    try {
+
+    const response = await fetch("/EmailTemplate/Save", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(data)
+
+    });
+
+    if (response.ok) {
+
+        const result = await response.json();
+
+        const message = document.getElementById("saveMessage");
+
+        message.className = "alert alert-success mb-3";
+
+                                            message.style.display = "block";
+
+        message.innerText = result.message;
+
+                                            hasUnsavedChanges = false;
+
+                                            document.getElementById("editorTitle").innerText =
+                                                "Template Editor";
+
+    }
+    else {
+
+        const message = document.getElementById("saveMessage");
+
+        message.className = "alert alert-danger mb-3";
+
+                                            message.style.display = "block";
+
+        message.innerText = "Unable to save template.";
+
+    }
+
+}
+catch {
+
+    const message = document.getElementById("saveMessage");
+
+    message.className = "alert alert-danger mb-3";
+
+                                        message.style.display = "block";
+
+    message.innerText = "An unexpected error occurred.";
+
+}
+finally {
+
+    btn.disabled = false;
+
+    btn.innerText = "Save";
+
+}
+
+                                });
+
+                </script>
+            }
+
+        </div>
+
+    </div>
+
+</div>

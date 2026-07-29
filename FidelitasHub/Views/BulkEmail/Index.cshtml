@@ -1,0 +1,259 @@
+﻿@model FidelitasHub.Frontend.ViewModels.Email.BulkEmployeeEmailViewModel
+
+@{
+    ViewData["Title"] = "Bulk Email";
+}
+
+<form asp-action="Send" method="post">
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                📧 Bulk Email
+            </h3>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <label asp-for="EmailTemplateId" class="form-label fw-bold"></label>
+
+                    <select asp-for="EmailTemplateId"
+                            asp-items="Model.EmailTemplates"
+                            class="form-select">
+                        <option value="">-- Select Email Template --</option>
+                    </select>
+
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+
+            <h5>Select Employees</h5>
+
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px; text-align:center;">
+                            <input type="checkbox" id="chkSelectAll" />
+                        </th>
+                        <th style="width:160px;">Employee Code</th>
+                        <th>Employee Name</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var employee in Model.EmployeeList)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       class="employee-checkbox"
+                                       name="EmployeeIds"
+                                       value="@employee.EmployeeId" />
+                            </td>
+
+                            <td>@employee.EmployeeCode</td>
+
+                            <td>@employee.EmployeeName</td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+                <div class="mt-4">
+
+                    <button type="submit" class="btn btn-primary">
+
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Send Bulk Email
+
+                    </button>
+
+                </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</form>
+
+@section Scripts
+{
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const form = document.querySelector("form");
+            const selectAll = document.getElementById("chkSelectAll");
+            const employeeCheckboxes =
+                document.querySelectorAll(".employee-checkbox");
+
+            //---------------------------------------------------
+            // Select / Unselect All
+            //---------------------------------------------------
+
+            selectAll.addEventListener("change", function() {
+
+                employeeCheckboxes.forEach(function(checkbox) {
+
+                    checkbox.checked = selectAll.checked;
+
+                });
+
+            });
+
+            //---------------------------------------------------
+            // Keep Select All in Sync
+            //---------------------------------------------------
+
+            employeeCheckboxes.forEach(function(checkbox) {
+
+                checkbox.addEventListener("change", function() {
+
+                    const total =
+                        document.querySelectorAll(".employee-checkbox").length;
+
+                    const checked =
+                        document.querySelectorAll(".employee-checkbox:checked").length;
+
+                    selectAll.checked = (total === checked);
+
+                });
+
+            });
+
+            //---------------------------------------------------
+            // Confirmation before sending
+            //---------------------------------------------------
+
+            form.addEventListener("submit", function(e) {
+
+                e.preventDefault();
+
+                const template =
+                    document.getElementById("EmailTemplateId");
+
+                const selectedEmployees =
+                    document.querySelectorAll(".employee-checkbox:checked");
+
+                if (template.value === "") {
+
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Template Required",
+                        text: "Please select an email template."
+                    });
+
+                    return;
+                }
+
+                if (selectedEmployees.length === 0) {
+
+                    Swal.fire({
+                        icon: "warning",
+                        title: "No Employees Selected",
+                        text: "Please select at least one employee."
+                    });
+
+                    return;
+                }
+
+                Swal.fire({
+
+                    title: "Send Bulk Email?",
+                    html:
+                        "<b>Template:</b> " +
+                        template.options[template.selectedIndex].text +
+                        "<br><br>" +
+                        "<b>Employees Selected:</b> " +
+                        selectedEmployees.length,
+
+                    icon: "question",
+
+                    showCancelButton: true,
+
+                    confirmButtonText: "Yes, Send",
+
+                    cancelButtonText: "Cancel"
+
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        const sendButton = document.querySelector('button[type="submit"]');
+
+                        sendButton.disabled = true;
+
+                        sendButton.innerHTML =
+                            '<span class="spinner-border spinner-border-sm me-2"></span>Sending Emails...';
+
+                        Swal.fire({
+                            title: "Please Wait",
+                            text: "Sending emails. Do not close this page.",
+                            icon: "info",
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false
+                        });
+
+                        form.submit();
+
+                    }
+
+                });
+
+            });
+
+        });
+
+        //---------------------------------------------------
+        // Show Result Popup
+        //---------------------------------------------------
+
+        @if (TempData["Success"] != null)
+            {
+                var failedEmployees = TempData["FailedEmployees"]?.ToString() ?? "";
+                var icon = string.IsNullOrWhiteSpace(failedEmployees) ? "success" : "warning";
+
+                <text>
+
+                        Swal.fire({
+
+                            icon: "@icon",
+
+                        title: "Bulk Email Completed",
+
+                        html: `
+                        <pre style="text-align:left;font-family:Consolas;white-space:pre-wrap;">@TempData["Success"]</pre>
+
+                        @if (!string.IsNullOrWhiteSpace(failedEmployees))
+                        {
+                            <text>
+                                    <hr>
+                                        <b>Failed Employees</b><br>
+                                        @Html.Raw(failedEmployees)
+                                    </text>
+                                }
+                                `
+
+                    });
+
+                    </text>
+                }
+
+    </script>
+}

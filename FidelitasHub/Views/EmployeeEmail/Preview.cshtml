@@ -1,0 +1,70 @@
+﻿@model FidelitasHub.ViewModels.Email.EmployeeEmailPreviewViewModel
+
+@{
+    ViewData["Title"] = "Email Preview";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                📧 Email Preview
+            </h3>
+        </div>
+
+        <div class="card-body">
+
+            <div class="mb-3">
+                <label class="fw-bold">To</label>
+                <input class="form-control"
+                       value="@Model.EmailAddress"
+                       readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="fw-bold">Subject</label>
+                <input class="form-control"
+                       value="@Model.Subject"
+                       readonly />
+            </div>
+
+            <hr />
+
+            <label class="fw-bold">Preview</label>
+
+            <div class="border rounded p-4 bg-white text-dark mt-2"
+                 style="min-height:300px;">
+
+                @Html.Raw(Model.Body)
+
+            </div>
+
+            <hr />
+
+            <form asp-action="Send"
+                  asp-controller="EmployeeEmail"
+                  method="post">
+
+                <input asp-for="EmployeeId" type="hidden" />
+                <input asp-for="TemplateId" type="hidden" />
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Back
+                </a>
+
+                <button type="submit"
+                        class="btn btn-success ms-2">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Send Email
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

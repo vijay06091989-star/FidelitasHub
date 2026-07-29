@@ -1,0 +1,101 @@
+﻿@model FidelitasHub.ViewModels.EmailSettingsViewModel
+
+@{
+    ViewData["Title"] = "Email Settings";
+}
+
+<div class="container-fluid">
+
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Email Settings</h2>
+            <p class="text-muted">
+                Configure the SMTP server used by Fidelitas Hub.
+            </p>
+        </div>
+    </div>
+
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success">
+            @ViewBag.Success
+        </div>
+    }
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            @Html.Raw(ViewBag.Error)
+        </div>
+    }
+
+    <form asp-action="Index" method="post">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+                SMTP Configuration
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label asp-for="SmtpServer" class="form-label"></label>
+                    <input asp-for="SmtpServer" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Port" class="form-label"></label>
+                    <input asp-for="Port" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label"></label>
+                    <input asp-for="Username" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SenderName" class="form-label"></label>
+                    <input asp-for="SenderName" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SenderEmail" class="form-label"></label>
+                    <input asp-for="SenderEmail" class="form-control" />
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="EnableSSL" class="form-check-input" />
+                    <label asp-for="EnableSSL" class="form-check-label"></label>
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            asp-action="Index">
+                        Save Settings
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-outline-success"
+                            asp-action="SendTestEmail">
+                        Send Test Email
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>

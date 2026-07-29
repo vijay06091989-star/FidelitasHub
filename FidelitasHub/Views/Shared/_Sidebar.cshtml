@@ -129,42 +129,52 @@
             </a>
         }
 
-        <!-- ================= MASTERS ================= -->
+        <!-- ================= ADMINISTRATION ================= -->
         @if (isAdmin)
         {
-            <div class="sidebar__section">Masters</div>
+            <div class="sidebar__section">Administration</div>
 
-            <a class="sidebar__link" asp-controller="Employee" asp-action="Index">
-                <i class="fa-solid fa-users"></i>
-                <span>Employees</span>
-            </a>
+            <!-- ================= MASTERS ================= -->
 
-            <a class="sidebar__link" asp-controller="Department" asp-action="Index">
-                <i class="fa-solid fa-sitemap"></i>
-                <span>Departments</span>
-            </a>
+            <div class="sidebar__group">
 
-            <a class="sidebar__link" asp-controller="Designation" asp-action="Index">
-                <i class="fa-solid fa-briefcase"></i>
-                <span>Designations</span>
-            </a>
+                <a class="sidebar__link" href="#">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Masters</span>
+                    <i class="fa-solid fa-chevron-right caret"></i>
+                </a>
 
-            <a class="sidebar__link" asp-controller="Shift" asp-action="Index">
-                <i class="fa-solid fa-business-time"></i>
-                <span>Shifts</span>
-            </a>
+                <div class="sidebar__submenu">
 
-            <a class="sidebar__link" asp-controller="LeaveType" asp-action="Index">
-                <i class="fa-solid fa-tags"></i>
-                <span>Leave Types</span>
-            </a>
+                    <a class="sidebar__link" asp-controller="Employee" asp-action="Index">
+                        <span>Employees</span>
+                    </a>
 
-            <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
-                <i class="fa-solid fa-umbrella-beach"></i>
-                <span>Holidays</span>
-            </a>
+                    <a class="sidebar__link" asp-controller="Department" asp-action="Index">
+                        <span>Departments</span>
+                    </a>
 
-            <div class="sidebar__section">Reports &amp; Admin</div>
+                    <a class="sidebar__link" asp-controller="Designation" asp-action="Index">
+                        <span>Designations</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Shift" asp-action="Index">
+                        <span>Shifts</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="LeaveType" asp-action="Index">
+                        <span>Leave Types</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
+                        <span>Holidays</span>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- ================= REPORTS ================= -->
 
             <div class="sidebar__group">
 
@@ -175,6 +185,7 @@
                 </a>
 
                 <div class="sidebar__submenu">
+
                     <a class="sidebar__link" asp-controller="Reports" asp-action="Attendance">
                         <span>Attendance Report</span>
                     </a>
@@ -186,15 +197,18 @@
                     <a class="sidebar__link" asp-controller="Reports" asp-action="Leave">
                         <span>Leave Report</span>
                     </a>
+
                 </div>
 
             </div>
+
+            <!-- ================= SYSTEM ================= -->
 
             <div class="sidebar__group">
 
                 <a class="sidebar__link" href="#">
                     <i class="fa-solid fa-gear"></i>
-                    <span>Administration</span>
+                    <span>System</span>
                     <i class="fa-solid fa-chevron-right caret"></i>
                 </a>
 
@@ -219,6 +233,39 @@
                 </div>
 
             </div>
+
+            <!-- ================= EMAIL ================= -->
+
+            <div class="sidebar__group">
+
+                <a class="sidebar__link" href="#">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>Email</span>
+                    <i class="fa-solid fa-chevron-right caret"></i>
+                </a>
+
+                <div class="sidebar__submenu">
+
+                    <a class="sidebar__link" asp-controller="EmailSettings" asp-action="Index">
+                        <span>SMTP Settings</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="EmailTemplate" asp-action="Index">
+                        <span>Templates</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="EmployeeEmail" asp-action="Index">
+                        <span>Send Email</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="BulkEmail" asp-action="Index">
+                        <span>Bulk Email</span>
+                    </a>
+
+                </div>
+
+            </div>
+
         }
 
     </nav>

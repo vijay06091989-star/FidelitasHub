@@ -1,0 +1,36 @@
+﻿@model List<FidelitasHub.Models.SystemSetting>
+
+@{
+    ViewData["Title"] = "System Settings";
+}
+
+<h2 class="mb-4">System Settings</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">
+        No system settings found.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th style="width:30%">Setting</th>
+                <th style="width:45%">Value</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.SettingKey</td>
+                    <td>@item.SettingValue</td>
+                    <td>@item.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

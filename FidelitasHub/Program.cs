@@ -1,6 +1,8 @@
 using FidelitasHub.Data;
 using FidelitasHub.Services.Attendance;
 using FidelitasHub.Services.BackgroundServices;
+using FidelitasHub.Services.Configuration;
+using FidelitasHub.Services.Email;
 using FidelitasHub.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +34,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 //==================================================
 
 builder.Services.AddScoped<MasterSequenceGenerator>();
+builder.Services.AddScoped<ConfigurationService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<EmailTemplateService>();
 
 //==================================================
 // Enable Session
