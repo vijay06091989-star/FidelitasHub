@@ -125,5 +125,10 @@ namespace FidelitasHub.Controllers
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
             });
         }
-    }
+
+        public IActionResult Test123()
+        {
+            return Content("Home Controller Works");
+        }
+        }
 }

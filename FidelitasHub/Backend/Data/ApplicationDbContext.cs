@@ -51,5 +51,14 @@ namespace FidelitasHub.Data
         //==================================================
 
         public DbSet<AuditLog> AuditLogs { get; set; }
+
+        //==================================================
+        // System Settings
+        //==================================================
+
+        public DbSet<SystemSetting> SystemSettings { get; set; }
+
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+
     }
 }

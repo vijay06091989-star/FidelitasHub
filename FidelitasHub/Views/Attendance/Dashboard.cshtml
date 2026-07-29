@@ -42,7 +42,7 @@
 
                 <p class="stat__label mb-1">Current IST Time</p>
                 <div id="istClock" class="fw-bold text-primary" style="font-size:2.6rem; line-height:1.1; font-variant-numeric:tabular-nums;"></div>
-                <p class="text-muted mb-4">@DateTime.Now.ToString("dddd, dd MMM yyyy")</p>
+                <p id="istDate" class="text-muted mb-4"></p>
 
                 <div class="mt-auto">
                     <p class="stat__label mb-2">Today's Actions</p>
@@ -94,7 +94,8 @@
 @section Scripts
 {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
+
             const btnPunchIn = document.getElementById("btnPunchIn");
             const btnBreak = document.getElementById("btnBreak");
             const btnResume = document.getElementById("btnResume");
@@ -102,11 +103,27 @@
 
             function updateISTClock() {
                 const now = new Date();
+
                 const istTime = now.toLocaleTimeString("en-IN", {
-                    timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+                    timeZone: "Asia/Kolkata",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true
                 });
+
+                const istDate = now.toLocaleDateString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                });
+
                 document.getElementById("istClock").innerText = istTime;
+                document.getElementById("istDate").innerText = istDate;
             }
+
             updateISTClock();
             setInterval(updateISTClock, 1000);
 
@@ -119,14 +136,30 @@
                             title: result.title,
                             html: result.message.replace(/\n/g, "<br>"),
                             confirmButtonColor: color
-                        }).then(() => { if (result.success) { location.reload(); } });
+                        }).then(() => {
+                            if (result.success) {
+                                location.reload();
+                            }
+                        });
                     });
             }
 
-            if (btnPunchIn) btnPunchIn.addEventListener("click", () => doAction('@Url.Action("PunchIn", "Attendance")', "#16a34a"));
-            if (btnBreak) btnBreak.addEventListener("click", () => doAction('@Url.Action("Break", "Attendance")', "#d97706"));
-            if (btnResume) btnResume.addEventListener("click", () => doAction('@Url.Action("Resume", "Attendance")', "#0891b2"));
-            if (btnPunchOut) btnPunchOut.addEventListener("click", () => doAction('@Url.Action("PunchOut", "Attendance")', "#dc2626"));
+            if (btnPunchIn)
+                btnPunchIn.addEventListener("click",
+                    () => doAction('@Url.Action("PunchIn", "Attendance")', "#16a34a"));
+
+            if (btnBreak)
+                btnBreak.addEventListener("click",
+                    () => doAction('@Url.Action("Break", "Attendance")', "#d97706"));
+
+            if (btnResume)
+                btnResume.addEventListener("click",
+                    () => doAction('@Url.Action("Resume", "Attendance")', "#0891b2"));
+
+            if (btnPunchOut)
+                btnPunchOut.addEventListener("click",
+                    () => doAction('@Url.Action("PunchOut", "Attendance")', "#dc2626"));
+
         });
     </script>
 }

@@ -25,6 +25,9 @@ namespace FidelitasHub.Models
         // NEW: Force user to change password on first login
         public bool MustChangePassword { get; set; } = true;
 
+        [Display(Name = "Password Last Changed")]
+        public DateTime PasswordLastChanged { get; set; } = DateTime.Today;
+
         [Display(Name = "Department")]
         [StringLength(100)]
         public string Department { get; set; }
