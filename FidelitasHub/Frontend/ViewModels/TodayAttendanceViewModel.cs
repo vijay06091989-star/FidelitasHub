@@ -14,17 +14,20 @@
 
         public string PunchOut { get; set; }
 
-        // NEW
         public string BreakStart { get; set; }
 
-        // NEW
         public string BreakEnd { get; set; }
 
-        // NEW
         public string TotalBreak { get; set; }
 
         public string WorkedTime { get; set; }
 
+        // KEEP THIS (existing)
         public string Status { get; set; }
+
+        // ADD THESE (new)
+        public string LeaveStatus { get; set; }
+
+        public bool IsOnApprovedLeave { get; set; }
     }
 }

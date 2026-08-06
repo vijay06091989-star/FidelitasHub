@@ -114,11 +114,28 @@ namespace FidelitasHub.Controllers
                 }
 
                 attendance.AttendanceStatus = remainingCLDays > 0
-                    ? "Approved Leave"
-                    : "LOP";
+    ? "Approved Leave"
+    : "LOP";
 
-                attendance.Status = "Punched Out";
-                attendance.PunchOutMode = "Manual";
+                // If employee has already punched in today,
+                // keep the attendance as Punched Out.
+                if (attendance.PunchIn != null)
+                {
+                    attendance.Status = "Punched Out";
+
+                    if (attendance.PunchOut == null)
+                    {
+                        attendance.PunchOut = DateTime.Now;
+                        attendance.PunchOutMode = "Manual";
+                    }
+                }
+                else
+                {
+                    // Full-day leave
+                    attendance.Status = "On Leave";
+                    attendance.PunchOut = null;
+                    attendance.PunchOutMode = "Leave";
+                }
 
                 if (remainingCLDays > 0)
                 {

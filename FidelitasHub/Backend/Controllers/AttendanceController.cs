@@ -620,6 +620,12 @@ into shiftGroup
 
                                   from a in attendance.DefaultIfEmpty()
 
+                                  let approvedLeave = _context.LeaveApplications.FirstOrDefault(l =>
+    l.EmployeeId == e.EmployeeId &&
+    l.Status == "Approved" &&
+    today >= l.FromDate.Date &&
+    today <= l.ToDate.Date)
+
                                   where e.IsActive
       && s != null
       && s.ShiftName == shift
@@ -676,10 +682,14 @@ into shiftGroup
             .ToString(@"hh\:mm")
         : "--",
 
-                                      Status =
-    a != null
-        ? a.Status
-        : "Absent"
+                                      Status = a != null
+    ? a.Status
+    : (approvedLeave != null ? "On Leave" : "Absent"),
+
+                                      LeaveStatus = approvedLeave != null ? "Approved Leave" : "",
+
+                                      IsOnApprovedLeave = approvedLeave != null
+
                                   }).ToList();
 
             ViewBag.SelectedShift = shift;

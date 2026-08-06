@@ -25,11 +25,29 @@
 <div class="stat-grid">
     <div class="stat stat--success attendance-card cursor-pointer" data-status="Present">
         <span class="stat__icon"><i class="fa-solid fa-user-check"></i></span>
-        <div class="stat__body"><p class="stat__label">Present</p><p class="stat__value">@Model.Count(x => x.Status != "Absent")</p></div>
+        <div class="stat__body">
+            <p class="stat__label">Present</p><p class="stat__value">
+            @Model.Count(x =>
+x.Status == "Working" ||
+x.Status == "On Break" ||
+x.Status == "Punched Out")
+        </p>
+    </div>
     </div>
     <div class="stat attendance-card cursor-pointer" data-status="Absent">
         <span class="stat__icon"><i class="fa-solid fa-user-xmark"></i></span>
         <div class="stat__body"><p class="stat__label">Absent</p><p class="stat__value">@Model.Count(x => x.Status == "Absent")</p></div>
+    </div>
+    <div class="stat stat--primary attendance-card cursor-pointer" data-status="Approved Leave">
+        <span class="stat__icon">
+            <i class="fa-solid fa-calendar-check"></i>
+        </span>
+        <div class="stat__body">
+            <p class="stat__label">Approved Leave</p>
+            <p class="stat__value">
+                @Model.Count(x => x.IsOnApprovedLeave)
+            </p>
+        </div>
     </div>
     <div class="stat stat--info attendance-card cursor-pointer" data-status="Working">
         <span class="stat__icon"><i class="fa-solid fa-briefcase"></i></span>
@@ -83,7 +101,8 @@
                     <th>Break Out</th>
                     <th>Total Break</th>
                     <th>Worked</th>
-                    <th>Status</th>
+                    <th>Attendance Status</th>
+                    <th>Leave Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -116,9 +135,25 @@
                                 {
                                     <span class="badge badge-soft-danger">Punched Out</span>
                                 }
+                                else if (item.Status == "On Leave")
+                                {
+                                    <span class="badge badge-soft-info">On Leave</span>
+                                }
                                 else
                                 {
                                     <span class="badge bg-secondary-subtle text-secondary-emphasis">Absent</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.IsOnApprovedLeave)
+                                {
+                                    <span class="badge bg-success">
+                                        @item.LeaveStatus
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">--</span>
                                 }
                             </td>
                         </tr>
@@ -175,12 +210,22 @@
 
                 document.querySelectorAll("tbody tr").forEach(function (row) {
                     if (!row.cells[11]) return;
-                    var rowStatus = row.cells[11].innerText.toLowerCase();
-                    if (filter === "present") {
-                        row.style.display = rowStatus.indexOf("absent") === -1 ? "" : "none";
-                    } else {
-                        row.style.display = rowStatus.indexOf(filter) > -1 ? "" : "none";
-                    }
+                    document.querySelectorAll("tbody tr").forEach(function(row) {
+
+                        var attendanceStatus = row.cells[11].innerText.toLowerCase();
+                        var leaveStatus = row.cells[12].innerText.toLowerCase();
+
+                        if (filter === "present") {
+                            row.style.display = attendanceStatus.indexOf("absent") === -1 ? "" : "none";
+                        }
+                        else if (filter === "approved leave") {
+                            row.style.display = leaveStatus.indexOf("approved leave") > -1 ? "" : "none";
+                        }
+                        else {
+                            row.style.display = attendanceStatus.indexOf(filter) > -1 ? "" : "none";
+                        }
+
+                    });
                 });
             });
         });
