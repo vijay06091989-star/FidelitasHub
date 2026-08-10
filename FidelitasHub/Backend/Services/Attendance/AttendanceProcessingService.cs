@@ -21,13 +21,23 @@ namespace FidelitasHub.Services.Attendance
         public async Task ProcessAutoPunchOutAsync()
         {
             Console.WriteLine(
-    $"Auto Punch-Out Check : {DateTimeHelper.GetIST()}");
+                $"Auto Punch-Out Check : {DateTimeHelper.GetIST()}");
 
             var istNow = DateTimeHelper.GetIST();
 
+            var today = istNow.Date;
+            var yesterday = today.AddDays(-1);
+
+            //==========================================
+            // Get today's active attendance records
+            // and yesterday's records for possible
+            // overnight US shift processing.
+            //==========================================
+
             var attendanceList = await _context.Attendances
                 .Where(a =>
-                    a.AttendanceDate.Date == istNow.Date &&
+                    (a.AttendanceDate.Date == today ||
+                     a.AttendanceDate.Date == yesterday) &&
                     (a.Status == "Working" ||
                      a.Status == "On Break"))
                 .ToListAsync();
@@ -49,7 +59,25 @@ namespace FidelitasHub.Services.Attendance
                     continue;
 
                 //==========================================
-                // Auto Punch-Out Time
+                // Determine whether this is an overnight shift
+                //==========================================
+
+                bool isOvernight =
+                    shift.StandardEndTime <= shift.StandardStartTime;
+
+                //==========================================
+                // Yesterday's attendance is relevant ONLY
+                // for an overnight shift.
+                //==========================================
+
+                if (attendance.AttendanceDate.Date == yesterday &&
+                    !isOvernight)
+                {
+                    continue;
+                }
+
+                //==========================================
+                // Calculate Auto Punch-Out Time
                 //==========================================
 
                 DateTime autoPunchOutTime =
@@ -57,30 +85,41 @@ namespace FidelitasHub.Services.Attendance
                     + shift.StandardEndTime;
 
                 //==========================================
-                // Overnight Shift Support
+                // Overnight Shift
                 //==========================================
 
-                if (shift.StandardEndTime < shift.StandardStartTime)
+                if (isOvernight)
                 {
-                    autoPunchOutTime = autoPunchOutTime.AddDays(1);
+                    autoPunchOutTime =
+                        autoPunchOutTime.AddDays(1);
                 }
 
-                autoPunchOutTime = autoPunchOutTime.AddMinutes(
-                    shift.MaximumPunchOutMinutes);
+                //==========================================
+                // Add allowed Punch-Out window
+                //==========================================
+
+                autoPunchOutTime =
+                    autoPunchOutTime.AddMinutes(
+                        shift.MaximumPunchOutMinutes);
+
+                //==========================================
+                // Not yet time for Auto Punch-Out
+                //==========================================
 
                 if (istNow < autoPunchOutTime)
                 {
                     continue;
                 }
 
-                await CompletePunchOutAsync(
-    attendance,
-    employee,
-    autoPunchOutTime,
-    true);
+                //==========================================
+                // Complete Auto Punch-Out
+                //==========================================
 
-                // Auto Punch-Out logic will be moved here
-                // after CompletePunchOutAsync() is implemented.
+                await CompletePunchOutAsync(
+                    attendance,
+                    employee,
+                    autoPunchOutTime,
+                    true);
             }
         }
 
@@ -91,6 +130,10 @@ namespace FidelitasHub.Services.Attendance
     bool isAutoPunchOut)
         {
             attendance.PunchOut = punchOutTime;
+
+            attendance.PunchOutMode = isAutoPunchOut
+    ? "Auto"
+    : "Manual";
 
             attendance.Status = "Punched Out";
 

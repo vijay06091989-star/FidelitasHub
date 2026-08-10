@@ -117,21 +117,26 @@ namespace FidelitasHub.Controllers
     ? "Approved Leave"
     : "LOP";
 
-                // If employee has already punched in today,
-                // keep the attendance as Punched Out.
+                //========================================
+                // Attendance Handling
+                //========================================
+
+                // If the employee has already punched in,
+                // DO NOT automatically punch them out when
+                // leave is approved.
+                //
+                // Leave approval should not change an
+                // employee's existing attendance activity.
                 if (attendance.PunchIn != null)
                 {
-                    attendance.Status = "Punched Out";
-
-                    if (attendance.PunchOut == null)
-                    {
-                        attendance.PunchOut = DateTime.Now;
-                        attendance.PunchOutMode = "Manual";
-                    }
+                    // Preserve the employee's current attendance.
+                    // The employee will punch out normally.
                 }
                 else
                 {
-                    // Full-day leave
+                    // No Punch In exists.
+                    // Employee has not started work.
+                    // Keep the attendance as On Leave.
                     attendance.Status = "On Leave";
                     attendance.PunchOut = null;
                     attendance.PunchOutMode = "Leave";

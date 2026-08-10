@@ -102,28 +102,50 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Correction Type</label>
-                            <select asp-for="CorrectionType" class="form-select">
+                            <select asp-for="CorrectionType"
+                                    class="form-select"
+                                    onchange="this.form.submit();">
                                 <option value="">-- Select Correction Type --</option>
+
                                 <option>Forgot Punch In</option>
                                 <option>Forgot Punch Out</option>
                                 <option>Wrong Punch Time</option>
                                 <option>Wrong Break Time</option>
+
+                                <option>Remove Punch Out</option>
+                                <option>Remove Break</option>
+                                <option>Half Day Leave Correction</option>
+                                <option>Manual Attendance</option>
                             </select>
                         </div>
 
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">New Punch In Time</label>
-                                <input asp-for="NewPunchInTime" type="time" class="form-control" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">New Punch Out Time</label>
-                                <input asp-for="NewPunchOutTime" type="time" class="form-control" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">New Break Minutes</label>
-                                <input asp-for="NewBreakMinutes" class="form-control" />
-                            </div>
+                            @if (Model.ShowPunchIn)
+                            {
+                                <div class="col-md-6">
+                                    <label class="form-label">New Punch In Time</label>
+                                    <input asp-for="NewPunchInTime"
+                                           type="time"
+                                           class="form-control" />
+                                </div>
+                            }
+                            @if (Model.ShowPunchOut)
+                            {
+                                <div class="col-md-6">
+                                    <label class="form-label">New Punch Out Time</label>
+                                    <input asp-for="NewPunchOutTime"
+                                           type="time"
+                                           class="form-control" />
+                                </div>
+                            }
+                            @if (Model.ShowBreakMinutes)
+                            {
+                                <div class="col-md-6">
+                                    <label class="form-label">New Break Minutes</label>
+                                    <input asp-for="NewBreakMinutes"
+                                           class="form-control" />
+                                </div>
+                            }
                             <div class="col-12">
                                 <label class="form-label">Reason for Correction</label>
                                 <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
@@ -132,9 +154,12 @@
 
                         <hr />
 
-                        <button type="submit" formaction="@Url.Action("SaveAttendanceCorrection", "Attendance")"
+                        <button type="submit"
+                                asp-action="SaveAttendanceCorrection"
+                                asp-controller="Attendance"
                                 class="btn btn-primary">
-                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Correction
+                            <i class="fa-solid fa-floppy-disk me-1"></i>
+                            Save Correction
                         </button>
                     </div>
                 </div>

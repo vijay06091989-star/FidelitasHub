@@ -77,10 +77,11 @@ namespace FidelitasHub.Controllers
             // Today's Attendance Status
             //--------------------------------------------------
 
-            var todayAttendance = _context.Attendances
-                .FirstOrDefault(a =>
-                    a.EmployeeId == employee.EmployeeId &&
-                    a.AttendanceDate.Date == DateTimeHelper.GetIST().Date);
+            var istNow = DateTimeHelper.GetIST();
+
+            var todayAttendance = shift != null
+    ? GetActiveAttendance(employee, shift, istNow)
+    : null;
 
             if (todayAttendance == null)
             {
@@ -187,21 +188,30 @@ namespace FidelitasHub.Controllers
 
             var istNow = DateTimeHelper.GetIST();
 
-            var attendance = _context.Attendances.FirstOrDefault(a =>
-                a.EmployeeId == employee.EmployeeId &&
-                a.AttendanceDate.Date == istNow.Date);
+            //==========================================
+            // CHECK ACTIVE ATTENDANCE
+            //==========================================
 
-            if (attendance != null)
+            var activeAttendance =
+                GetActiveAttendance(employee, shift, istNow);
+
+            if (activeAttendance != null)
             {
                 return Json(new
                 {
                     success = false,
                     title = "Already Punched In",
-                    message = $"You already punched in today at {attendance.PunchIn:hh:mm tt}."
+                    message =
+                        $"You already have an active attendance record " +
+                        $"from {activeAttendance.PunchIn:dd-MMM-yyyy hh:mm tt}."
                 });
             }
 
-            attendance = new Attendance
+            //==========================================
+            // CREATE NEW ATTENDANCE
+            //==========================================
+
+            var attendance = new Attendance
             {
                 EmployeeId = employee.EmployeeId,
                 AttendanceDate = istNow.Date,
@@ -212,6 +222,10 @@ namespace FidelitasHub.Controllers
             };
 
             _context.Attendances.Add(attendance);
+
+            //==========================================
+            // AUDIT LOG
+            //==========================================
 
             _context.AuditLogs.Add(new AuditLog
             {
@@ -224,6 +238,10 @@ namespace FidelitasHub.Controllers
             });
 
             _context.SaveChanges();
+
+            //==========================================
+            // GREETING
+            //==========================================
 
             string greeting;
 
@@ -239,7 +257,7 @@ namespace FidelitasHub.Controllers
                 success = true,
                 title = $"{greeting}, {employee.EmployeeName}",
                 message =
-$@"Welcome to Fidelitas Hub
+        $@"Welcome to Fidelitas Hub
 
 Shift : {shift.ShiftName}
 
@@ -283,9 +301,21 @@ Have a wonderful day!"
 
             var istNow = DateTimeHelper.GetIST();
 
-            var attendance = _context.Attendances.FirstOrDefault(a =>
-                a.EmployeeId == employee.EmployeeId &&
-                a.AttendanceDate.Date == istNow.Date);
+            var shift = _context.Shifts
+    .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
+
+            if (shift == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    title = "Shift",
+                    message = "No shift assigned."
+                });
+            }
+
+            var attendance =
+                GetActiveAttendance(employee, shift, istNow);
 
             if (attendance == null)
             {
@@ -387,10 +417,20 @@ Enjoy your break!"
 
             var istNow = DateTimeHelper.GetIST();
 
-            var attendance = _context.Attendances
-                .FirstOrDefault(a =>
-                    a.EmployeeId == employee.EmployeeId &&
-                    a.AttendanceDate.Date == istNow.Date);
+            var shift = _context.Shifts
+    .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
+
+            if (shift == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    title = "Shift",
+                    message = "No shift assigned."
+                });
+            }
+
+            var attendance = GetActiveAttendance(employee, shift, istNow);
 
             if (attendance == null)
             {
@@ -498,10 +538,21 @@ You may continue your work."
 
             var istNow = DateTimeHelper.GetIST();
 
-            var attendance = _context.Attendances
-                .FirstOrDefault(a =>
-                    a.EmployeeId == employee.EmployeeId &&
-                    a.AttendanceDate.Date == istNow.Date);
+            var shift = _context.Shifts
+    .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
+
+            if (shift == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    title = "Shift",
+                    message = "No shift assigned."
+                });
+            }
+
+            var attendance =
+                GetActiveAttendance(employee, shift, istNow);
 
             if (attendance == null)
             {
@@ -597,7 +648,8 @@ See you tomorrow!"
         public IActionResult TodayAttendance(string shift = "General Shift")
 
         {
-            var today = DateTimeHelper.GetIST().Date;
+            var istNow = DateTimeHelper.GetIST();
+            var today = istNow.Date;
 
             var attendanceList = (from e in _context.Employees
 
@@ -682,11 +734,18 @@ into shiftGroup
             .ToString(@"hh\:mm")
         : "--",
 
-                                      Status = a != null
-    ? a.Status
-    : (approvedLeave != null ? "On Leave" : "Absent"),
+                                      Status =
+    approvedLeave != null &&
+    !approvedLeave.IsMorningHalf &&
+    !approvedLeave.IsAfternoonHalf
+        ? "On Leave"
+        : (a != null
+            ? a.Status
+            : "Absent"),
 
-                                      LeaveStatus = approvedLeave != null ? "Approved Leave" : "",
+                                      LeaveStatus = approvedLeave != null
+    ? "Approved Leave"
+    : "",
 
                                       IsOnApprovedLeave = approvedLeave != null
 
@@ -1087,6 +1146,66 @@ into shiftGroup
         }
 
         //====================================================
+        // GET ACTIVE ATTENDANCE FOR CURRENT SHIFT
+        //====================================================
+        private Attendance? GetActiveAttendance(
+            Employee employee,
+            Shift shift,
+            DateTime istNow)
+        {
+            var today = istNow.Date;
+
+            // -----------------------------------------------
+            // 1. Today's open attendance
+            // -----------------------------------------------
+            var todayAttendance = _context.Attendances
+                .Where(a =>
+                    a.EmployeeId == employee.EmployeeId &&
+                    a.AttendanceDate.Date == today &&
+                    (a.Status == "Working" || a.Status == "On Break"))
+                .OrderByDescending(a => a.AttendanceDate)
+                .FirstOrDefault();
+
+            if (todayAttendance != null)
+                return todayAttendance;
+
+            // -----------------------------------------------
+            // 2. Overnight shift handling
+            // -----------------------------------------------
+            bool isOvernight =
+                shift.StandardEndTime <= shift.StandardStartTime;
+
+            if (!isOvernight)
+                return null;
+
+            // -----------------------------------------------
+            // Previous day's attendance is active only
+            // after midnight and until the shift cutoff.
+            // -----------------------------------------------
+            var currentTime = istNow.TimeOfDay;
+
+            var punchOutCutoff =
+                shift.StandardEndTime +
+                TimeSpan.FromMinutes(
+                    Math.Max(0, shift.MaximumPunchOutMinutes));
+
+            // We are only looking for the previous day's
+            // attendance during the overnight ending window.
+            if (currentTime > punchOutCutoff)
+                return null;
+
+            var yesterday = today.AddDays(-1);
+
+            return _context.Attendances
+                .Where(a =>
+                    a.EmployeeId == employee.EmployeeId &&
+                    a.AttendanceDate.Date == yesterday &&
+                    (a.Status == "Working" || a.Status == "On Break"))
+                .OrderByDescending(a => a.AttendanceDate)
+                .FirstOrDefault();
+        }
+
+        //====================================================
         // ATTENDANCE CORRECTION
         //====================================================
 
@@ -1156,7 +1275,10 @@ into shiftGroup
         [HttpGet]
         public IActionResult AttendanceCorrection()
         {
-            var model = new AttendanceCorrectionViewModel();
+            var model = new AttendanceCorrectionViewModel
+            {
+                AttendanceDate = DateTimeHelper.GetIST().Date
+            };
 
             LoadAttendanceCorrectionDropdown(model);
 
@@ -1197,6 +1319,24 @@ into shiftGroup
                 case "Wrong Break Time":
                     model.ShowBreakMinutes = true;
                     break;
+
+                case "Remove Punch Out":
+                    break;
+
+                case "Remove Break":
+                    break;
+
+                case "Half Day Leave Correction":
+                    model.ShowPunchIn = true;
+                    model.ShowPunchOut = true;
+                    model.ShowBreakMinutes = true;
+                    break;
+
+                case "Manual Attendance":
+                    model.ShowPunchIn = true;
+                    model.ShowPunchOut = true;
+                    model.ShowBreakMinutes = true;
+                    break;
             }
 
             return View(model);
@@ -1210,6 +1350,15 @@ into shiftGroup
         public IActionResult SaveAttendanceCorrection(
     AttendanceCorrectionViewModel model)
         {
+
+            Console.WriteLine("=================================");
+            Console.WriteLine("SAVE ATTENDANCE CORRECTION");
+            Console.WriteLine($"Employee ID : {model.EmployeeId}");
+            Console.WriteLine($"Attendance Date : {model.AttendanceDate}");
+            Console.WriteLine($"New Punch In : {model.NewPunchInTime}");
+            Console.WriteLine($"New Punch Out : {model.NewPunchOutTime}");
+            Console.WriteLine("=================================");
+
             //==========================================
             // Validation
             //==========================================
@@ -1246,11 +1395,14 @@ into shiftGroup
                 return View("AttendanceCorrection", model);
             }
 
-            //==========================================
-            // Find Attendance Record
-            //==========================================
+            
 
-            var attendance = _context.Attendances
+
+        //==========================================
+        // Find Attendance Record
+        //==========================================
+
+        var attendance = _context.Attendances
                 .FirstOrDefault(a =>
                     a.EmployeeId == model.EmployeeId &&
                     a.AttendanceDate.Date == model.AttendanceDate.Date);
@@ -1263,7 +1415,7 @@ into shiftGroup
                     AttendanceDate = model.AttendanceDate.Date,
                     TotalBreakMinutes = 0,
                     WorkedMinutes = 0,
-                    Status = "Present",
+                    Status = "Working",
                     PunchOutMode = "Manual Correction"
                 };
 
@@ -1271,30 +1423,114 @@ into shiftGroup
             }
 
             //==========================================
-            // UPDATE PUNCH IN
+            // UPDATE PUNCH IN / PUNCH OUT
             //==========================================
 
-            if (model.NewPunchInTime.HasValue)
+            if (model.CorrectionType == "Remove Punch Out")
             {
-                attendance.PunchIn = model.AttendanceDate.Date
-                    + model.NewPunchInTime.Value;
+                // Remove the existing Punch Out
+                attendance.PunchOut = null;
+                attendance.PunchOutMode = "Manual Correction";
             }
-
-            //==========================================
-            // UPDATE PUNCH OUT
-            //==========================================
-
-            if (model.NewPunchOutTime.HasValue)
+            else if (model.CorrectionType == "Forgot Punch In")
             {
-                attendance.PunchOut = model.AttendanceDate.Date
-                    + model.NewPunchOutTime.Value;
+                // Add the missing Punch In
+                if (model.NewPunchInTime.HasValue)
+                {
+                    attendance.PunchIn = model.AttendanceDate.Date
+                        + model.NewPunchInTime.Value;
+
+                    attendance.PunchOutMode = "Manual Correction";
+                }
+            }
+            else if (model.CorrectionType == "Forgot Punch Out")
+            {
+                // Add the missing Punch Out
+
+                if (model.NewPunchOutTime.HasValue)
+                {
+                    var punchOutDateTime =
+                        model.AttendanceDate.Date
+                        + model.NewPunchOutTime.Value;
+
+                    var employee = _context.Employees
+                        .FirstOrDefault(e =>
+                            e.EmployeeId == model.EmployeeId);
+
+                    var shift = employee != null
+                        ? _context.Shifts
+                            .FirstOrDefault(s =>
+                                s.ShiftId == employee.ShiftId)
+                        : null;
+
+                    // Overnight shift:
+                    // Punch Out belongs to the following calendar day
+                    if (shift != null &&
+                        shift.StandardEndTime <= shift.StandardStartTime &&
+                        model.NewPunchOutTime.Value <= shift.StandardEndTime)
+                    {
+                        punchOutDateTime = punchOutDateTime.AddDays(1);
+                    }
+
+                    attendance.PunchOut = punchOutDateTime;
+
+                    attendance.PunchOutMode = "Manual Correction";
+                }
+            }
+            else
+            {
+                // Update Punch In if supplied
+                if (model.NewPunchInTime.HasValue)
+                {
+                    attendance.PunchIn = model.AttendanceDate.Date
+                        + model.NewPunchInTime.Value;
+                }
+
+                // Update Punch Out if supplied
+                if (model.NewPunchOutTime.HasValue)
+                {
+                    var punchOutDateTime =
+                        model.AttendanceDate.Date
+                        + model.NewPunchOutTime.Value;
+
+                    var employee = _context.Employees
+                        .FirstOrDefault(e =>
+                            e.EmployeeId == model.EmployeeId);
+
+                    var shift = employee != null
+                        ? _context.Shifts
+                            .FirstOrDefault(s =>
+                                s.ShiftId == employee.ShiftId)
+                        : null;
+
+                    // Overnight shift:
+                    // Punch Out belongs to the following calendar day
+                    if (shift != null &&
+                        shift.StandardEndTime <= shift.StandardStartTime &&
+                        model.NewPunchOutTime.Value <= shift.StandardEndTime)
+                    {
+                        punchOutDateTime = punchOutDateTime.AddDays(1);
+                    }
+
+                    attendance.PunchOut = punchOutDateTime;
+                }
+
+                // Any normal time correction is a manual correction
+                attendance.PunchOutMode = "Manual Correction";
             }
 
             //==========================================
             // UPDATE BREAK MINUTES
             //==========================================
 
-            attendance.TotalBreakMinutes = model.NewBreakMinutes;
+            if (model.CorrectionType == "Remove Break")
+            {
+                attendance.TotalBreakMinutes = 0;
+            }
+            else
+            {
+                attendance.TotalBreakMinutes = model.NewBreakMinutes;
+            }
 
             //==========================================
             // RECALCULATE WORKED MINUTES
@@ -1315,15 +1551,25 @@ into shiftGroup
                 }
 
                 attendance.WorkedMinutes =
-                    (int)(punchOut - punchIn).TotalMinutes
-                    - attendance.TotalBreakMinutes;
+                    (int)Math.Max(
+                        0,
+                        (punchOut - punchIn).TotalMinutes
+                        - attendance.TotalBreakMinutes);
+            }
+            else
+            {
+                attendance.WorkedMinutes = 0;
             }
 
             //==========================================
             // ATTENDANCE STATUS
             //==========================================
 
-            if (attendance.PunchIn.HasValue && attendance.PunchOut.HasValue)
+            if (model.CorrectionType == "Remove Punch Out")
+            {
+                attendance.Status = "Working";
+            }
+            else if (attendance.PunchIn.HasValue && attendance.PunchOut.HasValue)
             {
                 attendance.Status = "Present";
             }
@@ -1361,9 +1607,12 @@ into shiftGroup
             // SUCCESS
             //==========================================
 
+            LoadAttendanceCorrectionDropdown(model);
+            LoadAttendanceDetails(model);
+
             TempData["Success"] = "Attendance corrected successfully.";
 
-            return RedirectToAction(nameof(AttendanceCorrection));
+            return View("AttendanceCorrection", model);
         }
 
     }
