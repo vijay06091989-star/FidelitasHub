@@ -59,11 +59,26 @@ namespace FidelitasHub.Services.Attendance
                     continue;
 
                 //==========================================
+                // Get applicable shift times
+                // Standard OR DST
+                //==========================================
+
+                TimeSpan applicableStartTime =
+                    ShiftTimeHelper.GetStartTime(
+                        shift,
+                        attendance.AttendanceDate);
+
+                TimeSpan applicableEndTime =
+                    ShiftTimeHelper.GetEndTime(
+                        shift,
+                        attendance.AttendanceDate);
+
+                //==========================================
                 // Determine whether this is an overnight shift
                 //==========================================
 
                 bool isOvernight =
-                    shift.StandardEndTime <= shift.StandardStartTime;
+                    applicableEndTime <= applicableStartTime;
 
                 //==========================================
                 // Yesterday's attendance is relevant ONLY
@@ -82,7 +97,7 @@ namespace FidelitasHub.Services.Attendance
 
                 DateTime autoPunchOutTime =
                     attendance.AttendanceDate.Date
-                    + shift.StandardEndTime;
+                    + applicableEndTime;
 
                 //==========================================
                 // Overnight Shift

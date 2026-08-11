@@ -63,9 +63,21 @@ namespace FidelitasHub.Controllers
             {
                 ViewBag.ShiftName = shift.ShiftName;
 
+                var applicableStartTime =
+    ShiftTimeHelper.GetStartTime(
+        shift,
+        DateTimeHelper.GetIST().Date);
+
+                var applicableEndTime =
+                    ShiftTimeHelper.GetEndTime(
+                        shift,
+                        DateTimeHelper.GetIST().Date);
+
+                var istToday = DateTimeHelper.GetIST().Date;
+
                 ViewBag.ShiftTiming =
-                    $"{DateTime.Today.Add(shift.StandardStartTime):hh:mm tt} - " +
-                    $"{DateTime.Today.Add(shift.StandardEndTime):hh:mm tt}";
+                    $"{istToday.Add(applicableStartTime):hh:mm tt} - " +
+                    $"{istToday.Add(applicableEndTime):hh:mm tt}";
             }
             else
             {
@@ -1148,6 +1160,9 @@ into shiftGroup
         //====================================================
         // GET ACTIVE ATTENDANCE FOR CURRENT SHIFT
         //====================================================
+        //====================================================
+        // GET ACTIVE ATTENDANCE FOR CURRENT SHIFT
+        //====================================================
         private Attendance? GetActiveAttendance(
             Employee employee,
             Shift shift,
@@ -1155,54 +1170,92 @@ into shiftGroup
         {
             var today = istNow.Date;
 
-            // -----------------------------------------------
-            // 1. Today's open attendance
-            // -----------------------------------------------
+            //====================================================
+            // 1. Today's attendance record
+            //====================================================
+
             var todayAttendance = _context.Attendances
                 .Where(a =>
                     a.EmployeeId == employee.EmployeeId &&
-                    a.AttendanceDate.Date == today &&
-                    (a.Status == "Working" || a.Status == "On Break"))
+                    a.AttendanceDate.Date == today)
                 .OrderByDescending(a => a.AttendanceDate)
                 .FirstOrDefault();
 
             if (todayAttendance != null)
                 return todayAttendance;
 
-            // -----------------------------------------------
-            // 2. Overnight shift handling
-            // -----------------------------------------------
+            //====================================================
+            // 2. Check previous day's attendance for overnight shift
+            //    STANDARD OR DST TIME IS USED
+            //====================================================
+
+            var yesterday = today.AddDays(-1);
+
+            var applicableStartTime =
+                ShiftTimeHelper.GetStartTime(
+                    shift,
+                    yesterday);
+
+            var applicableEndTime =
+                ShiftTimeHelper.GetEndTime(
+                    shift,
+                    yesterday);
+
             bool isOvernight =
-                shift.StandardEndTime <= shift.StandardStartTime;
+                applicableEndTime <= applicableStartTime;
 
             if (!isOvernight)
                 return null;
 
-            // -----------------------------------------------
-            // Previous day's attendance is active only
-            // after midnight and until the shift cutoff.
-            // -----------------------------------------------
-            var currentTime = istNow.TimeOfDay;
+            //====================================================
+            // 3. Get yesterday's attendance
+            //====================================================
 
-            var punchOutCutoff =
-                shift.StandardEndTime +
-                TimeSpan.FromMinutes(
-                    Math.Max(0, shift.MaximumPunchOutMinutes));
-
-            // We are only looking for the previous day's
-            // attendance during the overnight ending window.
-            if (currentTime > punchOutCutoff)
-                return null;
-
-            var yesterday = today.AddDays(-1);
-
-            return _context.Attendances
+            var yesterdayAttendance = _context.Attendances
                 .Where(a =>
                     a.EmployeeId == employee.EmployeeId &&
-                    a.AttendanceDate.Date == yesterday &&
-                    (a.Status == "Working" || a.Status == "On Break"))
+                    a.AttendanceDate.Date == yesterday)
                 .OrderByDescending(a => a.AttendanceDate)
                 .FirstOrDefault();
+
+            if (yesterdayAttendance == null)
+                return null;
+
+            //====================================================
+            // 4. IMPORTANT:
+            //    If the US employee has already punched out,
+            //    continue displaying that completed attendance
+            //    on the dashboard.
+            //
+            //    This remains true even after the punch-out cutoff.
+            //====================================================
+
+            if (yesterdayAttendance.Status == "Punched Out" &&
+                yesterdayAttendance.PunchOut.HasValue)
+            {
+                return yesterdayAttendance;
+            }
+
+            //====================================================
+            // 5. If still Working / On Break, only keep it active
+            //    until the applicable punch-out cutoff.
+            //====================================================
+
+            var punchOutCutoff =
+                applicableEndTime +
+                TimeSpan.FromMinutes(
+                    Math.Max(
+                        0,
+                        shift.MaximumPunchOutMinutes));
+
+            if (istNow.TimeOfDay > punchOutCutoff)
+                return null;
+
+            //====================================================
+            // 6. Still within overnight shift window
+            //====================================================
+
+            return yesterdayAttendance;
         }
 
         //====================================================
@@ -1465,11 +1518,27 @@ into shiftGroup
 
                     // Overnight shift:
                     // Punch Out belongs to the following calendar day
-                    if (shift != null &&
-                        shift.StandardEndTime <= shift.StandardStartTime &&
-                        model.NewPunchOutTime.Value <= shift.StandardEndTime)
+                    if (shift != null)
                     {
-                        punchOutDateTime = punchOutDateTime.AddDays(1);
+                        var applicableStartTime =
+                            ShiftTimeHelper.GetStartTime(
+                                shift,
+                                model.AttendanceDate);
+
+                        var applicableEndTime =
+                            ShiftTimeHelper.GetEndTime(
+                                shift,
+                                model.AttendanceDate);
+
+                        bool isOvernight =
+                            applicableEndTime <= applicableStartTime;
+
+                        if (isOvernight &&
+                            model.NewPunchOutTime.Value <= applicableEndTime)
+                        {
+                            punchOutDateTime =
+                                punchOutDateTime.AddDays(1);
+                        }
                     }
 
                     attendance.PunchOut = punchOutDateTime;
@@ -1505,11 +1574,27 @@ into shiftGroup
 
                     // Overnight shift:
                     // Punch Out belongs to the following calendar day
-                    if (shift != null &&
-                        shift.StandardEndTime <= shift.StandardStartTime &&
-                        model.NewPunchOutTime.Value <= shift.StandardEndTime)
+                    if (shift != null)
                     {
-                        punchOutDateTime = punchOutDateTime.AddDays(1);
+                        var applicableStartTime =
+                            ShiftTimeHelper.GetStartTime(
+                                shift,
+                                model.AttendanceDate);
+
+                        var applicableEndTime =
+                            ShiftTimeHelper.GetEndTime(
+                                shift,
+                                model.AttendanceDate);
+
+                        bool isOvernight =
+                            applicableEndTime <= applicableStartTime;
+
+                        if (isOvernight &&
+                            model.NewPunchOutTime.Value <= applicableEndTime)
+                        {
+                            punchOutDateTime =
+                                punchOutDateTime.AddDays(1);
+                        }
                     }
 
                     attendance.PunchOut = punchOutDateTime;

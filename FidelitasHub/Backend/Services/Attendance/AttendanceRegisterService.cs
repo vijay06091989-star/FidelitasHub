@@ -1,4 +1,5 @@
 ﻿using FidelitasHub.Data;
+using FidelitasHub.Helpers;
 using FidelitasHub.Models;
 using AttendanceModel = FidelitasHub.Models.Attendance;
 
@@ -244,8 +245,18 @@ namespace FidelitasHub.Services.Attendance
             {
                 if (attendance.PunchIn.HasValue && shift != null)
                 {
-                    var shiftStart = attendance.AttendanceDate.Date + shift.StandardStartTime;
-                    var graceTime = shiftStart.AddMinutes(shift.GraceMinutes);
+                    var applicableStartTime =
+    ShiftTimeHelper.GetStartTime(
+        shift,
+        attendance.AttendanceDate);
+
+                    var shiftStart =
+                        attendance.AttendanceDate.Date
+                        + applicableStartTime;
+
+                    var graceTime =
+                        shiftStart.AddMinutes(
+                            shift.GraceMinutes);
 
                     if (attendance.PunchIn.Value > graceTime)
                         return "Present - Late Entry";
