@@ -658,110 +658,194 @@ See you tomorrow!"
 
         [HttpGet]
         public IActionResult TodayAttendance(string shift = "General Shift")
-
         {
             var istNow = DateTimeHelper.GetIST();
             var today = istNow.Date;
 
-            var attendanceList = (from e in _context.Employees
+            //====================================================
+            // DETERMINE WHICH ATTENDANCE DATE(S) ARE RELEVANT
+            //====================================================
 
-                                  join d in _context.Departments
-                                  on e.Department equals d.DepartmentName
-                                  into dept
+            DateTime attendanceDate = today;
 
-                                  from d in dept.DefaultIfEmpty()
+            //====================================================
+            // US SHIFT OVERNIGHT ATTENDANCE
+            //====================================================
 
-                                  join s in _context.Shifts
-on e.ShiftId equals s.ShiftId
-into shiftGroup
+            if (shift == "US Shift")
+            {
+                var usShift = _context.Shifts
+                    .FirstOrDefault(s => s.ShiftName == "US Shift");
 
-                                  from s in shiftGroup.DefaultIfEmpty()
+                if (usShift != null)
+                {
+                    var yesterday = today.AddDays(-1);
 
-                                  join a in _context.Attendances
-                                  .Where(x => x.AttendanceDate == today)
-                                  on e.EmployeeId equals a.EmployeeId
-                                  into attendance
+                    var startTime =
+                        ShiftTimeHelper.GetStartTime(
+                            usShift,
+                            yesterday);
 
-                                  from a in attendance.DefaultIfEmpty()
+                    var endTime =
+                        ShiftTimeHelper.GetEndTime(
+                            usShift,
+                            yesterday);
 
-                                  let approvedLeave = _context.LeaveApplications.FirstOrDefault(l =>
-    l.EmployeeId == e.EmployeeId &&
-    l.Status == "Approved" &&
-    today >= l.FromDate.Date &&
-    today <= l.ToDate.Date)
+                    // US Shift crosses midnight
+                    bool isOvernight = endTime <= startTime;
 
-                                  where e.IsActive
-      && s != null
-      && s.ShiftName == shift
+                    if (isOvernight)
+                    {
+                        // Maximum allowed punch-out time after
+                        // the scheduled shift end.
+                        var punchOutCutoff =
+                            endTime +
+                            TimeSpan.FromMinutes(
+                                Math.Max(
+                                    0,
+                                    usShift.MaximumPunchOutMinutes));
 
-                                  orderby e.EmployeeCode
+                        /*
+                         * Example:
+                         *
+                         * US Shift:
+                         * 06:30 PM -> 03:30 AM
+                         *
+                         * 12:00 AM - 03:30 AM
+                         *       -> yesterday's attendance
+                         *
+                         * 03:30 AM - punch-out cutoff
+                         *       -> yesterday's attendance
+                         *
+                         * After punch-out cutoff
+                         *       -> today's attendance
+                         */
 
-                                  select new TodayAttendanceViewModel
-                                  {
-                                      EmployeeCode = e.EmployeeCode,
+                        if (istNow.TimeOfDay <= punchOutCutoff)
+                        {
+                            attendanceDate = yesterday;
+                        }
+                    }
+                }
+            }
 
-                                      EmployeeName = e.EmployeeName,
+            //====================================================
+            // TODAY'S / ACTIVE SHIFT ATTENDANCE
+            //====================================================
 
-                                      Department = e.Department,
+            var attendanceList =
+                (from e in _context.Employees
 
-                                      Shift = s != null ? s.ShiftName : "--",
+                 join d in _context.Departments
+                 on e.Department equals d.DepartmentName
+                 into dept
 
-                                      PunchIn = a != null && a.PunchIn != null
-                                                ? a.PunchIn.Value.ToString("hh:mm tt")
-                                                : "--",
+                 from d in dept.DefaultIfEmpty()
 
-                                      PunchOut = a != null && a.PunchOut != null
-            ? a.PunchOut.Value.ToString("hh:mm tt")
-            : "--",
+                 join s in _context.Shifts
+                 on e.ShiftId equals s.ShiftId
+                 into shiftGroup
 
-                                      BreakStart =
-    a != null
-        ? _context.AttendanceBreaks
-            .Where(b => b.AttendanceId == a.AttendanceId)
-            .OrderByDescending(b => b.BreakStart)
-            .Select(b => b.BreakStart.ToString("hh:mm tt"))
-            .FirstOrDefault() ?? "--"
-        : "--",
+                 from s in shiftGroup.DefaultIfEmpty()
 
-                                      BreakEnd =
-    a != null
-        ? _context.AttendanceBreaks
-            .Where(b => b.AttendanceId == a.AttendanceId)
-            .OrderByDescending(b => b.BreakStart)
-            .Select(b => b.BreakEnd != null
-                ? b.BreakEnd.Value.ToString("hh:mm tt")
-                : "--")
-            .FirstOrDefault() ?? "--"
-        : "--",
+                 join a in _context.Attendances
+                     .Where(x => x.AttendanceDate == attendanceDate)
+                 on e.EmployeeId equals a.EmployeeId
+                 into attendance
 
-                                      TotalBreak =
-    a != null
-        ? TimeSpan.FromMinutes(a.TotalBreakMinutes)
-            .ToString(@"hh\:mm")
-        : "--",
+                 from a in attendance.DefaultIfEmpty()
 
-                                      WorkedTime =
-    a != null
-        ? TimeSpan.FromMinutes(a.WorkedMinutes)
-            .ToString(@"hh\:mm")
-        : "--",
+                 let approvedLeave =
+                     _context.LeaveApplications.FirstOrDefault(l =>
+                         l.EmployeeId == e.EmployeeId &&
+                         l.Status == "Approved" &&
+                         attendanceDate >= l.FromDate.Date &&
+                         attendanceDate <= l.ToDate.Date)
 
-                                      Status =
-    approvedLeave != null &&
-    !approvedLeave.IsMorningHalf &&
-    !approvedLeave.IsAfternoonHalf
-        ? "On Leave"
-        : (a != null
-            ? a.Status
-            : "Absent"),
+                 where e.IsActive
+                       && s != null
+                       && s.ShiftName == shift
 
-                                      LeaveStatus = approvedLeave != null
-    ? "Approved Leave"
-    : "",
+                 orderby e.EmployeeCode
 
-                                      IsOnApprovedLeave = approvedLeave != null
+                 select new TodayAttendanceViewModel
+                 {
+                     EmployeeCode = e.EmployeeCode,
 
-                                  }).ToList();
+                     EmployeeName = e.EmployeeName,
+
+                     Department = e.Department,
+
+                     Shift = s != null
+                         ? s.ShiftName
+                         : "--",
+
+                     PunchIn =
+                         a != null && a.PunchIn != null
+                             ? a.PunchIn.Value.ToString("hh:mm tt")
+                             : "--",
+
+                     PunchOut =
+                         a != null && a.PunchOut != null
+                             ? a.PunchOut.Value.ToString("hh:mm tt")
+                             : "--",
+
+                     BreakStart =
+                         a != null
+                             ? _context.AttendanceBreaks
+                                 .Where(b =>
+                                     b.AttendanceId == a.AttendanceId)
+                                 .OrderByDescending(b => b.BreakStart)
+                                 .Select(b =>
+                                     b.BreakStart.ToString("hh:mm tt"))
+                                 .FirstOrDefault() ?? "--"
+                             : "--",
+
+                     BreakEnd =
+                         a != null
+                             ? _context.AttendanceBreaks
+                                 .Where(b =>
+                                     b.AttendanceId == a.AttendanceId)
+                                 .OrderByDescending(b => b.BreakStart)
+                                 .Select(b =>
+                                     b.BreakEnd != null
+                                         ? b.BreakEnd.Value.ToString("hh:mm tt")
+                                         : "--")
+                                 .FirstOrDefault() ?? "--"
+                             : "--",
+
+                     TotalBreak =
+                         a != null
+                             ? TimeSpan.FromMinutes(
+                                 a.TotalBreakMinutes)
+                                 .ToString(@"hh\:mm")
+                             : "--",
+
+                     WorkedTime =
+                         a != null
+                             ? TimeSpan.FromMinutes(
+                                 a.WorkedMinutes)
+                                 .ToString(@"hh\:mm")
+                             : "--",
+
+                     Status =
+                         approvedLeave != null &&
+                         !approvedLeave.IsMorningHalf &&
+                         !approvedLeave.IsAfternoonHalf
+                             ? "On Leave"
+                             : (a != null
+                                 ? a.Status
+                                 : "Absent"),
+
+                     LeaveStatus =
+                         approvedLeave != null
+                             ? "Approved Leave"
+                             : "",
+
+                     IsOnApprovedLeave =
+                         approvedLeave != null
+
+                 }).ToList();
 
             ViewBag.SelectedShift = shift;
 
@@ -1160,9 +1244,6 @@ into shiftGroup
         //====================================================
         // GET ACTIVE ATTENDANCE FOR CURRENT SHIFT
         //====================================================
-        //====================================================
-        // GET ACTIVE ATTENDANCE FOR CURRENT SHIFT
-        //====================================================
         private Attendance? GetActiveAttendance(
             Employee employee,
             Shift shift,
@@ -1171,91 +1252,113 @@ into shiftGroup
             var today = istNow.Date;
 
             //====================================================
-            // 1. Today's attendance record
+            // GET TODAY'S SHIFT TIMES
             //====================================================
 
-            var todayAttendance = _context.Attendances
-                .Where(a =>
-                    a.EmployeeId == employee.EmployeeId &&
-                    a.AttendanceDate.Date == today)
-                .OrderByDescending(a => a.AttendanceDate)
-                .FirstOrDefault();
+            var todayStartTime =
+                ShiftTimeHelper.GetStartTime(
+                    shift,
+                    today);
 
-            if (todayAttendance != null)
-                return todayAttendance;
+            var todayEndTime =
+                ShiftTimeHelper.GetEndTime(
+                    shift,
+                    today);
+
+            bool isOvernight =
+                todayEndTime <= todayStartTime;
 
             //====================================================
-            // 2. Check previous day's attendance for overnight shift
-            //    STANDARD OR DST TIME IS USED
+            // NON-OVERNIGHT SHIFT
+            //====================================================
+
+            if (!isOvernight)
+            {
+                return _context.Attendances
+                    .Where(a =>
+                        a.EmployeeId == employee.EmployeeId &&
+                        a.AttendanceDate.Date == today)
+                    .OrderByDescending(a => a.AttendanceDate)
+                    .FirstOrDefault();
+            }
+
+            //====================================================
+            // OVERNIGHT SHIFT
+            //
+            // Example:
+            //
+            // 12-Aug 06:30 PM -> 13-Aug 03:30 AM
+            //
             //====================================================
 
             var yesterday = today.AddDays(-1);
 
-            var applicableStartTime =
-                ShiftTimeHelper.GetStartTime(
-                    shift,
-                    yesterday);
+            //====================================================
+            // YESTERDAY'S SHIFT END / PUNCH-OUT CUTOFF
+            //====================================================
 
-            var applicableEndTime =
+            var yesterdayEndTime =
                 ShiftTimeHelper.GetEndTime(
                     shift,
                     yesterday);
 
-            bool isOvernight =
-                applicableEndTime <= applicableStartTime;
-
-            if (!isOvernight)
-                return null;
-
-            //====================================================
-            // 3. Get yesterday's attendance
-            //====================================================
-
-            var yesterdayAttendance = _context.Attendances
-                .Where(a =>
-                    a.EmployeeId == employee.EmployeeId &&
-                    a.AttendanceDate.Date == yesterday)
-                .OrderByDescending(a => a.AttendanceDate)
-                .FirstOrDefault();
-
-            if (yesterdayAttendance == null)
-                return null;
-
-            //====================================================
-            // 4. IMPORTANT:
-            //    If the US employee has already punched out,
-            //    continue displaying that completed attendance
-            //    on the dashboard.
-            //
-            //    This remains true even after the punch-out cutoff.
-            //====================================================
-
-            if (yesterdayAttendance.Status == "Punched Out" &&
-                yesterdayAttendance.PunchOut.HasValue)
-            {
-                return yesterdayAttendance;
-            }
-
-            //====================================================
-            // 5. If still Working / On Break, only keep it active
-            //    until the applicable punch-out cutoff.
-            //====================================================
-
             var punchOutCutoff =
-                applicableEndTime +
+                yesterdayEndTime +
                 TimeSpan.FromMinutes(
                     Math.Max(
                         0,
                         shift.MaximumPunchOutMinutes));
 
-            if (istNow.TimeOfDay > punchOutCutoff)
+            //====================================================
+            // CASE 1
+            //
+            // We are BEFORE today's US shift start.
+            //
+            // If we are still inside yesterday's overnight
+            // attendance window, use yesterday's attendance.
+            //====================================================
+
+            if (istNow.TimeOfDay < todayStartTime)
+            {
+                if (istNow.TimeOfDay <= punchOutCutoff)
+                {
+                    var yesterdayAttendance =
+                        _context.Attendances
+                            .Where(a =>
+                                a.EmployeeId == employee.EmployeeId &&
+                                a.AttendanceDate.Date == yesterday)
+                            .OrderByDescending(a => a.AttendanceDate)
+                            .FirstOrDefault();
+
+                    return yesterdayAttendance;
+                }
+
+                //================================================
+                // Between yesterday's cutoff and today's shift
+                // start there is NO active attendance.
+                //================================================
+
                 return null;
+            }
 
             //====================================================
-            // 6. Still within overnight shift window
+            // CASE 2
+            //
+            // Today's US shift has started.
+            //
+            // From 6:30 PM onward, ONLY today's attendance
+            // belongs to the current shift.
             //====================================================
 
-            return yesterdayAttendance;
+            var todayAttendance =
+                _context.Attendances
+                    .Where(a =>
+                        a.EmployeeId == employee.EmployeeId &&
+                        a.AttendanceDate.Date == today)
+                    .OrderByDescending(a => a.AttendanceDate)
+                    .FirstOrDefault();
+
+            return todayAttendance;
         }
 
         //====================================================
