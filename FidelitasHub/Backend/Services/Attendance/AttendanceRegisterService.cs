@@ -221,13 +221,62 @@ namespace FidelitasHub.Services.Attendance
             }
 
             //====================================
-            // Today's Attendance - Live Status
+            // CURRENT ATTENDANCE - LIVE STATUS
+            //
+            // Handles both normal shifts and overnight
+            // US shifts after midnight.
             //====================================
 
-            if (attendance.AttendanceDate.Date == DateTime.Today &&
-                attendance.PunchOut == null)
+            var istNow = DateTimeHelper.GetIST();
+
+            if (attendance.PunchOut == null &&
+                shift != null)
             {
-                return attendance.Status;
+                var currentAttendanceDate = istNow.Date;
+
+                var shiftStartTime =
+                    ShiftTimeHelper.GetStartTime(
+                        shift,
+                        istNow.Date);
+
+                var shiftEndTime =
+                    ShiftTimeHelper.GetEndTime(
+                        shift,
+                        istNow.Date);
+
+                bool isOvernight =
+                    shiftEndTime <= shiftStartTime;
+
+                // For an overnight shift, after midnight and
+                // before today's shift starts, the active
+                // attendance belongs to yesterday.
+                if (isOvernight &&
+                    istNow.TimeOfDay < shiftStartTime)
+                {
+                    var yesterday = istNow.Date.AddDays(-1);
+
+                    var yesterdayEndTime =
+                        ShiftTimeHelper.GetEndTime(
+                            shift,
+                            yesterday);
+
+                    var punchOutCutoff =
+                        yesterdayEndTime +
+                        TimeSpan.FromMinutes(
+                            Math.Max(
+                                0,
+                                shift.MaximumPunchOutMinutes));
+
+                    if (istNow.TimeOfDay <= punchOutCutoff)
+                    {
+                        currentAttendanceDate = yesterday;
+                    }
+                }
+
+                if (attendance.AttendanceDate.Date == currentAttendanceDate)
+                {
+                    return attendance.Status;
+                }
             }
 
             int workedMinutes = attendance.WorkedMinutes;

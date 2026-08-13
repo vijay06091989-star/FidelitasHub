@@ -158,126 +158,176 @@ namespace FidelitasHub.Controllers
         //====================================================
 
         [HttpPost]
-        public IActionResult PunchIn()
+public IActionResult PunchIn()
+{
+    var employeeCode = HttpContext.Session.GetString("EmployeeCode");
+
+    if (string.IsNullOrEmpty(employeeCode))
+    {
+        return Json(new
         {
-            var employeeCode = HttpContext.Session.GetString("EmployeeCode");
+            success = false,
+            title = "Session Expired",
+            message = "Please login again."
+        });
+    }
 
-            if (string.IsNullOrEmpty(employeeCode))
-            {
-                return Json(new
-                {
-                    success = false,
-                    title = "Session Expired",
-                    message = "Please login again."
-                });
-            }
+    var employee = _context.Employees
+        .FirstOrDefault(e => e.EmployeeCode == employeeCode);
 
-            var employee = _context.Employees
-                .FirstOrDefault(e => e.EmployeeCode == employeeCode);
+    if (employee == null)
+    {
+        return Json(new
+        {
+            success = false,
+            title = "Employee",
+            message = "Employee not found."
+        });
+    }
 
-            if (employee == null)
-            {
-                return Json(new
-                {
-                    success = false,
-                    title = "Employee",
-                    message = "Employee not found."
-                });
-            }
+    var shift = _context.Shifts
+        .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
 
-            var shift = _context.Shifts
-                .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
+    if (shift == null)
+    {
+        return Json(new
+        {
+            success = false,
+            title = "Shift",
+            message = "No shift assigned."
+        });
+    }
 
-            if (shift == null)
-            {
-                return Json(new
-                {
-                    success = false,
-                    title = "Shift",
-                    message = "No shift assigned."
-                });
-            }
+    var istNow = DateTimeHelper.GetIST();
 
-            var istNow = DateTimeHelper.GetIST();
+            //====================================================
+            // DETERMINE CORRECT ATTENDANCE DATE
+            //====================================================
 
-            //==========================================
+            var attendanceDate =
+            GetAttendanceDateForCurrentShift(
+                shift,
+                istNow);
+
+            //====================================================
             // CHECK ACTIVE ATTENDANCE
-            //==========================================
+            //====================================================
 
             var activeAttendance =
-                GetActiveAttendance(employee, shift, istNow);
+        GetActiveAttendance(
+            employee,
+            shift,
+            istNow);
 
-            if (activeAttendance != null)
-            {
-                return Json(new
-                {
-                    success = false,
-                    title = "Already Punched In",
-                    message =
-                        $"You already have an active attendance record " +
-                        $"from {activeAttendance.PunchIn:dd-MMM-yyyy hh:mm tt}."
-                });
-            }
+    if (activeAttendance != null)
+    {
+        return Json(new
+        {
+            success = false,
+            title = "Already Punched In",
+            message =
+                $"You already have an active attendance record " +
+                $"from {activeAttendance.PunchIn:dd-MMM-yyyy hh:mm tt}."
+        });
+    }
 
-            //==========================================
-            // CREATE NEW ATTENDANCE
-            //==========================================
+    //====================================================
+    // SAFETY CHECK
+    //
+    // Because Employee + AttendanceDate is now UNIQUE,
+    // never create another record if one already exists.
+    //====================================================
 
-            var attendance = new Attendance
-            {
-                EmployeeId = employee.EmployeeId,
-                AttendanceDate = istNow.Date,
-                PunchIn = istNow,
-                Status = "Working",
-                TotalBreakMinutes = 0,
-                PunchOutMode = "Manual"
-            };
+    var existingAttendance =
+        _context.Attendances
+            .FirstOrDefault(a =>
+                a.EmployeeId == employee.EmployeeId &&
+                a.AttendanceDate.Date == attendanceDate);
 
-            _context.Attendances.Add(attendance);
+    if (existingAttendance != null)
+    {
+        return Json(new
+        {
+            success = false,
+            title = "Attendance Already Exists",
+            message =
+                $"An attendance record already exists for " +
+                $"{attendanceDate:dd-MMM-yyyy}."
+        });
+    }
 
-            //==========================================
-            // AUDIT LOG
-            //==========================================
+    //====================================================
+    // CREATE NEW ATTENDANCE
+    //====================================================
 
-            _context.AuditLogs.Add(new AuditLog
-            {
-                EmployeeId = employee.EmployeeId,
-                Action = "Punch In",
-                ActionTime = istNow,
-                Remarks = "Manual Punch In",
-                IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
-                ComputerName = Environment.MachineName
-            });
+    var attendance = new Attendance
+    {
+        EmployeeId = employee.EmployeeId,
+        AttendanceDate = attendanceDate,
+        PunchIn = istNow,
+        Status = "Working",
+        TotalBreakMinutes = 0,
+        PunchOutMode = "Manual"
+    };
 
-            _context.SaveChanges();
+    _context.Attendances.Add(attendance);
 
-            //==========================================
+    //====================================================
+    // AUDIT LOG
+    //====================================================
+
+    _context.AuditLogs.Add(new AuditLog
+    {
+        EmployeeId = employee.EmployeeId,
+        Action = "Punch In",
+        ActionTime = istNow,
+        Remarks = "Manual Punch In",
+        IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+        ComputerName = Environment.MachineName
+    });
+
+    try
+    {
+        _context.SaveChanges();
+    }
+    catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+    {
+        return Json(new
+        {
+            success = false,
+            title = "Already Punched In",
+            message =
+                "An attendance record already exists for this shift."
+        });
+    }
+
+            //====================================================
             // GREETING
-            //==========================================
+            //====================================================
 
             string greeting;
 
-            if (istNow.Hour >= 5 && istNow.Hour < 12)
+            if (istNow.Hour < 12)
                 greeting = "🌞 Good Morning";
-            else if (istNow.Hour >= 12 && istNow.Hour < 17)
+            else if (istNow.Hour < 17)
                 greeting = "☀️ Good Afternoon";
             else
                 greeting = "🌙 Good Evening";
 
             return Json(new
-            {
-                success = true,
-                title = $"{greeting}, {employee.EmployeeName}",
-                message =
-        $@"Welcome to Fidelitas Hub
+    {
+        success = true,
+        title = $"{greeting}, {employee.EmployeeName}",
+        message =
+$@"Welcome to Fidelitas Hub
 
 Shift : {shift.ShiftName}
 
 Punch In : {attendance.PunchIn:hh:mm:ss tt} IST
 
 Have a wonderful day!"
-            });
-        }
+    });
+}
 
         //====================================================
         // BREAK
@@ -1244,16 +1294,32 @@ See you tomorrow!"
         //====================================================
         // GET ACTIVE ATTENDANCE FOR CURRENT SHIFT
         //====================================================
-        private Attendance? GetActiveAttendance(
-            Employee employee,
+
+        //====================================================
+        // GET ATTENDANCE DATE FOR CURRENT SHIFT
+        //
+        // Determines which attendance date the current
+        // activity belongs to.
+        //
+        // Normal shift:
+        //     AttendanceDate = today's IST date
+        //
+        // Overnight US shift:
+        //     Before today's shift start and within the
+        //     previous shift's punch-out window:
+        //     AttendanceDate = yesterday
+        //
+        // Example:
+        //     US Shift: 06:30 PM -> 03:30 AM
+        //
+        //     13-Aug 01:30 AM
+        //     belongs to the 12-Aug attendance.
+        //====================================================
+        private DateTime GetAttendanceDateForCurrentShift(
             Shift shift,
             DateTime istNow)
         {
             var today = istNow.Date;
-
-            //====================================================
-            // GET TODAY'S SHIFT TIMES
-            //====================================================
 
             var todayStartTime =
                 ShiftTimeHelper.GetStartTime(
@@ -1268,97 +1334,65 @@ See you tomorrow!"
             bool isOvernight =
                 todayEndTime <= todayStartTime;
 
-            //====================================================
-            // NON-OVERNIGHT SHIFT
-            //====================================================
-
+            //================================================
+            // NORMAL / DAY SHIFT
+            //================================================
             if (!isOvernight)
             {
-                return _context.Attendances
-                    .Where(a =>
-                        a.EmployeeId == employee.EmployeeId &&
-                        a.AttendanceDate.Date == today)
-                    .OrderByDescending(a => a.AttendanceDate)
-                    .FirstOrDefault();
+                return today;
             }
 
-            //====================================================
+            //================================================
             // OVERNIGHT SHIFT
             //
-            // Example:
-            //
-            // 12-Aug 06:30 PM -> 13-Aug 03:30 AM
-            //
-            //====================================================
-
-            var yesterday = today.AddDays(-1);
-
-            //====================================================
-            // YESTERDAY'S SHIFT END / PUNCH-OUT CUTOFF
-            //====================================================
-
-            var yesterdayEndTime =
-                ShiftTimeHelper.GetEndTime(
-                    shift,
-                    yesterday);
-
-            var punchOutCutoff =
-                yesterdayEndTime +
-                TimeSpan.FromMinutes(
-                    Math.Max(
-                        0,
-                        shift.MaximumPunchOutMinutes));
-
-            //====================================================
-            // CASE 1
-            //
-            // We are BEFORE today's US shift start.
-            //
-            // If we are still inside yesterday's overnight
-            // attendance window, use yesterday's attendance.
-            //====================================================
-
+            // We are before today's shift start.
+            // Check whether we are still inside yesterday's
+            // overnight attendance window.
+            //================================================
             if (istNow.TimeOfDay < todayStartTime)
             {
+                var yesterday = today.AddDays(-1);
+
+                var yesterdayEndTime =
+                    ShiftTimeHelper.GetEndTime(
+                        shift,
+                        yesterday);
+
+                var punchOutCutoff =
+                    yesterdayEndTime +
+                    TimeSpan.FromMinutes(
+                        Math.Max(
+                            0,
+                            shift.MaximumPunchOutMinutes));
+
                 if (istNow.TimeOfDay <= punchOutCutoff)
                 {
-                    var yesterdayAttendance =
-                        _context.Attendances
-                            .Where(a =>
-                                a.EmployeeId == employee.EmployeeId &&
-                                a.AttendanceDate.Date == yesterday)
-                            .OrderByDescending(a => a.AttendanceDate)
-                            .FirstOrDefault();
-
-                    return yesterdayAttendance;
+                    return yesterday;
                 }
-
-                //================================================
-                // Between yesterday's cutoff and today's shift
-                // start there is NO active attendance.
-                //================================================
-
-                return null;
             }
 
-            //====================================================
-            // CASE 2
-            //
-            // Today's US shift has started.
-            //
-            // From 6:30 PM onward, ONLY today's attendance
-            // belongs to the current shift.
-            //====================================================
+            return today;
+        }
 
-            var todayAttendance =
-                _context.Attendances
-                    .Where(a =>
-                        a.EmployeeId == employee.EmployeeId &&
-                        a.AttendanceDate.Date == today)
-                    .OrderByDescending(a => a.AttendanceDate)
-                    .FirstOrDefault();
+        //====================================================
+        // GET ACTIVE ATTENDANCE FOR CURRENT SHIFT
+        //====================================================
+        private Attendance? GetActiveAttendance(
+            Employee employee,
+            Shift shift,
+            DateTime istNow)
+        {
+            var attendanceDate =
+                GetAttendanceDateForCurrentShift(
+                    shift,
+                    istNow);
 
-            return todayAttendance;
+            return _context.Attendances
+                .Where(a =>
+                    a.EmployeeId == employee.EmployeeId &&
+                    a.AttendanceDate.Date == attendanceDate)
+                .OrderByDescending(a => a.AttendanceId)
+                .FirstOrDefault();
         }
 
         //====================================================
