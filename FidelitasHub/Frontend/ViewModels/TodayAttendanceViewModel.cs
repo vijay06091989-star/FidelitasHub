@@ -29,5 +29,9 @@
         public string LeaveStatus { get; set; }
 
         public bool IsOnApprovedLeave { get; set; }
+
+        public LeaveApplication? ApprovedLeave { get; set; }
+
+        public Shift? ShiftModel { get; set; }
     }
 }

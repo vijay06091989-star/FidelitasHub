@@ -2,6 +2,7 @@
 using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using FidelitasHub.Helpers;
 
 namespace FidelitasHub.Controllers
 {
@@ -21,6 +22,11 @@ namespace FidelitasHub.Controllers
         public IActionResult ApplyLeave()
         {
             var model = new LeaveApplicationViewModel();
+
+            DateTime istToday = DateTimeHelper.GetIST().Date;
+
+            model.FromDate = istToday;
+            model.ToDate = istToday;
 
             LoadEmployee(model);
 
@@ -188,7 +194,7 @@ namespace FidelitasHub.Controllers
             }
 
             // Determine Leave Status based on Payroll Cycle
-            DateTime currentPayroll = GetPayrollStart(DateTime.Today);
+            DateTime currentPayroll = GetPayrollStart(DateTimeHelper.GetIST().Date);
 
             DateTime leavePayroll = GetPayrollStart(model.FromDate);
 
@@ -230,7 +236,7 @@ namespace FidelitasHub.Controllers
 
                 ManagerStatus = "Pending",
 
-                AppliedOn = DateTime.Now
+                AppliedOn = DateTimeHelper.GetIST()
             };
 
             _context.LeaveApplications.Add(leave);
@@ -311,6 +317,7 @@ namespace FidelitasHub.Controllers
 
             return RedirectToAction(nameof(MyLeaveHistory));
         }
+
 
         //==================================================
         // Common Method

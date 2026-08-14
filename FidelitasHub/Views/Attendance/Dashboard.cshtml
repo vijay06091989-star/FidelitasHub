@@ -1,7 +1,9 @@
 @{
     ViewData["Title"] = "Attendance Dashboard";
 
-    bool canPunchIn = ViewBag.AttendanceStatus == "Not Punched In";
+    bool canPunchIn =
+    ViewBag.CanPunchIn is bool allowed && allowed;
+
     bool canBreak = ViewBag.AttendanceStatus == "Working";
     bool canResume = ViewBag.AttendanceStatus == "On Break";
     bool canPunchOut = ViewBag.AttendanceStatus == "Working";

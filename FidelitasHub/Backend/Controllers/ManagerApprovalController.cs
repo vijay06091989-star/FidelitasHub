@@ -113,34 +113,67 @@ namespace FidelitasHub.Controllers
                     _context.Attendances.Add(attendance);
                 }
 
-                attendance.AttendanceStatus = remainingCLDays > 0
-    ? "Approved Leave"
-    : "LOP";
+                bool isFullDayLeave =
+    !leave.IsMorningHalf &&
+    !leave.IsAfternoonHalf;
+
+                bool isHalfDayLeave =
+                    leave.IsMorningHalf ||
+                    leave.IsAfternoonHalf;
 
                 //========================================
-                // Attendance Handling
+                // ATTENDANCE CLASSIFICATION
                 //========================================
-
-                // If the employee has already punched in,
-                // DO NOT automatically punch them out when
-                // leave is approved.
                 //
-                // Leave approval should not change an
-                // employee's existing attendance activity.
-                if (attendance.PunchIn != null)
+                // Full Day:
+                //     AttendanceStatus = Approved Leave / LOP
+                //     Status = On Leave
+                //
+                // Half Day:
+                //     AttendanceStatus = Half Day
+                //     Status = Not Punched In
+                //
+                // Half-day leave must NOT lock attendance.
+                // The employee must still be able to Punch In.
+                //
+
+                if (attendance.PunchIn == null)
                 {
-                    // Preserve the employee's current attendance.
-                    // The employee will punch out normally.
+                    if (isFullDayLeave)
+                    {
+                        attendance.AttendanceStatus =
+                            remainingCLDays > 0
+                                ? "Approved Leave"
+                                : "LOP";
+
+                        attendance.Status = "On Leave";
+                        attendance.PunchOut = null;
+                        attendance.PunchOutMode = "Leave";
+                    }
+                    else
+                    {
+                        // Half-day leave.
+                        // Employee is still expected to work part of the day.
+
+                        attendance.AttendanceStatus = "Half Day";
+                        attendance.Status = "Not Punched In";
+                        attendance.PunchOut = null;
+                        attendance.PunchOutMode = "Manual";
+                    }
                 }
-                else
+                else if (isHalfDayLeave)
                 {
-                    // No Punch In exists.
-                    // Employee has not started work.
-                    // Keep the attendance as On Leave.
-                    attendance.Status = "On Leave";
-                    attendance.PunchOut = null;
-                    attendance.PunchOutMode = "Leave";
+                    // Employee was already working when the half-day
+                    // leave was approved.
+
+                    attendance.AttendanceStatus = "Half Day";
+
+                    // DO NOT change:
+                    // Working / On Break / Punched Out
                 }
+
+                // If full-day leave is approved after Punch In,
+                // preserve the employee's existing attendance activity.
 
                 if (remainingCLDays > 0)
                 {
