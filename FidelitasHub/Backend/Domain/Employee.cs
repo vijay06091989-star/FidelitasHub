@@ -51,6 +51,15 @@ namespace FidelitasHub.Models
         [StringLength(50)]
         public string Role { get; set; }
 
+        [Display(Name = "Reporting Manager")]
+        public int? ReportingManagerId { get; set; }
+
+        [Display(Name = "Reporting Team Leader")]
+        public int? ReportingTeamLeaderId { get; set; }
+
+        public Employee? ReportingManager { get; set; }
+        public Employee? ReportingTeamLeader { get; set; }
+
         public int ShiftId { get; set; }
 
         public bool IsActive { get; set; } = true;

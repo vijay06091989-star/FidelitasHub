@@ -1,6 +1,7 @@
 ﻿using FidelitasHub.Data;
 using FidelitasHub.Helpers;
 using FidelitasHub.Models;
+using FidelitasHub.Services;
 using AttendanceModel = FidelitasHub.Models.Attendance;
 
 namespace FidelitasHub.Services.Attendance
@@ -8,10 +9,14 @@ namespace FidelitasHub.Services.Attendance
     public class AttendanceRegisterService : IAttendanceRegisterService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ReportingService _reportingService;
 
-        public AttendanceRegisterService(ApplicationDbContext context)
+        public AttendanceRegisterService(
+    ApplicationDbContext context,
+    ReportingService reportingService)
         {
             _context = context;
+            _reportingService = reportingService;
         }
 
         public List<AttendanceRegisterViewModel> GetAttendanceRegister(
@@ -50,7 +55,9 @@ namespace FidelitasHub.Services.Attendance
             // Get Active Employees
             //====================================
 
-            var employees = GetActiveEmployees();
+            var employees = _reportingService
+    .GetVisibleEmployees()
+    .ToList();
 
             //====================================
             // Load Shifts Once

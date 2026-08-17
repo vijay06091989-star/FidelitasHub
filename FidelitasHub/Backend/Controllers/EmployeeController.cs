@@ -93,6 +93,8 @@ namespace FidelitasHub.Controllers
 
             LoadShifts();
 
+            LoadReportingEmployees();
+
             return View();
         }
 
@@ -154,6 +156,10 @@ namespace FidelitasHub.Controllers
 
             LoadShifts();
 
+            LoadReportingEmployees(
+                employee.ReportingManagerId,
+                employee.ReportingTeamLeaderId);
+
             return View(employee);
         }
 
@@ -175,6 +181,11 @@ namespace FidelitasHub.Controllers
 
             LoadShifts();
 
+            LoadReportingEmployees(
+                employee.ReportingManagerId,
+                employee.ReportingTeamLeaderId,
+                employee.EmployeeId);
+
             return View(employee);
         }
 
@@ -187,6 +198,24 @@ namespace FidelitasHub.Controllers
         public IActionResult Edit(Employee employee)
         {
             ModelState.Remove(nameof(Employee.Password));
+
+            //--------------------------------------------------
+            // Prevent Employee from reporting to themselves
+            //--------------------------------------------------
+
+            if (employee.ReportingManagerId == employee.EmployeeId)
+            {
+                ModelState.AddModelError(
+                    "ReportingManagerId",
+                    "An employee cannot be their own Reporting Manager.");
+            }
+
+            if (employee.ReportingTeamLeaderId == employee.EmployeeId)
+            {
+                ModelState.AddModelError(
+                    "ReportingTeamLeaderId",
+                    "An employee cannot be their own Reporting Team Leader.");
+            }
 
             //--------------------------------------------------
             // Duplicate Employee Code
@@ -235,9 +264,13 @@ namespace FidelitasHub.Controllers
 
             LoadShifts();
 
+            LoadReportingEmployees(
+                employee.ReportingManagerId,
+                employee.ReportingTeamLeaderId,
+                employee.EmployeeId);
+
             return View(employee);
         }
-
 
         //==================================================
         // Disable Employee
@@ -292,7 +325,6 @@ namespace FidelitasHub.Controllers
         //==================================================
 
         private void LoadDepartments()
-
         {
             ViewBag.Departments = new SelectList(
 
@@ -307,9 +339,14 @@ namespace FidelitasHub.Controllers
 
             );
         }
+
+        //==================================================
+        // Load Shift Dropdown
+        //==================================================
+
         private void LoadShifts()
         {
-            ViewBag.Shifts = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+            ViewBag.Shifts = new SelectList(
 
                 _context.Shifts
                         .Where(s => s.IsActive)
@@ -321,6 +358,85 @@ namespace FidelitasHub.Controllers
                 "ShiftName"
 
             );
+        }
+
+        //==================================================
+        // Load Reporting Manager / Team Leader Dropdowns
+        //==================================================
+
+        private void LoadReportingEmployees(
+    int? selectedManagerId = null,
+    int? selectedTeamLeaderId = null,
+    int? excludeEmployeeId = null)
+        {
+            //--------------------------------------------------
+            // Reporting Managers
+            // Only Active Managers and Admins
+            //--------------------------------------------------
+
+            var managers = _context.Employees
+                .Where(e =>
+                    e.IsActive &&
+                    (e.Role == "Manager" || e.Role == "Admin"));
+
+            //--------------------------------------------------
+            // Reporting Team Leaders
+            // Only Active Team Leaders
+            //--------------------------------------------------
+
+            var teamLeaders = _context.Employees
+                .Where(e =>
+                    e.IsActive &&
+                    e.Role == "Team Leader");
+
+            //--------------------------------------------------
+            // Exclude the employee being edited
+            //--------------------------------------------------
+
+            if (excludeEmployeeId.HasValue)
+            {
+                managers = managers.Where(e =>
+                    e.EmployeeId != excludeEmployeeId.Value);
+
+                teamLeaders = teamLeaders.Where(e =>
+                    e.EmployeeId != excludeEmployeeId.Value);
+            }
+
+            //--------------------------------------------------
+            // Build Manager List
+            //--------------------------------------------------
+
+            var managerList = managers
+                .OrderBy(e => e.EmployeeName)
+                .ToList();
+
+            //--------------------------------------------------
+            // Build Team Leader List
+            //--------------------------------------------------
+
+            var teamLeaderList = teamLeaders
+                .OrderBy(e => e.EmployeeName)
+                .ToList();
+
+            //--------------------------------------------------
+            // Reporting Manager Dropdown
+            //--------------------------------------------------
+
+            ViewBag.ReportingManagers = new SelectList(
+                managerList,
+                "EmployeeId",
+                "EmployeeName",
+                selectedManagerId);
+
+            //--------------------------------------------------
+            // Reporting Team Leader Dropdown
+            //--------------------------------------------------
+
+            ViewBag.ReportingTeamLeaders = new SelectList(
+                teamLeaderList,
+                "EmployeeId",
+                "EmployeeName",
+                selectedTeamLeaderId);
         }
     }
 }

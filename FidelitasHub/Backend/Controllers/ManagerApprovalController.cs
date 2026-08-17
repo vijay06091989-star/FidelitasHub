@@ -1,5 +1,6 @@
 ﻿using FidelitasHub.Data;
 using FidelitasHub.Models;
+using FidelitasHub.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,51 +9,160 @@ namespace FidelitasHub.Controllers
     public class ManagerApprovalController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ReportingService _reportingService;
 
-        public ManagerApprovalController(ApplicationDbContext context)
+        public ManagerApprovalController(
+            ApplicationDbContext context,
+            ReportingService reportingService)
         {
             _context = context;
+            _reportingService = reportingService;
         }
 
         //==================================================
         // Manager Approval List
         //==================================================
+
         public async Task<IActionResult> Index()
         {
-            var leaves = await _context.LeaveApplications
-                .Include(x => x.Employee)
-                .Where(x => x.Status == "Pending Manager Approval")
-                .OrderByDescending(x => x.AppliedOn)
-                .ToListAsync();
+            var currentEmployee = _reportingService.GetCurrentEmployee();
 
-            return View(leaves);
+            //==================================================
+            // Not Logged In
+            //==================================================
+
+            if (currentEmployee == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            //==================================================
+            // ADMIN / SUPER ADMIN
+            //
+            // Can see all pending Manager approvals
+            //==================================================
+
+            if (currentEmployee.Role == "Admin" ||
+                currentEmployee.Role == "SuperAdmin")
+            {
+                var adminLeaves = await _context.LeaveApplications
+                    .Include(x => x.Employee)
+                    .Where(x =>
+                        x.Status == "Pending Manager Approval")
+                    .OrderByDescending(x => x.AppliedOn)
+                    .ToListAsync();
+
+                return View(adminLeaves);
+            }
+
+            //==================================================
+            // MANAGER
+            //
+            // Can see only employees whose
+            // ReportingManagerId points to this Manager
+            //==================================================
+
+            if (currentEmployee.Role == "Manager")
+            {
+                var managerLeaves = await _context.LeaveApplications
+                    .Include(x => x.Employee)
+                    .Where(x =>
+                        x.Status == "Pending Manager Approval" &&
+                        x.Employee.ReportingManagerId ==
+                            currentEmployee.EmployeeId)
+                    .OrderByDescending(x => x.AppliedOn)
+                    .ToListAsync();
+
+                return View(managerLeaves);
+            }
+
+            //==================================================
+            // OTHER ROLES
+            //==================================================
+
+            return Forbid();
         }
+
 
         //==================================================
         // Manager Approve
         //==================================================
+
         public async Task<IActionResult> Approve(int id)
         {
+            var currentEmployee =
+                _reportingService.GetCurrentEmployee();
+
+            //==================================================
+            // Not Logged In
+            //==================================================
+
+            if (currentEmployee == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            //==================================================
+            // Get Leave Application + Employee
+            //==================================================
+
             var leave = await _context.LeaveApplications
-                .FirstOrDefaultAsync(x => x.LeaveApplicationId == id);
+                .Include(x => x.Employee)
+                .FirstOrDefaultAsync(x =>
+                    x.LeaveApplicationId == id);
 
             if (leave == null)
+            {
                 return NotFound();
+            }
+
+            //==================================================
+            // SECURITY CHECK
+            //==================================================
+
+            if (currentEmployee.Role == "Admin" ||
+                currentEmployee.Role == "SuperAdmin")
+            {
+                // Admin / SuperAdmin allowed
+            }
+            else if (currentEmployee.Role == "Manager")
+            {
+                // Manager can approve only their own employees
+
+                if (leave.Employee.ReportingManagerId !=
+                    currentEmployee.EmployeeId)
+                {
+                    return Forbid();
+                }
+            }
+            else
+            {
+                return Forbid();
+            }
+
+            //==================================================
+            // Already Approved
+            //==================================================
 
             if (leave.Status == "Approved")
             {
-                TempData["Error"] = "This leave has already been approved.";
+                TempData["Error"] =
+                    "This leave has already been approved.";
+
                 return RedirectToAction(nameof(Index));
             }
 
-            //========================================
+            //==================================================
             // Calculate CL / LOP
-            //========================================
+            //==================================================
 
-            var leaveBalance = await _context.EmployeeLeaveBalances
-                .FirstOrDefaultAsync(x => x.EmployeeId == leave.EmployeeId);
+            var leaveBalance =
+                await _context.EmployeeLeaveBalances
+                    .FirstOrDefaultAsync(x =>
+                        x.EmployeeId == leave.EmployeeId);
 
-            decimal availableBalance = leaveBalance?.CurrentLeaveBalance ?? 0;
+            decimal availableBalance =
+                leaveBalance?.CurrentLeaveBalance ?? 0;
 
             if (availableBalance >= leave.TotalDays)
             {
@@ -61,69 +171,93 @@ namespace FidelitasHub.Controllers
 
                 if (leaveBalance != null)
                 {
-                    leaveBalance.CurrentLeaveBalance -= leave.TotalDays;
-                    leaveBalance.LastUpdatedOn = DateTime.Now;
-                    leaveBalance.LastUpdatedBy = "Manager";
+                    leaveBalance.CurrentLeaveBalance -=
+                        leave.TotalDays;
+
+                    leaveBalance.LastUpdatedOn =
+                        DateTime.Now;
+
+                    leaveBalance.LastUpdatedBy =
+                        "Manager";
                 }
             }
             else
             {
                 leave.CLDays = availableBalance;
-                leave.LOPDays = leave.TotalDays - availableBalance;
+
+                leave.LOPDays =
+                    leave.TotalDays - availableBalance;
 
                 if (leaveBalance != null)
                 {
                     leaveBalance.CurrentLeaveBalance = 0;
-                    leaveBalance.LastUpdatedOn = DateTime.Now;
-                    leaveBalance.LastUpdatedBy = "Manager";
+
+                    leaveBalance.LastUpdatedOn =
+                        DateTime.Now;
+
+                    leaveBalance.LastUpdatedBy =
+                        "Manager";
                 }
             }
 
-            //========================================
+            //==================================================
             // Final Approval
-            //========================================
+            //==================================================
 
             leave.ManagerStatus = "Approved";
-            leave.ManagerApprovalDate = DateTime.Now;
+
+            leave.ManagerApprovalDate =
+                DateTime.Now;
+
             leave.Status = "Approved";
 
-            //========================================
+            //==================================================
             // Create / Update Attendance Records
-            //========================================
+            //==================================================
 
-            decimal remainingCLDays = leave.CLDays;
+            decimal remainingCLDays =
+                leave.CLDays;
 
-            DateTime currentDate = leave.FromDate;
+            DateTime currentDate =
+                leave.FromDate;
 
             while (currentDate <= leave.ToDate)
             {
-                Attendance? attendance = await _context.Attendances
-                    .FirstOrDefaultAsync(a =>
-                        a.EmployeeId == leave.EmployeeId &&
-                        a.AttendanceDate.Date == currentDate.Date);
+                Attendance? attendance =
+                    await _context.Attendances
+                        .FirstOrDefaultAsync(a =>
+                            a.EmployeeId ==
+                                leave.EmployeeId &&
+
+                            a.AttendanceDate.Date ==
+                                currentDate.Date);
 
                 if (attendance == null)
                 {
                     attendance = new Attendance
                     {
-                        EmployeeId = leave.EmployeeId,
-                        AttendanceDate = currentDate
+                        EmployeeId =
+                            leave.EmployeeId,
+
+                        AttendanceDate =
+                            currentDate
                     };
 
-                    _context.Attendances.Add(attendance);
+                    _context.Attendances.Add(
+                        attendance);
                 }
 
                 bool isFullDayLeave =
-    !leave.IsMorningHalf &&
-    !leave.IsAfternoonHalf;
+                    !leave.IsMorningHalf &&
+                    !leave.IsAfternoonHalf;
 
                 bool isHalfDayLeave =
                     leave.IsMorningHalf ||
                     leave.IsAfternoonHalf;
 
-                //========================================
+                //==================================================
                 // ATTENDANCE CLASSIFICATION
-                //========================================
+                //==================================================
                 //
                 // Full Day:
                 //     AttendanceStatus = Approved Leave / LOP
@@ -146,68 +280,145 @@ namespace FidelitasHub.Controllers
                                 ? "Approved Leave"
                                 : "LOP";
 
-                        attendance.Status = "On Leave";
-                        attendance.PunchOut = null;
-                        attendance.PunchOutMode = "Leave";
+                        attendance.Status =
+                            "On Leave";
+
+                        attendance.PunchOut =
+                            null;
+
+                        attendance.PunchOutMode =
+                            "Leave";
                     }
                     else
                     {
                         // Half-day leave.
-                        // Employee is still expected to work part of the day.
+                        // Employee is still expected
+                        // to work part of the day.
 
-                        attendance.AttendanceStatus = "Half Day";
-                        attendance.Status = "Not Punched In";
-                        attendance.PunchOut = null;
-                        attendance.PunchOutMode = "Manual";
+                        attendance.AttendanceStatus =
+                            "Half Day";
+
+                        attendance.Status =
+                            "Not Punched In";
+
+                        attendance.PunchOut =
+                            null;
+
+                        attendance.PunchOutMode =
+                            "Manual";
                     }
                 }
                 else if (isHalfDayLeave)
                 {
-                    // Employee was already working when the half-day
-                    // leave was approved.
+                    // Employee was already working when
+                    // the half-day leave was approved.
 
-                    attendance.AttendanceStatus = "Half Day";
+                    attendance.AttendanceStatus =
+                        "Half Day";
 
                     // DO NOT change:
                     // Working / On Break / Punched Out
                 }
 
-                // If full-day leave is approved after Punch In,
-                // preserve the employee's existing attendance activity.
+                //==================================================
+                // Deduct CL Day
+                //==================================================
 
                 if (remainingCLDays > 0)
                 {
                     remainingCLDays -= 1;
                 }
 
-                currentDate = currentDate.AddDays(1);
+                currentDate =
+                    currentDate.AddDays(1);
             }
+
+            //==================================================
+            // Save Changes
+            //==================================================
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Leave approved successfully.";
+            TempData["Success"] =
+                "Leave approved successfully.";
 
             return RedirectToAction(nameof(Index));
         }
 
+
         //==================================================
         // Manager Reject
         //==================================================
+
         public async Task<IActionResult> Reject(int id)
         {
+            var currentEmployee =
+                _reportingService.GetCurrentEmployee();
+
+            //==================================================
+            // Not Logged In
+            //==================================================
+
+            if (currentEmployee == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            //==================================================
+            // Get Leave Application + Employee
+            //==================================================
+
             var leave = await _context.LeaveApplications
-                .FirstOrDefaultAsync(x => x.LeaveApplicationId == id);
+                .Include(x => x.Employee)
+                .FirstOrDefaultAsync(x =>
+                    x.LeaveApplicationId == id);
 
             if (leave == null)
+            {
                 return NotFound();
+            }
 
-            leave.ManagerStatus = "Rejected";
-            leave.ManagerApprovalDate = DateTime.Now;
-            leave.Status = "Rejected";
+            //==================================================
+            // SECURITY CHECK
+            //==================================================
+
+            if (currentEmployee.Role == "Admin" ||
+                currentEmployee.Role == "SuperAdmin")
+            {
+                // Admin / SuperAdmin allowed
+            }
+            else if (currentEmployee.Role == "Manager")
+            {
+                // Manager can reject only their own employees
+
+                if (leave.Employee.ReportingManagerId !=
+                    currentEmployee.EmployeeId)
+                {
+                    return Forbid();
+                }
+            }
+            else
+            {
+                return Forbid();
+            }
+
+            //==================================================
+            // Reject
+            //==================================================
+
+            leave.ManagerStatus =
+                "Rejected";
+
+            leave.ManagerApprovalDate =
+                DateTime.Now;
+
+            leave.Status =
+                "Rejected";
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Leave rejected.";
+            TempData["Success"] =
+                "Leave rejected.";
 
             return RedirectToAction(nameof(Index));
         }

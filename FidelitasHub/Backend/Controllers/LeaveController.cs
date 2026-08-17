@@ -209,6 +209,40 @@ namespace FidelitasHub.Controllers
                 leaveStatus = "Pending - Next Payroll Cycle";
             }
 
+            //==================================================
+            // Determine Approval Route
+            //==================================================
+            //
+            // If the employee has a Team Leader:
+            //     Team Leader -> Manager
+            //
+            // If the employee has NO Team Leader:
+            //     Directly -> Manager
+            //
+
+            var employee = _context.Employees
+                .FirstOrDefault(e => e.EmployeeId == model.EmployeeId);
+
+            if (employee == null)
+            {
+                TempData["Error"] =
+                    "Employee record could not be found.";
+
+                return RedirectToAction(nameof(ApplyLeave));
+            }
+
+            bool hasTeamLeader =
+                employee.ReportingTeamLeaderId.HasValue;
+
+            //==================================================
+            // Approval Status
+            //==================================================
+
+            if (leaveStatus == "Pending" && !hasTeamLeader)
+            {
+                leaveStatus = "Pending Manager Approval";
+            }
+
             // Create Entity
             LeaveApplication leave = new LeaveApplication
             {
@@ -232,7 +266,10 @@ namespace FidelitasHub.Controllers
 
                 Status = leaveStatus,
 
-                TeamLeaderStatus = "Pending",
+                TeamLeaderStatus =
+    hasTeamLeader
+        ? "Pending"
+        : "Not Required",
 
                 ManagerStatus = "Pending",
 

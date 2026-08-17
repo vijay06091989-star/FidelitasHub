@@ -49,6 +49,7 @@
 
                         <div class="col-md-6">
                             <label asp-for="EmployeeCode" class="form-label"></label>
+
                             <input asp-for="EmployeeCode"
                                    class="form-control"
                                    placeholder="e.g. F0040" />
@@ -56,7 +57,6 @@
                             <span asp-validation-for="EmployeeCode"
                                   class="text-danger"></span>
                         </div>
-
 
 
                         <div class="col-md-6">
@@ -69,7 +69,6 @@
                             <span asp-validation-for="EmployeeName"
                                   class="text-danger"></span>
                         </div>
-
 
 
                         <div class="col-md-6">
@@ -92,7 +91,6 @@
                         </div>
 
 
-
                         <div class="col-md-6">
 
                             <label asp-for="Designation" class="form-label"></label>
@@ -105,8 +103,6 @@
                                   class="text-danger"></span>
 
                         </div>
-
-
 
 
                         <div class="col-md-6">
@@ -123,8 +119,6 @@
                         </div>
 
 
-
-
                         <div class="col-md-6">
 
                             <label asp-for="Mobile" class="form-label"></label>
@@ -139,8 +133,6 @@
                         </div>
 
 
-
-
                         <!-- SHIFT -->
 
                         <div class="col-md-6">
@@ -149,7 +141,6 @@
                                    class="form-label">
                                 Shift
                             </label>
-
 
                             <select asp-for="ShiftId"
                                     asp-items="ViewBag.Shifts"
@@ -161,13 +152,10 @@
 
                             </select>
 
-
                             <span asp-validation-for="ShiftId"
                                   class="text-danger"></span>
 
                         </div>
-
-
 
 
                         <!-- ROLE -->
@@ -177,7 +165,6 @@
                             <label asp-for="Role"
                                    class="form-label">
                             </label>
-
 
                             <select asp-for="Role"
                                     class="form-select">
@@ -202,9 +189,7 @@
                                     Admin
                                 </option>
 
-
                             </select>
-
 
                             <span asp-validation-for="Role"
                                   class="text-danger"></span>
@@ -212,8 +197,57 @@
                         </div>
 
 
+                        <!-- REPORTING MANAGER -->
+
+                        <div class="col-md-6">
+
+                            <label asp-for="ReportingManagerId"
+                                   class="form-label">
+                                Reporting Manager
+                            </label>
+
+                            <select asp-for="ReportingManagerId"
+                                    asp-items="ViewBag.ReportingManagers"
+                                    class="form-select">
+
+                                <option value="">
+                                    -- Select Reporting Manager --
+                                </option>
+
+                            </select>
+
+                            <span asp-validation-for="ReportingManagerId"
+                                  class="text-danger"></span>
+
+                        </div>
 
 
+                        <!-- REPORTING TEAM LEADER -->
+
+                        <div class="col-md-6">
+
+                            <label asp-for="ReportingTeamLeaderId"
+                                   class="form-label">
+                                Reporting Team Leader
+                            </label>
+
+                            <select asp-for="ReportingTeamLeaderId"
+                                    asp-items="ViewBag.ReportingTeamLeaders"
+                                    class="form-select">
+
+                                <option value="">
+                                    -- Select Reporting Team Leader --
+                                </option>
+
+                            </select>
+
+                            <span asp-validation-for="ReportingTeamLeaderId"
+                                  class="text-danger"></span>
+
+                        </div>
+
+
+                        <!-- DATE JOINED -->
 
                         <div class="col-md-6">
 
@@ -221,11 +255,9 @@
                                    class="form-label">
                             </label>
 
-
                             <input asp-for="DateJoined"
                                    type="date"
                                    class="form-control" />
-
 
                             <span asp-validation-for="DateJoined"
                                   class="text-danger"></span>
@@ -233,9 +265,7 @@
                         </div>
 
 
-
                     </div>
-
 
 
                     <hr />
@@ -267,7 +297,6 @@
     </div>
 
 </div>
-
 
 
 @section Scripts

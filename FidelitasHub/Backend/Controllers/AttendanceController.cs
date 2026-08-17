@@ -1,34 +1,38 @@
-﻿    using FidelitasHub.Data;
+﻿    using ClosedXML.Excel;
+    using FidelitasHub.Data;
     using FidelitasHub.Helpers;
     using FidelitasHub.Models;
-    using Microsoft.AspNetCore.Mvc;
-    using ClosedXML.Excel;
-    using System.IO;
     using FidelitasHub.Services.Attendance;
+using FidelitasHub.Services;
+using Microsoft.AspNetCore.Mvc;
+    using System.IO;
 
     namespace FidelitasHub.Controllers
     {
         public class AttendanceController : Controller
         {
-            private readonly ApplicationDbContext _context;
-            private readonly IAttendanceRegisterService _attendanceRegisterService;
-            private readonly IAttendanceProcessingService _attendanceProcessingService;
+        private readonly ApplicationDbContext _context;
+        private readonly IAttendanceRegisterService _attendanceRegisterService;
+        private readonly IAttendanceProcessingService _attendanceProcessingService;
+        private readonly ReportingService _reportingService;
 
-            public AttendanceController(
-        ApplicationDbContext context,
-        IAttendanceRegisterService attendanceRegisterService,
-        IAttendanceProcessingService attendanceProcessingService)
-            {
-                _context = context;
-                _attendanceRegisterService = attendanceRegisterService;
-                _attendanceProcessingService = attendanceProcessingService;
-            }
+        public AttendanceController(
+    ApplicationDbContext context,
+    IAttendanceRegisterService attendanceRegisterService,
+    IAttendanceProcessingService attendanceProcessingService,
+    ReportingService reportingService)
+        {
+            _context = context;
+            _attendanceRegisterService = attendanceRegisterService;
+            _attendanceProcessingService = attendanceProcessingService;
+            _reportingService = reportingService;
+        }
 
-            //====================================================
-            // ATTENDANCE DASHBOARD
-            //====================================================
+        //====================================================
+        // ATTENDANCE DASHBOARD
+        //====================================================
 
-            [HttpGet]
+        [HttpGet]
             public IActionResult Dashboard()
             {
                 //--------------------------------------------------
@@ -947,14 +951,14 @@
                     }
                 }
 
-                //====================================================
-                // TODAY'S / ACTIVE SHIFT ATTENDANCE
-                //====================================================
+            //====================================================
+            // TODAY'S / ACTIVE SHIFT ATTENDANCE
+            //====================================================
 
-                var attendanceList =
-                    (from e in _context.Employees
+            var attendanceList =
+(from e in _reportingService.GetVisibleEmployees()
 
-                     join d in _context.Departments
+ join d in _context.Departments
                      on e.Department equals d.DepartmentName
                      into dept
 
@@ -1363,7 +1367,7 @@
 
                     var today = DateTimeHelper.GetIST().Date;
 
-                    var attendanceList = (from e in _context.Employees
+                    var attendanceList = (from e in _reportingService.GetVisibleEmployees()
 
                                           join s in _context.Shifts
                                           on e.ShiftId equals s.ShiftId

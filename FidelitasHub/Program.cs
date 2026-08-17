@@ -1,4 +1,5 @@
 using FidelitasHub.Data;
+using FidelitasHub.Services;
 using FidelitasHub.Services.Attendance;
 using FidelitasHub.Services.BackgroundServices;
 using FidelitasHub.Services.Configuration;
@@ -13,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 //==================================================
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<ReportingService>();
 
 builder.Services.AddHostedService<AttendanceAutoPunchOutService>();
 

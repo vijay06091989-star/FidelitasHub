@@ -60,5 +60,35 @@ namespace FidelitasHub.Data
 
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
+
+        //==================================================
+        // Entity Relationships
+        //==================================================
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            //==================================================
+            // Reporting Manager relationship
+            //==================================================
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.ReportingManager)
+                .WithMany()
+                .HasForeignKey(e => e.ReportingManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            //==================================================
+            // Reporting Team Leader relationship
+            //==================================================
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.ReportingTeamLeader)
+                .WithMany()
+                .HasForeignKey(e => e.ReportingTeamLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }

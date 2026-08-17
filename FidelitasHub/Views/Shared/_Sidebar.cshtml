@@ -47,24 +47,47 @@
 
         <div class="sidebar__section">Attendance</div>
 
+        <!-- Today's Attendance -->
         @if (!isEmployee)
         {
-            <a class="sidebar__link" asp-controller="Attendance" asp-action="TodayAttendance">
+            <a class="sidebar__link"
+               asp-controller="Attendance"
+               asp-action="TodayAttendance">
+
                 <i class="fa-solid fa-calendar-day"></i>
+
                 <span>Today's Attendance</span>
+
             </a>
         }
 
+
+        <!-- Attendance Register -->
+        @if (isAdmin || isManager || isTeamLeader || isEmployee)
+        {
+            <a class="sidebar__link"
+               asp-controller="Attendance"
+               asp-action="Register">
+
+                <i class="fa-solid fa-clipboard-list"></i>
+
+                <span>Attendance Register</span>
+
+            </a>
+        }
+
+
+        <!-- Attendance Correction -->
         @if (isAdmin)
         {
-            <a class="sidebar__link" asp-controller="Attendance" asp-action="Register">
-                <i class="fa-solid fa-clipboard-list"></i>
-                <span>Attendance Register</span>
-            </a>
+            <a class="sidebar__link"
+               asp-controller="Attendance"
+               asp-action="AttendanceCorrection">
 
-            <a class="sidebar__link" asp-controller="Attendance" asp-action="AttendanceCorrection">
                 <i class="fa-solid fa-pen-to-square"></i>
+
                 <span>Attendance Correction</span>
+
             </a>
         }
 
