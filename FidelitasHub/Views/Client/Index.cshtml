@@ -1,0 +1,400 @@
+﻿@model IEnumerable<FidelitasHub.Models.Client>
+
+@{
+    ViewData["Title"] = "Client Master";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title">
+            <i class="fa-solid fa-handshake"></i> Client Master
+        </h1>
+        <p class="page-head__sub">
+            Manage client records, shift responsibility and status
+        </p>
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Add Client
+    </a>
+</div>
+
+
+<!--==================================================
+    Filter Stats
+==================================================-->
+
+<div class="stat-grid">
+
+    <a class="stat @(string.IsNullOrEmpty(ViewBag.Status as string) ? "is-active" : "")"
+       asp-action="Index"
+       asp-route-searchText="@ViewBag.SearchText">
+
+        <span class="stat__icon">
+            <i class="fa-solid fa-handshake"></i>
+        </span>
+
+        <div class="stat__body">
+            <p class="stat__label">Total Clients</p>
+            <p class="stat__value">@ViewBag.TotalClients</p>
+        </div>
+
+    </a>
+
+
+    <a class="stat stat--success @(ViewBag.Status == "Active" ? "is-active" : "")"
+       asp-action="Index"
+       asp-route-status="Active"
+       asp-route-searchText="@ViewBag.SearchText">
+
+        <span class="stat__icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </span>
+
+        <div class="stat__body">
+            <p class="stat__label">Active</p>
+            <p class="stat__value">@ViewBag.ActiveClients</p>
+        </div>
+
+    </a>
+
+
+    <a class="stat stat--danger @(ViewBag.Status == "Inactive" ? "is-active" : "")"
+       asp-action="Index"
+       asp-route-status="Inactive"
+       asp-route-searchText="@ViewBag.SearchText">
+
+        <span class="stat__icon">
+            <i class="fa-solid fa-ban"></i>
+        </span>
+
+        <div class="stat__body">
+            <p class="stat__label">Inactive</p>
+            <p class="stat__value">@ViewBag.InactiveClients</p>
+        </div>
+
+    </a>
+
+</div>
+
+
+<!--==================================================
+    Search
+==================================================-->
+
+<form asp-action="Index" method="get" class="mb-3">
+
+    <div class="row g-2">
+
+        <div class="col-sm-6 col-md-4">
+
+            <div class="input-group">
+
+                <span class="input-group-text bg-transparent">
+                    <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                </span>
+
+                <input type="text"
+                       name="searchText"
+                       value="@ViewBag.SearchText"
+                       class="form-control"
+                       placeholder="Search client by name or code..." />
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <select name="status"
+                    class="form-select">
+
+                @if (string.IsNullOrEmpty(ViewBag.Status as string))
+                {
+                    <option value="" selected>All</option>
+                }
+                else
+                {
+                    <option value="">All</option>
+                }
+
+                @if (ViewBag.Status == "Active")
+                {
+                    <option value="Active" selected>Active</option>
+                }
+                else
+                {
+                    <option value="Active">Active</option>
+                }
+
+                @if (ViewBag.Status == "Inactive")
+                {
+                    <option value="Inactive" selected>Inactive</option>
+                }
+                else
+                {
+                    <option value="Inactive">Inactive</option>
+                }
+
+            </select>
+
+        </div>
+
+
+        <div class="col-auto">
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Search
+            </button>
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+                Clear
+            </a>
+
+        </div>
+
+    </div>
+
+</form>
+
+
+<!--==================================================
+    Client List
+==================================================-->
+
+<div class="table-card">
+
+    <div class="table-responsive">
+
+        <table class="table table-hover mb-0">
+
+            <thead>
+
+                <tr>
+
+                    <th>Code</th>
+
+                    <th>Client Name</th>
+
+                    <th>Status</th>
+
+                    <th class="text-end">
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+
+                            <td>
+                                <span class="fw-semibold">
+                                    @item.ClientCode
+                                </span>
+                            </td>
+
+
+                            <td>
+                                @item.ClientName
+                            </td>
+
+
+                            <td>
+
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-soft-success">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger">
+                                        Inactive
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <td class="text-end">
+
+                                <!-- Edit -->
+
+                                <a asp-action="Edit"
+                                   asp-route-id="@item.ClientId"
+                                   class="btn btn-sm btn-outline-primary"
+                                   title="Edit Client">
+
+                                    <i class="fa-solid fa-pen"></i>
+
+                                </a>
+
+
+                                @if (item.IsActive)
+                                {
+                                    <!-- Disable -->
+
+                                    <form id="disableForm_@item.ClientId"
+                                          asp-action="Disable"
+                                          asp-route-id="@item.ClientId"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Disable Client"
+                                                onclick="confirmDisable('@item.ClientId','@item.ClientName')">
+
+                                            <i class="fa-solid fa-ban"></i>
+
+                                        </button>
+
+                                    </form>
+                                }
+                                else
+                                {
+                                    <!-- Enable -->
+
+                                    <form id="enableForm_@item.ClientId"
+                                          asp-action="Enable"
+                                          asp-route-id="@item.ClientId"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-success"
+                                                title="Enable Client"
+                                                onclick="confirmEnable('@item.ClientId','@item.ClientName')">
+
+                                            <i class="fa-solid fa-check"></i>
+
+                                        </button>
+
+                                    </form>
+                                }
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+
+                        <td colspan="4"
+                            class="text-center text-muted py-4">
+
+                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
+
+                            No clients found.
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+
+        function confirmDisable(id, name) {
+
+            Swal.fire({
+
+                title: 'Disable Client?',
+
+                html: '<b>' + name +
+                    '</b><br><br>' +
+                    'This client will become inactive.',
+
+                icon: 'warning',
+
+                showCancelButton: true,
+
+                confirmButtonColor: '#dc2626',
+
+                cancelButtonColor: '#64748b',
+
+                confirmButtonText: 'Yes, Disable',
+
+                cancelButtonText: 'Cancel'
+
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    document
+                        .getElementById('disableForm_' + id)
+                        .submit();
+
+                }
+
+            });
+
+        }
+
+
+        function confirmEnable(id, name) {
+
+            Swal.fire({
+
+                title: 'Enable Client?',
+
+                html: '<b>' + name +
+                    '</b><br><br>' +
+                    'This client will become active again.',
+
+                icon: 'question',
+
+                showCancelButton: true,
+
+                confirmButtonColor: '#0d9488',
+
+                cancelButtonColor: '#64748b',
+
+                confirmButtonText: 'Yes, Enable',
+
+                cancelButtonText: 'Cancel'
+
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    document
+                        .getElementById('enableForm_' + id)
+                        .submit();
+
+                }
+
+            });
+
+        }
+
+    </script>
+}

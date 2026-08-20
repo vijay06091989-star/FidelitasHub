@@ -1,0 +1,398 @@
+﻿@model FidelitasHub.Models.Client
+
+@{
+    ViewData["Title"] = $"{Model.ClientCode} Productivity";
+}
+
+<div class="page-head">
+
+    <div>
+
+        <h1 class="page-head__title">
+            <i class="fa-solid fa-chart-line"></i>
+            @Model.ClientCode Productivity
+        </h1>
+
+        <p class="page-head__sub">
+            @Model.ClientName
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================== -->
+<!-- CLIENT OVERVIEW -->
+<!-- ================================================== -->
+
+<div class="table-card mb-4">
+
+    <div class="p-3 border-bottom">
+
+        <h5 class="mb-0">
+            <i class="fa-solid fa-handshake me-2"></i>
+            Client Overview
+        </h5>
+
+    </div>
+
+
+    <div class="p-3">
+
+        <div class="row g-3">
+
+
+            <!-- Client Code -->
+
+            <div class="col-md-4">
+
+                <div class="text-muted small">
+                    Client Code
+                </div>
+
+                <div class="fw-semibold">
+                    @Model.ClientCode
+                </div>
+
+            </div>
+
+
+            <!-- Client Name -->
+
+            <div class="col-md-8">
+
+                <div class="text-muted small">
+                    Client Name
+                </div>
+
+                <div class="fw-semibold">
+                    @Model.ClientName
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================== -->
+<!-- GENERAL SHIFT RESPONSIBILITY -->
+<!-- ================================================== -->
+
+<div class="table-card mb-4">
+
+    <div class="p-3 border-bottom">
+
+        <h5 class="mb-0">
+            <i class="fa-solid fa-sun me-2"></i>
+            General Shift Responsibility
+        </h5>
+
+    </div>
+
+
+    <div class="p-3">
+
+        <div class="row g-4">
+
+
+            <!-- Manager -->
+
+            <div class="col-md-6">
+
+                <div class="text-muted small">
+                    Manager
+                </div>
+
+                <div class="fw-semibold">
+
+                    @(Model.GeneralShiftManager?.EmployeeName
+                        ?? "Not Assigned")
+
+                </div>
+
+            </div>
+
+
+            <!-- Billing Team Leader -->
+
+            <div class="col-md-6">
+
+                <div class="text-muted small">
+                    Team Leader - Billing
+                </div>
+
+                <div class="fw-semibold">
+
+                    @(Model.GeneralShiftBillingTeamLeader?.EmployeeName
+                        ?? "Not Assigned")
+
+                </div>
+
+            </div>
+
+
+            <!-- Posting Team Leader -->
+
+            <div class="col-md-6">
+
+                <div class="text-muted small">
+                    Team Leader - Posting
+                </div>
+
+                <div class="fw-semibold">
+
+                    @(Model.GeneralShiftPostingTeamLeader?.EmployeeName
+                        ?? "Not Assigned")
+
+                </div>
+
+            </div>
+
+
+            <!-- DM Team Leader -->
+
+            <div class="col-md-6">
+
+                <div class="text-muted small">
+                    Team Leader - DM
+                </div>
+
+                <div class="fw-semibold">
+
+                    @(Model.GeneralShiftDMTeamLeader?.EmployeeName
+                        ?? "Not Assigned")
+
+                </div>
+
+            </div>
+
+
+            <!-- End to End Team Leader -->
+
+            <div class="col-md-6">
+
+                <div class="text-muted small">
+                    Team Leader - End to End
+                </div>
+
+                <div class="fw-semibold">
+
+                    @(Model.GeneralShiftEndToEndTeamLeader?.EmployeeName
+                        ?? "Not Assigned")
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================== -->
+<!-- US SHIFT RESPONSIBILITY -->
+<!-- ================================================== -->
+
+<div class="table-card mb-4">
+
+    <div class="p-3 border-bottom">
+
+        <h5 class="mb-0">
+            <i class="fa-solid fa-moon me-2"></i>
+            US Shift Responsibility
+        </h5>
+
+    </div>
+
+
+    <div class="p-3">
+
+        <div class="row g-4">
+
+
+            <!-- US Shift Manager -->
+
+            <div class="col-md-6">
+
+                <div class="text-muted small">
+                    Manager
+                </div>
+
+                <div class="fw-semibold">
+
+                    @(Model.USShiftManager?.EmployeeName
+                        ?? "Not Assigned")
+
+                </div>
+
+            </div>
+
+
+            <!-- US Shift Team Leader -->
+
+            <div class="col-md-6">
+
+                <div class="text-muted small">
+                    Team Leader
+                </div>
+
+                <div class="fw-semibold">
+
+                    @(Model.USShiftTeamLeader?.EmployeeName
+                        ?? "Not Assigned")
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================== -->
+<!-- PRODUCTIVITY MODULES -->
+<!-- ================================================== -->
+
+<div class="table-card mb-4">
+
+    <div class="p-3 border-bottom">
+
+        <h5 class="mb-0">
+            <i class="fa-solid fa-layer-group me-2"></i>
+            Productivity Setup
+        </h5>
+
+    </div>
+
+
+    <div class="p-3">
+
+        <div class="row g-3">
+
+
+            <!-- SOP -->
+
+            <div class="col-md-3">
+
+                <div class="border rounded p-3 h-100">
+
+                    <h6>
+                        <i class="fa-solid fa-book me-1"></i>
+                        SOP
+                    </h6>
+
+                    <p class="text-muted small mb-3">
+                        Standard operating procedures for this client.
+                    </p>
+
+                    <button class="btn btn-outline-primary btn-sm"
+                            disabled>
+
+                        View SOP
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Billing -->
+
+            <div class="col-md-3">
+
+                <div class="border rounded p-3 h-100">
+
+                    <h6>
+                        <i class="fa-solid fa-file-invoice-dollar me-1"></i>
+                        Billing
+                    </h6>
+
+                    <p class="text-muted small mb-3">
+                        Billing activities and productivity configuration.
+                    </p>
+
+                    <button class="btn btn-outline-primary btn-sm"
+                            disabled>
+
+                        Manage
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Posting -->
+
+            <div class="col-md-3">
+
+                <div class="border rounded p-3 h-100">
+
+                    <h6>
+                        <i class="fa-solid fa-file-circle-check me-1"></i>
+                        Posting
+                    </h6>
+
+                    <p class="text-muted small mb-3">
+                        Posting activities and productivity configuration.
+                    </p>
+
+                    <button class="btn btn-outline-primary btn-sm"
+                            disabled>
+
+                        Manage
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Other -->
+
+            <div class="col-md-3">
+
+                <div class="border rounded p-3 h-100">
+
+                    <h6>
+                        <i class="fa-solid fa-ellipsis me-1"></i>
+                        Others
+                    </h6>
+
+                    <p class="text-muted small mb-3">
+                        Additional client-specific activities.
+                    </p>
+
+                    <button class="btn btn-outline-primary btn-sm"
+                            disabled>
+
+                        Manage
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>

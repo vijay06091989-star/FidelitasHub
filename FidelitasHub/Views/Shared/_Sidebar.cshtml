@@ -1,3 +1,6 @@
+@using FidelitasHub.Data
+@inject ApplicationDbContext Db
+
 @{
     var role = (Context.Session.GetString("Role") ?? "").Trim();
 
@@ -152,6 +155,120 @@
             </a>
         }
 
+        <!-- ================= PRODUCTIVITY ================= -->
+        
+        {
+            <div class="sidebar__section">Productivity</div>
+
+            <a class="sidebar__link"
+               asp-controller="Productivity"
+               asp-action="Index">
+
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Productivity Dashboard</span>
+
+            </a>
+
+            <div class="sidebar__group">
+
+                <a class="sidebar__link" href="#"
+                   onclick="toggleProductivityClients(event)">
+
+                    <i class="fa-solid fa-handshake"></i>
+
+                    <span>Clients</span>
+
+                    <i id="productivityClientCaret"
+                       class="fa-solid fa-chevron-right caret"></i>
+
+                </a>
+
+                <div id="productivityClientMenu"
+                     class="sidebar__submenu"
+                     style="display:none;">
+
+                    @{
+                        var productivityClients = Db.Clients
+                            .Where(c => c.IsActive)
+                            .OrderBy(c => c.ClientCode)
+                            .ToList();
+                    }
+
+                    <div class="productivity-client-selector">
+
+                        <div class="productivity-client-input-wrap">
+
+                            <input type="text"
+                                   id="productivityClientSearch"
+                                   class="productivity-client-input"
+                                   placeholder="Select client..."
+                                   autocomplete="off"
+                                   oninput="filterProductivityClients()" />
+
+                            <button type="button"
+                                    class="productivity-client-arrow"
+                                    onclick="toggleProductivityClientDropdown(event)"
+                                    tabindex="-1">
+
+                                <i id="productivityClientArrow"
+                                   class="fa-solid fa-chevron-down"></i>
+
+                            </button>
+
+                        </div>
+
+                        <div id="productivityClientDropdown"
+                             class="productivity-client-dropdown">
+
+                            @foreach (var client in productivityClients)
+                            {
+                                <button type="button"
+                                        class="productivity-client-option"
+                                        data-code="@client.ClientCode"
+                                        data-id="@client.ClientId"
+                                        onclick="selectProductivityClient(this)">
+
+                                    @client.ClientCode
+
+                                </button>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <a class="sidebar__link"
+               asp-controller="Productivity"
+               asp-action="Setup">
+
+                <i class="fa-solid fa-sliders"></i>
+                <span>Productivity Setup</span>
+
+            </a>
+
+            <a class="sidebar__link"
+               asp-controller="Productivity"
+               asp-action="Register">
+
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Productivity Register</span>
+
+            </a>
+
+            <a class="sidebar__link"
+               asp-controller="Productivity"
+               asp-action="Reports">
+
+                <i class="fa-solid fa-chart-column"></i>
+                <span>Productivity Reports</span>
+
+            </a>
+        }
+
         <!-- ================= ADMINISTRATION ================= -->
         @if (isAdmin)
         {
@@ -191,6 +308,10 @@
 
                     <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
                         <span>Holidays</span>
+                    </a>
+
+                    <a class="sidebar__link" asp-controller="Client" asp-action="Index">
+                        <span>Clients</span>
                     </a>
 
                 </div>
@@ -296,3 +417,191 @@
 </aside>
 
 <div class="sidebar__backdrop"></div>
+
+        <script>
+
+            // ==========================================================
+            // PRODUCTIVITY CLIENT MENU
+            // ==========================================================
+
+            function toggleProductivityClients(event) {
+
+                event.preventDefault();
+
+                const menu =
+                    document.getElementById("productivityClientMenu");
+
+                const caret =
+                    document.getElementById("productivityClientCaret");
+
+                if (!menu) return;
+
+                if (menu.style.display === "none" ||
+                    menu.style.display === "") {
+
+                    menu.style.display = "block";
+
+                    if (caret) {
+                        caret.classList.remove("fa-chevron-right");
+                        caret.classList.add("fa-chevron-down");
+                    }
+
+                }
+                else {
+
+                    menu.style.display = "none";
+
+                    if (caret) {
+                        caret.classList.remove("fa-chevron-down");
+                        caret.classList.add("fa-chevron-right");
+                    }
+
+                    closeProductivityClientDropdown();
+                }
+            }
+
+
+            // ==========================================================
+            // OPEN / CLOSE CLIENT DROPDOWN
+            // ==========================================================
+
+            function toggleProductivityClientDropdown(event) {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const dropdown =
+                    document.getElementById("productivityClientDropdown");
+
+                const arrow =
+                    document.getElementById("productivityClientArrow");
+
+                if (!dropdown) return;
+
+                if (dropdown.classList.contains("show")) {
+
+                    closeProductivityClientDropdown();
+
+                }
+                else {
+
+                    dropdown.classList.add("show");
+
+                    if (arrow) {
+                        arrow.classList.remove("fa-chevron-down");
+                        arrow.classList.add("fa-chevron-up");
+                    }
+                }
+            }
+
+
+            // ==========================================================
+            // FILTER CLIENTS WHILE TYPING
+            // ==========================================================
+
+            function filterProductivityClients() {
+
+                const input =
+                    document.getElementById("productivityClientSearch");
+
+                const dropdown =
+                    document.getElementById("productivityClientDropdown");
+
+                if (!input || !dropdown) return;
+
+                const searchText =
+                    input.value.trim().toLowerCase();
+
+                const clients =
+                    dropdown.querySelectorAll(".productivity-client-option");
+
+                clients.forEach(function(client) {
+
+                    const code =
+                        (client.dataset.code || "").toLowerCase();
+
+                    if (code.includes(searchText)) {
+
+                        client.style.display = "block";
+
+                    }
+                    else {
+
+                        client.style.display = "none";
+
+                    }
+                });
+
+                dropdown.classList.add("show");
+
+                const arrow =
+                    document.getElementById("productivityClientArrow");
+
+                if (arrow) {
+                    arrow.classList.remove("fa-chevron-down");
+                    arrow.classList.add("fa-chevron-up");
+                }
+            }
+
+
+            // ==========================================================
+            // SELECT CLIENT
+            // ==========================================================
+
+            function selectProductivityClient(element) {
+
+                if (!element) return;
+
+                const clientId =
+                    element.dataset.id;
+
+                if (!clientId) return;
+
+                window.location.href =
+                    "/Productivity/Client?id=" + clientId;
+            }
+
+
+            // ==========================================================
+            // CLOSE DROPDOWN
+            // ==========================================================
+
+            function closeProductivityClientDropdown() {
+
+                const dropdown =
+                    document.getElementById("productivityClientDropdown");
+
+                const arrow =
+                    document.getElementById("productivityClientArrow");
+
+                if (dropdown) {
+                    dropdown.classList.remove("show");
+                }
+
+                if (arrow) {
+                    arrow.classList.remove("fa-chevron-up");
+                    arrow.classList.add("fa-chevron-down");
+                }
+            }
+
+
+            // ==========================================================
+            // CLICK OUTSIDE DROPDOWN
+            // ==========================================================
+
+            document.addEventListener("click", function(event) {
+
+                const selector =
+                    document.querySelector(".productivity-client-selector");
+
+                if (!selector) return;
+
+                if (!selector.contains(event.target)) {
+
+                    closeProductivityClientDropdown();
+
+                }
+
+            });
+
+        </script>

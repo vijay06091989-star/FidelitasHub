@@ -1,0 +1,349 @@
+﻿@model FidelitasHub.Models.Client
+
+@{
+    ViewData["Title"] = "Add Client";
+}
+
+<form id="clientForm"
+      asp-action="Create"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="page-head">
+        <div>
+            <h1 class="page-head__title">
+                <i class="fa-solid fa-handshake"></i> Add Client
+            </h1>
+
+            <p class="page-head__sub">
+                Create a new client and assign shift responsibilities
+            </p>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back
+        </a>
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- Client Information -->
+    <!-- ================================================== -->
+
+    <div class="table-card mb-3">
+
+        <div class="p-3 border-bottom">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-handshake me-2"></i>
+                Client Information
+            </h5>
+        </div>
+
+        <div class="p-3">
+
+            <div class="row g-3">
+
+                <!-- Client Code -->
+
+                <div class="col-md-4">
+
+                    <label asp-for="ClientCode" class="form-label">
+                        Client Code
+                    </label>
+
+                    <input asp-for="ClientCode"
+                           class="form-control"
+                           placeholder="Example: GPS" />
+
+                    <span asp-validation-for="ClientCode"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Client Name -->
+
+                <div class="col-md-8">
+
+                    <label asp-for="ClientName" class="form-label">
+                        Client Name
+                    </label>
+
+                    <input asp-for="ClientName"
+                           class="form-control"
+                           placeholder="Enter full client name" />
+
+                    <span asp-validation-for="ClientName"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- General Shift -->
+    <!-- ================================================== -->
+
+    <div class="table-card mb-3">
+
+        <div class="p-3 border-bottom">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-sun me-2"></i>
+                General Shift
+            </h5>
+        </div>
+
+        <div class="p-3">
+
+            <div class="row g-3">
+
+                <!-- General Shift Manager -->
+
+                <div class="col-md-6">
+
+                    <label asp-for="GeneralShiftManagerId"
+                           class="form-label">
+                        Manager
+                    </label>
+
+                    <select asp-for="GeneralShiftManagerId"
+                            asp-items="ViewBag.GeneralShiftManagers"
+                            class="form-select">
+
+                        <option value="">
+                            -- Optional: Select Manager --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="GeneralShiftManagerId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Team Leader - Billing -->
+
+                <div class="col-md-6">
+
+                    <label asp-for="GeneralShiftBillingTeamLeaderId"
+                           class="form-label">
+                        Team Leader - Billing
+                    </label>
+
+                    <select asp-for="GeneralShiftBillingTeamLeaderId"
+                            asp-items="ViewBag.GeneralShiftBillingTeamLeaders"
+                            class="form-select">
+
+                        <option value="">
+                            -- Optional: Select Team Leader --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="GeneralShiftBillingTeamLeaderId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Team Leader - Posting -->
+
+                <div class="col-md-6">
+
+                    <label asp-for="GeneralShiftPostingTeamLeaderId"
+                           class="form-label">
+                        Team Leader - Posting
+                    </label>
+
+                    <select asp-for="GeneralShiftPostingTeamLeaderId"
+                            asp-items="ViewBag.GeneralShiftPostingTeamLeaders"
+                            class="form-select">
+
+                        <option value="">
+                            -- Optional: Select Team Leader --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="GeneralShiftPostingTeamLeaderId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Team Leader - DM -->
+
+                <div class="col-md-6">
+
+                    <label asp-for="GeneralShiftDMTeamLeaderId"
+                           class="form-label">
+                        Team Leader - DM
+                    </label>
+
+                    <select asp-for="GeneralShiftDMTeamLeaderId"
+                            asp-items="ViewBag.GeneralShiftDMTeamLeaders"
+                            class="form-select">
+
+                        <option value="">
+                            -- Optional: Select Team Leader --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="GeneralShiftDMTeamLeaderId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Team Leader - End to End -->
+
+                <div class="col-md-6">
+
+                    <label asp-for="GeneralShiftEndToEndTeamLeaderId"
+                           class="form-label">
+                        Team Leader - End to End
+                    </label>
+
+                    <select asp-for="GeneralShiftEndToEndTeamLeaderId"
+                            asp-items="ViewBag.GeneralShiftEndToEndTeamLeaders"
+                            class="form-select">
+
+                        <option value="">
+                            -- Optional: Select Team Leader --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="GeneralShiftEndToEndTeamLeaderId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- US Shift -->
+    <!-- ================================================== -->
+
+    <div class="table-card mb-3">
+
+        <div class="p-3 border-bottom">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-moon me-2"></i>
+                US Shift
+            </h5>
+        </div>
+
+        <div class="p-3">
+
+            <div class="row g-3">
+
+                <!-- US Shift Manager -->
+
+                <div class="col-md-6">
+
+                    <label asp-for="USShiftManagerId"
+                           class="form-label">
+                        Manager
+                    </label>
+
+                    <select asp-for="USShiftManagerId"
+                            asp-items="ViewBag.USShiftManagers"
+                            class="form-select">
+
+                        <option value="">
+                            -- Optional: Select Manager --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="USShiftManagerId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- US Shift Team Leader -->
+
+                <div class="col-md-6">
+
+                    <label asp-for="USShiftTeamLeaderId"
+                           class="form-label">
+                        Team Leader
+                    </label>
+
+                    <select asp-for="USShiftTeamLeaderId"
+                            asp-items="ViewBag.USShiftTeamLeaders"
+                            class="form-select">
+
+                        <option value="">
+                            -- Optional: Select Team Leader --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="USShiftTeamLeaderId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- Actions -->
+    <!-- ================================================== -->
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="fa-solid fa-xmark me-1"></i>
+            Cancel
+
+        </a>
+
+        <button type="submit"
+                class="btn btn-primary">
+
+            <i class="fa-solid fa-floppy-disk me-1"></i>
+            Save Client
+
+        </button>
+
+    </div>
+
+</form>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

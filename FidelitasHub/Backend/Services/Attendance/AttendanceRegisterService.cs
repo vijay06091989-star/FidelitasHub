@@ -291,37 +291,31 @@ namespace FidelitasHub.Services.Attendance
             if (workedMinutes < 240)
                 return "Absent";
 
-            if (workedMinutes >= 240 && workedMinutes <= 300)
+            if (workedMinutes < 360)
                 return "Half Day";
 
-            if (workedMinutes > 300 && workedMinutes < 480)
-                return "Present";
-
-            if (workedMinutes >= 480)
+            // 360 minutes and above:
+            // Always check late entry
+            if (attendance.PunchIn.HasValue && shift != null)
             {
-                if (attendance.PunchIn.HasValue && shift != null)
-                {
-                    var applicableStartTime =
-    ShiftTimeHelper.GetStartTime(
-        shift,
-        attendance.AttendanceDate);
+                var applicableStartTime =
+                    ShiftTimeHelper.GetStartTime(
+                        shift,
+                        attendance.AttendanceDate);
 
-                    var shiftStart =
-                        attendance.AttendanceDate.Date
-                        + applicableStartTime;
+                var shiftStart =
+                    attendance.AttendanceDate.Date
+                    + applicableStartTime;
 
-                    var graceTime =
-                        shiftStart.AddMinutes(
-                            shift.GraceMinutes);
+                var graceTime =
+                    shiftStart.AddMinutes(
+                        shift.GraceMinutes);
 
-                    if (attendance.PunchIn.Value > graceTime)
-                        return "Present - Late Entry";
-                }
-
-                return "Present";
+                if (attendance.PunchIn.Value > graceTime)
+                    return "Present - Late Entry";
             }
 
-            return "Absent";
+            return "Present";
         }
 
         public List<Employee> GetActiveEmployees()

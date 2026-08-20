@@ -26,6 +26,9 @@ namespace FidelitasHub.Data
 
         public DbSet<Holiday> Holidays { get; set; }
 
+        public DbSet<Client> Clients { get; set; }
+
+
         //==================================================
         // Attendance
         //==================================================
@@ -33,6 +36,7 @@ namespace FidelitasHub.Data
         public DbSet<Attendance> Attendances { get; set; }
 
         public DbSet<AttendanceBreak> AttendanceBreaks { get; set; }
+
 
         //==================================================
         // Leave Management
@@ -46,11 +50,13 @@ namespace FidelitasHub.Data
 
         public DbSet<PayrollCalendar> PayrollCalendars { get; set; }
 
+
         //==================================================
         // Audit
         //==================================================
 
         public DbSet<AuditLog> AuditLogs { get; set; }
+
 
         //==================================================
         // System Settings
@@ -69,10 +75,12 @@ namespace FidelitasHub.Data
         {
             base.OnModelCreating(modelBuilder);
 
+
             //==================================================
-            // Reporting Manager relationship
+            // Employee Reporting Relationships
             //==================================================
 
+            // Reporting Manager
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.ReportingManager)
                 .WithMany()
@@ -80,14 +88,71 @@ namespace FidelitasHub.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            //==================================================
-            // Reporting Team Leader relationship
-            //==================================================
-
+            // Reporting Team Leader
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.ReportingTeamLeader)
                 .WithMany()
                 .HasForeignKey(e => e.ReportingTeamLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            //==================================================
+            // Client Responsibility Relationships
+            //==================================================
+
+            // General Shift Manager
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.GeneralShiftManager)
+                .WithMany()
+                .HasForeignKey(c => c.GeneralShiftManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // General Shift Team Leader - Billing
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.GeneralShiftBillingTeamLeader)
+                .WithMany()
+                .HasForeignKey(c => c.GeneralShiftBillingTeamLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // General Shift Team Leader - Posting
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.GeneralShiftPostingTeamLeader)
+                .WithMany()
+                .HasForeignKey(c => c.GeneralShiftPostingTeamLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // General Shift Team Leader - DM
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.GeneralShiftDMTeamLeader)
+                .WithMany()
+                .HasForeignKey(c => c.GeneralShiftDMTeamLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // General Shift Team Leader - End to End
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.GeneralShiftEndToEndTeamLeader)
+                .WithMany()
+                .HasForeignKey(c => c.GeneralShiftEndToEndTeamLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // US Shift Manager
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.USShiftManager)
+                .WithMany()
+                .HasForeignKey(c => c.USShiftManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // US Shift Team Leader
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.USShiftTeamLeader)
+                .WithMany()
+                .HasForeignKey(c => c.USShiftTeamLeaderId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

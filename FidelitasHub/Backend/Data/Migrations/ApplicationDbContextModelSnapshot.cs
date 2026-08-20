@@ -135,6 +135,79 @@ namespace FidelitasHub.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("FidelitasHub.Models.Client", b =>
+                {
+                    b.Property<int>("ClientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClientId"));
+
+                    b.Property<string>("ClientCode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GeneralShiftBillingTeamLeaderId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GeneralShiftDMTeamLeaderId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GeneralShiftEndToEndTeamLeaderId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GeneralShiftManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GeneralShiftPostingTeamLeaderId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("USShiftManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("USShiftTeamLeaderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClientId");
+
+                    b.HasIndex("GeneralShiftBillingTeamLeaderId");
+
+                    b.HasIndex("GeneralShiftDMTeamLeaderId");
+
+                    b.HasIndex("GeneralShiftEndToEndTeamLeaderId");
+
+                    b.HasIndex("GeneralShiftManagerId");
+
+                    b.HasIndex("GeneralShiftPostingTeamLeaderId");
+
+                    b.HasIndex("USShiftManagerId");
+
+                    b.HasIndex("USShiftTeamLeaderId");
+
+                    b.ToTable("Clients");
+                });
+
             modelBuilder.Entity("FidelitasHub.Models.Department", b =>
                 {
                     b.Property<int>("DepartmentId")
@@ -688,6 +761,58 @@ namespace FidelitasHub.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SystemSettings");
+                });
+
+            modelBuilder.Entity("FidelitasHub.Models.Client", b =>
+                {
+                    b.HasOne("FidelitasHub.Models.Employee", "GeneralShiftBillingTeamLeader")
+                        .WithMany()
+                        .HasForeignKey("GeneralShiftBillingTeamLeaderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FidelitasHub.Models.Employee", "GeneralShiftDMTeamLeader")
+                        .WithMany()
+                        .HasForeignKey("GeneralShiftDMTeamLeaderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FidelitasHub.Models.Employee", "GeneralShiftEndToEndTeamLeader")
+                        .WithMany()
+                        .HasForeignKey("GeneralShiftEndToEndTeamLeaderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FidelitasHub.Models.Employee", "GeneralShiftManager")
+                        .WithMany()
+                        .HasForeignKey("GeneralShiftManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FidelitasHub.Models.Employee", "GeneralShiftPostingTeamLeader")
+                        .WithMany()
+                        .HasForeignKey("GeneralShiftPostingTeamLeaderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FidelitasHub.Models.Employee", "USShiftManager")
+                        .WithMany()
+                        .HasForeignKey("USShiftManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FidelitasHub.Models.Employee", "USShiftTeamLeader")
+                        .WithMany()
+                        .HasForeignKey("USShiftTeamLeaderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("GeneralShiftBillingTeamLeader");
+
+                    b.Navigation("GeneralShiftDMTeamLeader");
+
+                    b.Navigation("GeneralShiftEndToEndTeamLeader");
+
+                    b.Navigation("GeneralShiftManager");
+
+                    b.Navigation("GeneralShiftPostingTeamLeader");
+
+                    b.Navigation("USShiftManager");
+
+                    b.Navigation("USShiftTeamLeader");
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.Employee", b =>
