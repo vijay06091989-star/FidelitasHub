@@ -1,177 +1,439 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
+using FidelitasHub.Helpers;
 using FidelitasHub.Models;
+using FidelitasHub.Services.Leave;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
-using System.IO;
 
 namespace FidelitasHub.Controllers
 {
     public class LeaveBalanceController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly PayrollCycleLeaveService _payrollCycleLeaveService;
 
-        public LeaveBalanceController(ApplicationDbContext context)
+        public LeaveBalanceController(
+            ApplicationDbContext context,
+            PayrollCycleLeaveService payrollCycleLeaveService)
         {
             _context = context;
+            _payrollCycleLeaveService = payrollCycleLeaveService;
         }
 
         //==================================================
-        // Leave Balance Import
+        // Leave Balance Import Page
         //==================================================
 
         [HttpGet]
         public IActionResult Import()
         {
-            return View("~/Views/LeaveBalance/Import.cshtml",
-                new LeaveBalanceImportViewModel());
+            var model = new LeaveBalanceImportViewModel
+            {
+                PayrollCycles = _context.PayrollCalendars
+                    .OrderByDescending(x => x.PeriodStart)
+                    .ToList()
+            };
+
+            return View(
+                "~/Views/LeaveBalance/Import.cshtml",
+                model);
         }
+
+        //==================================================
+        // Preview Excel File
+        //==================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Import(LeaveBalanceImportViewModel model)
+        public IActionResult Import(
+            LeaveBalanceImportViewModel model)
         {
-            if (model.ExcelFile == null || model.ExcelFile.Length == 0)
-            {
-                TempData["Error"] = "Please select an Excel file.";
+            model.PayrollCycles = _context.PayrollCalendars
+                .OrderByDescending(x => x.PeriodStart)
+                .ToList();
 
-                return View("~/Views/LeaveBalance/Import.cshtml", model);
+            //==================================================
+            // Validate Payroll Cycle
+            //==================================================
+
+            if (model.PayrollCalendarId <= 0)
+            {
+                ModelState.AddModelError(
+                    nameof(model.PayrollCalendarId),
+                    "Please select a payroll cycle.");
+
+                return View(
+                    "~/Views/LeaveBalance/Import.cshtml",
+                    model);
             }
 
-            ExcelPackage.License.SetNonCommercialPersonal("Vijay Peethambaram");
+            //==================================================
+            // Validate Excel File
+            //==================================================
+
+            if (model.ExcelFile == null ||
+                model.ExcelFile.Length == 0)
+            {
+                ModelState.AddModelError(
+                    nameof(model.ExcelFile),
+                    "Please select an Excel file.");
+
+                return View(
+                    "~/Views/LeaveBalance/Import.cshtml",
+                    model);
+            }
+
+            //==================================================
+            // Get Selected Payroll Cycle
+            //==================================================
+
+            var payroll = _context.PayrollCalendars
+                .FirstOrDefault(x =>
+                    x.PayrollCalendarId ==
+                    model.PayrollCalendarId);
+
+            if (payroll == null)
+            {
+                ModelState.AddModelError(
+                    nameof(model.PayrollCalendarId),
+                    "Invalid payroll cycle selected.");
+
+                return View(
+                    "~/Views/LeaveBalance/Import.cshtml",
+                    model);
+            }
+
+            //==================================================
+            // EPPlus License
+            //==================================================
+
+            ExcelPackage.License.SetNonCommercialPersonal(
+                "Vijay Peethambaram");
+
+            //==================================================
+            // Create Temporary File
+            //==================================================
 
             string fileName =
-    Guid.NewGuid().ToString() +
-    Path.GetExtension(model.ExcelFile.FileName);
+                Guid.NewGuid().ToString() +
+                Path.GetExtension(model.ExcelFile.FileName);
 
-            string filePath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "TempImports",
-                fileName);
+            string tempDirectory =
+                Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "TempImports");
 
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            Directory.CreateDirectory(tempDirectory);
+
+            string filePath =
+                Path.Combine(
+                    tempDirectory,
+                    fileName);
+
+            using (var fileStream =
+                   new FileStream(
+                       filePath,
+                       FileMode.Create))
             {
                 model.ExcelFile.CopyTo(fileStream);
             }
+
+            //==================================================
+            // Store File Name
+            //==================================================
 
             HttpContext.Session.SetString(
                 "LeaveImportFile",
                 fileName);
 
+            // Store selected payroll cycle as well
+            HttpContext.Session.SetInt32(
+                "LeaveImportPayrollCalendarId",
+                model.PayrollCalendarId);
+
+            //==================================================
+            // Read Excel File
+            //==================================================
+
             using var stream = new MemoryStream();
 
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (var fileStream =
+                   new FileStream(
+                       filePath,
+                       FileMode.Open,
+                       FileAccess.Read))
             {
                 fileStream.CopyTo(stream);
             }
 
             stream.Position = 0;
 
-            using var package = new ExcelPackage(stream);
+            using var package =
+                new ExcelPackage(stream);
 
-            var worksheet = package.Workbook.Worksheets[0];
-
-            if (worksheet == null)
+            if (package.Workbook.Worksheets.Count == 0)
             {
-                TempData["Error"] = "No worksheet found in the Excel file.";
+                TempData["Error"] =
+                    "No worksheet found in the Excel file.";
 
-                return View("~/Views/LeaveBalance/Import.cshtml", model);
+                return View(
+                    "~/Views/LeaveBalance/Import.cshtml",
+                    model);
             }
 
-            int totalRows = worksheet.Dimension.Rows;
+            var worksheet =
+                package.Workbook.Worksheets[0];
 
-            var preview = new List<LeaveBalancePreview>();
-
-            for (int row = 2; row <= totalRows; row++)
+            if (worksheet.Dimension == null)
             {
-                string employeeCode = worksheet.Cells[row, 1].Text.Trim();
+                TempData["Error"] =
+                    "The Excel worksheet is empty.";
 
-                preview.Add(new LeaveBalancePreview
+                return View(
+                    "~/Views/LeaveBalance/Import.cshtml",
+                    model);
+            }
+
+            int totalRows =
+                worksheet.Dimension.Rows;
+
+            var preview =
+                new List<LeaveBalancePreview>();
+
+            //==================================================
+            // Build Preview
+            //==================================================
+
+            for (int row = 2;
+                 row <= totalRows;
+                 row++)
+            {
+                string employeeCode =
+                    worksheet.Cells[row, 1]
+                        .Text
+                        .Trim();
+
+                // Ignore blank rows
+                if (string.IsNullOrWhiteSpace(
+                    employeeCode))
                 {
-                    EmployeeCode = employeeCode,
+                    continue;
+                }
 
-                    EmployeeName = worksheet.Cells[row, 2].Text.Trim(),
+                string employeeName =
+                    worksheet.Cells[row, 2]
+                        .Text
+                        .Trim();
 
-                    LeaveBalance = decimal.TryParse(
+                decimal leaveBalance =
+                    decimal.TryParse(
                         worksheet.Cells[row, 3].Text,
                         out decimal balance)
-                        ? balance
-                        : 0,
+                    ? balance
+                    : 0;
 
-                    Status = _context.Employees.Any(e => e.EmployeeCode == employeeCode)
-                        ? "Employee Found"
-                        : "Employee Not Found"
-                });
+                bool employeeExists =
+                    _context.Employees.Any(e =>
+                        e.EmployeeCode ==
+                        employeeCode);
+
+                preview.Add(
+                    new LeaveBalancePreview
+                    {
+                        EmployeeCode = employeeCode,
+                        EmployeeName = employeeName,
+                        LeaveBalance = leaveBalance,
+
+                        Status = employeeExists
+                            ? "Employee Found"
+                            : "Employee Not Found"
+                    });
             }
 
             model.PreviewData = preview;
 
             TempData["Success"] =
-                $"Excel loaded successfully. {preview.Count} record(s) found.";
+                $"Excel loaded successfully. " +
+                $"{preview.Count} record(s) found.";
 
-            return View("~/Views/LeaveBalance/Import.cshtml", model);
+            return View(
+                "~/Views/LeaveBalance/Import.cshtml",
+                model);
         }
 
         //==================================================
-        // Import Leave Balances
+        // Save Leave Balance Import
         //==================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SaveImport()
+        public async Task<IActionResult> SaveImport(
+            LeaveBalanceImportViewModel model)
         {
+            //==================================================
+            // Get Payroll Cycle
+            //==================================================
+
+            int payrollCalendarId =
+                model.PayrollCalendarId;
+
+            if (payrollCalendarId <= 0)
+            {
+                payrollCalendarId =
+                    HttpContext.Session.GetInt32(
+                        "LeaveImportPayrollCalendarId")
+                    ?? 0;
+            }
+
+            if (payrollCalendarId <= 0)
+            {
+                TempData["Error"] =
+                    "Please select a payroll cycle.";
+
+                return RedirectToAction(
+                    nameof(Import));
+            }
+
+            //==================================================
+            // Get Selected Payroll Cycle
+            //==================================================
+
+            var payroll =
+                await _context.PayrollCalendars
+                    .FirstOrDefaultAsync(x =>
+                        x.PayrollCalendarId ==
+                        payrollCalendarId);
+
+            if (payroll == null)
+            {
+                TempData["Error"] =
+                    "Invalid payroll cycle selected.";
+
+                return RedirectToAction(
+                    nameof(Import));
+            }
+
+            //==================================================
+            // Payroll Dates
+            //==================================================
+
+            DateTime payrollStart =
+                payroll.PeriodStart.Date;
+
+            DateTime payrollEnd =
+                payroll.PeriodEnd.Date;
+
+            //==================================================
+            // Get Temporary Excel File
+            //==================================================
+
             string? fileName =
-                HttpContext.Session.GetString("LeaveImportFile");
+                HttpContext.Session.GetString(
+                    "LeaveImportFile");
 
-            if (string.IsNullOrWhiteSpace(fileName))
+            if (string.IsNullOrWhiteSpace(
+                fileName))
             {
                 TempData["Error"] =
-                    "Import session has expired. Please preview the Excel again.";
+                    "Import session expired. " +
+                    "Please upload and preview the Excel file again.";
 
-                return RedirectToAction(nameof(Import));
+                return RedirectToAction(
+                    nameof(Import));
             }
 
-            string filePath = Path.Combine(
-    Directory.GetCurrentDirectory(),
-    "wwwroot",
-    "TempImports",
-    fileName);
+            string tempDirectory =
+                Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "TempImports");
 
-            if (!System.IO.File.Exists(filePath))
+            string filePath =
+                Path.Combine(
+                    tempDirectory,
+                    fileName);
+
+            if (!System.IO.File.Exists(
+                filePath))
             {
                 TempData["Error"] =
-                    "Temporary import file not found.";
+                    "Temporary Excel file was not found. " +
+                    "Please upload the file again.";
 
-                return RedirectToAction(nameof(Import));
+                HttpContext.Session.Remove(
+                    "LeaveImportFile");
+
+                HttpContext.Session.Remove(
+                    "LeaveImportPayrollCalendarId");
+
+                return RedirectToAction(
+                    nameof(Import));
             }
 
-            ExcelPackage.License.SetNonCommercialPersonal("Vijay Peethambaram");
+            //==================================================
+            // Read Excel File
+            //==================================================
 
-            using var package = new ExcelPackage(new FileInfo(filePath));
+            ExcelPackage.License.SetNonCommercialPersonal(
+                "Vijay Peethambaram");
 
-            var worksheet = package.Workbook.Worksheets[0];
+            using var stream =
+                new FileStream(
+                    filePath,
+                    FileMode.Open,
+                    FileAccess.Read);
 
-            if (worksheet == null)
+            using var package =
+                new ExcelPackage(stream);
+
+            if (package.Workbook.Worksheets.Count == 0)
             {
-                TempData["Error"] = "Worksheet not found.";
+                TempData["Error"] =
+                    "No worksheet found in the Excel file.";
 
-                return RedirectToAction(nameof(Import));
+                return RedirectToAction(
+                    nameof(Import));
             }
 
-            int totalRows = worksheet.Dimension.Rows;
+            var worksheet =
+                package.Workbook.Worksheets[0];
 
-            //========================================
-            // Test Import - First Employee Only
-            //========================================
+            if (worksheet.Dimension == null)
+            {
+                TempData["Error"] =
+                    "The Excel worksheet is empty.";
+
+                return RedirectToAction(
+                    nameof(Import));
+            }
+
+            int totalRows =
+                worksheet.Dimension.Rows;
 
             int imported = 0;
             int updated = 0;
             int skipped = 0;
 
-            for (int row = 2; row <= totalRows; row++)
+            //==================================================
+            // Process Excel Rows
+            //==================================================
+
+            for (int row = 2;
+                 row <= totalRows;
+                 row++)
             {
-                string employeeCode = worksheet.Cells[row, 1].Text.Trim();
+                string employeeCode =
+                    worksheet.Cells[row, 1]
+                        .Text
+                        .Trim();
+
+                if (string.IsNullOrWhiteSpace(
+                    employeeCode))
+                {
+                    continue;
+                }
 
                 decimal leaveBalance =
                     decimal.TryParse(
@@ -180,8 +442,15 @@ namespace FidelitasHub.Controllers
                     ? balanceValue
                     : 0;
 
-                var employee = _context.Employees
-                                       .FirstOrDefault(e => e.EmployeeCode == employeeCode);
+                //==================================================
+                // Find Employee
+                //==================================================
+
+                var employee =
+                    await _context.Employees
+                        .FirstOrDefaultAsync(e =>
+                            e.EmployeeCode ==
+                            employeeCode);
 
                 if (employee == null)
                 {
@@ -189,74 +458,147 @@ namespace FidelitasHub.Controllers
                     continue;
                 }
 
-                var balance = _context.EmployeeLeaveBalances
-                                      .FirstOrDefault(x => x.EmployeeId == employee.EmployeeId);
+                //==================================================
+                // Find Leave Balance
+                //
+                // ONLY for the selected payroll cycle.
+                //==================================================
+
+                var balance =
+                    await _context.EmployeeLeaveBalances
+                        .FirstOrDefaultAsync(x =>
+                            x.EmployeeId ==
+                            employee.EmployeeId &&
+
+                            x.BalancePeriodStart.HasValue &&
+                            x.BalancePeriodEnd.HasValue &&
+
+                            x.BalancePeriodStart.Value.Date ==
+                            payrollStart &&
+
+                            x.BalancePeriodEnd.Value.Date ==
+                            payrollEnd);
+
+                //==================================================
+                // Create New Balance
+                //==================================================
 
                 if (balance == null)
                 {
-                    balance = new EmployeeLeaveBalance
-                    {
-                        EmployeeId = employee.EmployeeId,
-                        CurrentLeaveBalance = leaveBalance,
-                        LastUpdatedOn = DateTime.Now,
-                        LastUpdatedBy = "Admin"
-                    };
+                    balance =
+                        new EmployeeLeaveBalance
+                        {
+                            EmployeeId =
+                                employee.EmployeeId,
 
-                    _context.EmployeeLeaveBalances.Add(balance);
+                            CurrentLeaveBalance =
+                                leaveBalance,
+
+                            BalancePeriodStart =
+                                payrollStart,
+
+                            BalancePeriodEnd =
+                                payrollEnd,
+
+                            LastUpdatedOn =
+                                DateTimeHelper.GetIST(),
+
+                            LastUpdatedBy =
+                                "Admin"
+                        };
+
+                    _context.EmployeeLeaveBalances
+                        .Add(balance);
 
                     imported++;
                 }
+
+                //==================================================
+                // Update Existing Balance
+                //==================================================
+
                 else
                 {
-                    balance.CurrentLeaveBalance = leaveBalance;
-                    balance.LastUpdatedOn = DateTime.Now;
-                    balance.LastUpdatedBy = "Admin";
+                    balance.CurrentLeaveBalance =
+                        leaveBalance;
+
+                    balance.BalancePeriodStart =
+                        payrollStart;
+
+                    balance.BalancePeriodEnd =
+                        payrollEnd;
+
+                    balance.LastUpdatedOn =
+                        DateTimeHelper.GetIST();
+
+                    balance.LastUpdatedBy =
+                        "Admin";
 
                     updated++;
                 }
             }
 
-            _context.SaveChanges();
+            //==================================================
+            // Save all balance changes
+            //==================================================
 
-            //========================================
-            // Release Next Payroll Leave Requests
-            //========================================
+            await _context.SaveChangesAsync();
 
-            DateTime currentPayroll = GetPayrollStart(DateTime.Today);
+            //==================================================
+            // Mark selected payroll cycle as Leave Credit Done
+            //==================================================
 
-            var queuedLeaves = _context.LeaveApplications
-                .Where(x => x.Status == "Pending - Next Payroll Cycle")
-                .ToList();
+            payroll.IsLeaveCreditProcessed = true;
 
-            foreach (var leave in queuedLeaves)
-            {
-                if (GetPayrollStart(leave.FromDate) == currentPayroll)
-                {
-                    leave.Status = "Pending";
-                }
-            }
+            _context.PayrollCalendars.Update(payroll);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+
+            //==================================================
+            // Synchronize leave applications
+            //==================================================
+
+            await _payrollCycleLeaveService
+                .SynchronizeAsync(payroll);
+
+            //==================================================
+            // Import Result Message
+            //==================================================
 
             TempData["Success"] =
-                $"Import Completed. Imported : {imported}, Updated : {updated}, Skipped : {skipped}";
+                $"Import completed for " +
+                $"{payrollStart:dd-MMM-yyyy} to " +
+                $"{payrollEnd:dd-MMM-yyyy}. " +
+                $"Imported: {imported}, " +
+                $"Updated: {updated}, " +
+                $"Skipped: {skipped}";
 
-            return RedirectToAction(nameof(Import));
-        }
+            //==================================================
+            // Delete Temporary File
+            //==================================================
 
-        //==================================================
-        // Get Payroll Start Date
-        //==================================================
-        private DateTime GetPayrollStart(DateTime leaveDate)
-        {
-            if (leaveDate.Day >= 22)
+            try
             {
-                return new DateTime(leaveDate.Year, leaveDate.Month, 22);
+                System.IO.File.Delete(
+                    filePath);
+            }
+            catch
+            {
+                // File cleanup failure is not fatal
             }
 
-            DateTime previousMonth = leaveDate.AddMonths(-1);
+            //==================================================
+            // Clear Session
+            //==================================================
 
-            return new DateTime(previousMonth.Year, previousMonth.Month, 22);
+            HttpContext.Session.Remove(
+                "LeaveImportFile");
+
+            HttpContext.Session.Remove(
+                "LeaveImportPayrollCalendarId");
+
+            return RedirectToAction(
+                nameof(Import));
         }
     }
 }

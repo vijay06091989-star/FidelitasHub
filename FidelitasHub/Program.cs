@@ -4,6 +4,7 @@ using FidelitasHub.Services.Attendance;
 using FidelitasHub.Services.BackgroundServices;
 using FidelitasHub.Services.Configuration;
 using FidelitasHub.Services.Email;
+using FidelitasHub.Services.Leave;
 using FidelitasHub.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,8 +19,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ReportingService>();
+builder.Services.AddScoped<PayrollCycleLeaveService>();
 
 builder.Services.AddHostedService<AttendanceAutoPunchOutService>();
+builder.Services.AddHostedService<PayrollCycleLeaveBackgroundService>();
 
 builder.Services.AddScoped<IAttendanceRegisterService, AttendanceRegisterService>();
 

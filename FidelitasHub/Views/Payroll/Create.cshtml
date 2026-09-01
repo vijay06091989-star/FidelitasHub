@@ -1,0 +1,171 @@
+@model FidelitasHub.Models.PayrollCalendar
+
+@{
+    ViewData["Title"] = "Add Payroll Cycle";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title">
+            <i class="fa-solid fa-calendar-plus"></i>
+            Add Payroll Cycle
+        </h1>
+
+        <p class="page-head__sub">
+            Define a new payroll period and salary processing date
+        </p>
+    </div>
+</div>
+
+<div class="form-card">
+
+    <form asp-action="Create" method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3">
+        </div>
+
+        <div class="row">
+
+            <!-- Payroll Month -->
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="PayrollMonth"
+                       class="form-label">
+                    Payroll Month
+                </label>
+
+                <input asp-for="PayrollMonth"
+                       class="form-control"
+                       placeholder="Example: September 2026" />
+
+                <span asp-validation-for="PayrollMonth"
+                      class="text-danger">
+                </span>
+            </div>
+
+
+            <!-- Salary Processing Date -->
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="SalaryProcessingDate"
+                       class="form-label">
+                    Salary Processing Date
+                </label>
+
+                <input asp-for="SalaryProcessingDate"
+                       type="date"
+                       class="form-control" />
+
+                <span asp-validation-for="SalaryProcessingDate"
+                      class="text-danger">
+                </span>
+            </div>
+
+
+            <!-- Period Start -->
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="PeriodStart"
+                       class="form-label">
+                    Payroll Period Start
+                </label>
+
+                <input asp-for="PeriodStart"
+                       type="date"
+                       class="form-control" />
+
+                <span asp-validation-for="PeriodStart"
+                      class="text-danger">
+                </span>
+            </div>
+
+
+            <!-- Period End -->
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="PeriodEnd"
+                       class="form-label">
+                    Payroll Period End
+                </label>
+
+                <input asp-for="PeriodEnd"
+                       type="date"
+                       class="form-control" />
+
+                <span asp-validation-for="PeriodEnd"
+                      class="text-danger">
+                </span>
+            </div>
+
+
+            <!-- Remarks -->
+
+            <div class="col-md-12 mb-3">
+                <label asp-for="Remarks"
+                       class="form-label">
+                    Remarks
+                </label>
+
+                <textarea asp-for="Remarks"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Optional remarks">
+                </textarea>
+
+                <span asp-validation-for="Remarks"
+                      class="text-danger">
+                </span>
+            </div>
+
+
+            <!-- Processing Status -->
+
+            <div class="col-md-6 mb-3">
+
+                <div class="form-check">
+
+                    <input asp-for="IsLeaveCreditProcessed"
+                           class="form-check-input" />
+
+                    <label asp-for="IsLeaveCreditProcessed"
+                           class="form-check-label">
+                        Leave Credit Processed
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+
+            </div>
+
+        </div>
+
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="btn btn-primary">
+
+                <i class="fa-solid fa-floppy-disk"></i>
+
+                Save Payroll Cycle
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

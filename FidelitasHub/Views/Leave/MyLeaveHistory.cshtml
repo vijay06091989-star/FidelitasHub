@@ -1,4 +1,4 @@
-﻿@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+@model IEnumerable<FidelitasHub.Models.LeaveApplication>
 
 @{
     ViewData["Title"] = "My Leave History";
@@ -127,7 +127,8 @@
                                 <td>
 
                                     @if (item.Status == "Pending" ||
-     item.Status == "Pending - Next Payroll Cycle")
+     item.Status == "Pending - Next Payroll Cycle" ||
+     item.Status == "Pending - Balance Import")
                                     {
                                         <a asp-action="CancelLeave"
                                            asp-route-id="@item.LeaveApplicationId"

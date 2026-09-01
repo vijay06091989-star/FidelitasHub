@@ -8,6 +8,15 @@ namespace FidelitasHub.Models
         [Required]
         public IFormFile? ExcelFile { get; set; }
 
+
+        [Required(ErrorMessage = "Please select payroll cycle.")]
+        public int PayrollCalendarId { get; set; }
+
+
+        public List<PayrollCalendar> PayrollCycles { get; set; }
+            = new List<PayrollCalendar>();
+
+
         public List<LeaveBalancePreview> PreviewData { get; set; }
             = new List<LeaveBalancePreview>();
     }

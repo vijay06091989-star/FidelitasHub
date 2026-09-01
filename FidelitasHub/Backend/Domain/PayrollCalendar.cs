@@ -22,8 +22,6 @@ namespace FidelitasHub.Models
 
         public bool IsLeaveCreditProcessed { get; set; } = false;
 
-        public bool IsCarryForwardProcessed { get; set; } = false;
-
         public string Remarks { get; set; } = "";
     }
 }
