@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using FidelitasHub.Models;
 using FidelitasHub.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -156,10 +156,24 @@ namespace FidelitasHub.Controllers
             // Calculate CL / LOP
             //==================================================
 
+            // IMPORTANT:
+            // An employee can have multiple leave-balance rows.
+            // Use the imported balance for the payroll period that
+            // actually contains this leave date. Historical rows
+            // (including rows with NULL payroll periods) must not be
+            // used for a current-period approval.
+            DateTime leaveDate = leave.FromDate.Date;
+
             var leaveBalance =
                 await _context.EmployeeLeaveBalances
-                    .FirstOrDefaultAsync(x =>
-                        x.EmployeeId == leave.EmployeeId);
+                    .Where(x =>
+                        x.EmployeeId == leave.EmployeeId &&
+                        x.BalancePeriodStart.HasValue &&
+                        x.BalancePeriodEnd.HasValue &&
+                        x.BalancePeriodStart.Value.Date <= leaveDate &&
+                        x.BalancePeriodEnd.Value.Date >= leaveDate)
+                    .OrderByDescending(x => x.BalancePeriodStart)
+                    .FirstOrDefaultAsync();
 
             decimal availableBalance =
                 leaveBalance?.CurrentLeaveBalance ?? 0;

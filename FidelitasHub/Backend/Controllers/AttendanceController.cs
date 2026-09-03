@@ -1,4 +1,4 @@
-﻿    using ClosedXML.Excel;
+    using ClosedXML.Excel;
     using FidelitasHub.Data;
     using FidelitasHub.Helpers;
     using FidelitasHub.Models;
@@ -52,6 +52,29 @@ using Microsoft.AspNetCore.Mvc;
                 if (employee == null)
                 {
                     return RedirectToAction("Login", "Account");
+                }
+
+                //--------------------------------------------------
+                // SuperAdmin is not attendance-tracked
+                //--------------------------------------------------
+
+                if (IsAttendanceExempt(employee))
+                {
+                    ViewBag.EmployeeName = employee.EmployeeName;
+                    ViewBag.ShiftName = "Not Required";
+                    ViewBag.ShiftTiming = "-";
+                    ViewBag.AttendanceStatus = "Attendance Not Applicable";
+                    ViewBag.CanPunchIn = false;
+                    ViewBag.PunchInTime = "--";
+                    ViewBag.PunchOutTime = "--";
+                    ViewBag.TotalBreakTime = "--";
+                    ViewBag.WorkedTime = "--";
+                    ViewBag.BreakStartTime = "--";
+                    ViewBag.BreakEndTime = "--";
+                    ViewBag.IsOnApprovedLeave = false;
+                    ViewBag.LeaveStatus = "";
+
+                    return View();
                 }
 
                 //--------------------------------------------------
@@ -285,6 +308,11 @@ using Microsoft.AspNetCore.Mvc;
             });
         }
 
+        if (IsAttendanceExempt(employee))
+        {
+            return AttendanceNotApplicableResponse();
+        }
+
         var shift = _context.Shifts
             .FirstOrDefault(s => s.ShiftId == employee.ShiftId);
 
@@ -503,6 +531,11 @@ using Microsoft.AspNetCore.Mvc;
                     });
                 }
 
+                if (IsAttendanceExempt(employee))
+                {
+                    return AttendanceNotApplicableResponse();
+                }
+
                 var istNow = DateTimeHelper.GetIST();
 
                 var shift = _context.Shifts
@@ -629,6 +662,11 @@ using Microsoft.AspNetCore.Mvc;
                     });
                 }
 
+                if (IsAttendanceExempt(employee))
+                {
+                    return AttendanceNotApplicableResponse();
+                }
+
                 var istNow = DateTimeHelper.GetIST();
 
                 var shift = _context.Shifts
@@ -748,6 +786,11 @@ using Microsoft.AspNetCore.Mvc;
                         title = "Employee",
                         message = "Employee not found."
                     });
+                }
+
+                if (IsAttendanceExempt(employee))
+                {
+                    return AttendanceNotApplicableResponse();
                 }
 
                 var istNow = DateTimeHelper.GetIST();
@@ -985,6 +1028,7 @@ using Microsoft.AspNetCore.Mvc;
                              attendanceDate <= l.ToDate.Date)
 
                      where e.IsActive
+                           && e.Role != "SuperAdmin"
                            && s != null
                            && s.ShiftName == shift
 
@@ -1380,6 +1424,7 @@ using Microsoft.AspNetCore.Mvc;
                                           from a in attendance.DefaultIfEmpty()
 
                                           where e.IsActive
+                                                && e.Role != "SuperAdmin"
                                                 && s.ShiftName == shift
 
                                           orderby e.EmployeeCode
@@ -1594,7 +1639,7 @@ using Microsoft.AspNetCore.Mvc;
                 AttendanceCorrectionViewModel model)
             {
                 model.Employees = _context.Employees
-                    .Where(e => e.IsActive)
+                    .Where(e => e.IsActive && e.Role != "SuperAdmin")
                     .OrderBy(e => e.EmployeeCode)
                     .Select(e => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                     {
@@ -1614,7 +1659,8 @@ using Microsoft.AspNetCore.Mvc;
                 var employee = _context.Employees
                     .FirstOrDefault(e => e.EmployeeId == model.EmployeeId);
 
-                if (employee == null)
+                if (employee == null ||
+                    string.Equals(employee.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
                     return;
 
                 model.EmployeeCode = employee.EmployeeCode;
@@ -1774,6 +1820,23 @@ using Microsoft.AspNetCore.Mvc;
 
             
 
+
+            //==========================================
+            // SuperAdmin is not attendance-tracked
+            //==========================================
+
+            var selectedEmployee = _context.Employees
+                .FirstOrDefault(e => e.EmployeeId == model.EmployeeId);
+
+            if (selectedEmployee == null || IsAttendanceExempt(selectedEmployee))
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Attendance is not applicable for SuperAdmin.");
+
+                LoadAttendanceCorrectionDropdown(model);
+                return View("AttendanceCorrection", model);
+            }
 
             //==========================================
             // Find Attendance Record
@@ -2081,6 +2144,29 @@ using Microsoft.AspNetCore.Mvc;
                 }
 
                 return false;
+            }
+
+
+            //====================================================
+            // ATTENDANCE EXEMPTION
+            //====================================================
+
+            private static bool IsAttendanceExempt(Employee employee)
+            {
+                return string.Equals(
+                    employee.Role,
+                    "SuperAdmin",
+                    StringComparison.OrdinalIgnoreCase);
+            }
+
+            private JsonResult AttendanceNotApplicableResponse()
+            {
+                return Json(new
+                {
+                    success = false,
+                    title = "Attendance Not Applicable",
+                    message = "SuperAdmin accounts are not included in attendance tracking."
+                });
             }
 
         }

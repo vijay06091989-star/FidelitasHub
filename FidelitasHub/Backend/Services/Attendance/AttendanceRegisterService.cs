@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using FidelitasHub.Helpers;
 using FidelitasHub.Models;
 using FidelitasHub.Services;
@@ -56,8 +56,9 @@ namespace FidelitasHub.Services.Attendance
             //====================================
 
             var employees = _reportingService
-    .GetVisibleEmployees()
-    .ToList();
+                .GetVisibleEmployees()
+                .Where(e => e.Role != "SuperAdmin")
+                .ToList();
 
             //====================================
             // Load Shifts Once
@@ -102,7 +103,6 @@ namespace FidelitasHub.Services.Attendance
             //====================================
 
             var attendanceRegister = new List<AttendanceRegisterViewModel>();
-
             //====================================
             // Attendance Engine
             //====================================
@@ -112,12 +112,17 @@ namespace FidelitasHub.Services.Attendance
                 foreach (var attendanceDate in dates)
                 {
                     attendanceLookup.TryGetValue(
-    (employee.EmployeeId, attendanceDate.Date),
-    out var attendance);
+                        (employee.EmployeeId, attendanceDate.Date),
+                        out var attendance);
 
-                    shiftLookup.TryGetValue(
-    employee.ShiftId,
-    out var shift);
+                    Shift? shift = null;
+
+                    if (employee.ShiftId.HasValue)
+                    {
+                        shiftLookup.TryGetValue(
+                            employee.ShiftId.Value,
+                            out shift);
+                    }
 
                     attendanceRegister.Add(new AttendanceRegisterViewModel
                     {
@@ -131,33 +136,36 @@ namespace FidelitasHub.Services.Attendance
 
                         AttendanceDate = attendanceDate,
 
-                        PunchIn = attendance?.PunchIn?.ToString("hh:mm tt") ?? "--",
+                        PunchIn =
+                            attendance?.PunchIn?.ToString("hh:mm tt") ?? "--",
 
                         BreakStart = "--",
 
                         BreakEnd = "--",
 
-                        PunchOut = attendance?.PunchOut?.ToString("hh:mm tt") ?? "--",
+                        PunchOut =
+                            attendance?.PunchOut?.ToString("hh:mm tt") ?? "--",
 
                         WorkedTime = attendance != null
-    ? TimeSpan.FromMinutes(attendance.WorkedMinutes).ToString(@"hh\:mm")
-    : "--",
+                            ? TimeSpan.FromMinutes(attendance.WorkedMinutes)
+                                .ToString(@"hh\:mm")
+                            : "--",
 
                         BreakTime = attendance != null
-    ? TimeSpan.FromMinutes(attendance.TotalBreakMinutes).ToString(@"hh\:mm")
-    : "--",
+                            ? TimeSpan.FromMinutes(attendance.TotalBreakMinutes)
+                                .ToString(@"hh\:mm")
+                            : "--",
 
                         Status = attendance?.Status ?? "Absent",
 
                         AttendanceStatus = CalculateAttendanceStatus(
-    attendance,
-    shift),
+                            attendance,
+                            shift),
 
                         Remarks = ""
                     });
                 }
             }
-
 
             //====================================
             // Shift Filter
@@ -321,7 +329,7 @@ namespace FidelitasHub.Services.Attendance
         public List<Employee> GetActiveEmployees()
         {
             return _context.Employees
-                .Where(x => x.IsActive)
+                .Where(x => x.IsActive && x.Role != "SuperAdmin")
                 .OrderBy(x => x.EmployeeCode)
                 .ToList();
         }

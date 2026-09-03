@@ -135,7 +135,7 @@
 
                         <!-- SHIFT -->
 
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="shiftSection">
 
                             <label asp-for="ShiftId"
                                    class="form-label">
@@ -189,6 +189,10 @@
                                     Admin
                                 </option>
 
+                                <option value="SuperAdmin">
+                                    SuperAdmin
+                                </option>
+
                             </select>
 
                             <span asp-validation-for="Role"
@@ -199,7 +203,7 @@
 
                         <!-- REPORTING MANAGER -->
 
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="reportingManagerSection">
 
                             <label asp-for="ReportingManagerId"
                                    class="form-label">
@@ -224,7 +228,7 @@
 
                         <!-- REPORTING TEAM LEADER -->
 
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="reportingTeamLeaderSection">
 
                             <label asp-for="ReportingTeamLeaderId"
                                    class="form-label">
@@ -304,4 +308,61 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const roleSelect = document.getElementById("Role");
+
+            const shiftSection =
+                document.getElementById("shiftSection");
+
+            const reportingManagerSection =
+                document.getElementById("reportingManagerSection");
+
+            const reportingTeamLeaderSection =
+                document.getElementById("reportingTeamLeaderSection");
+
+
+            function toggleSuperAdminFields() {
+
+                const isSuperAdmin =
+                    roleSelect.value === "SuperAdmin";
+
+
+                shiftSection.style.display =
+                    isSuperAdmin ? "none" : "";
+
+                reportingManagerSection.style.display =
+                    isSuperAdmin ? "none" : "";
+
+                reportingTeamLeaderSection.style.display =
+                    isSuperAdmin ? "none" : "";
+
+
+                if (isSuperAdmin) {
+
+                    document.getElementById("ShiftId").value = "";
+
+                    document.getElementById(
+                        "ReportingManagerId"
+                    ).value = "";
+
+                    document.getElementById(
+                        "ReportingTeamLeaderId"
+                    ).value = "";
+                }
+            }
+
+
+            roleSelect.addEventListener(
+                "change",
+                toggleSuperAdminFields
+            );
+
+
+            toggleSuperAdminFields();
+
+        });
+    </script>
 }

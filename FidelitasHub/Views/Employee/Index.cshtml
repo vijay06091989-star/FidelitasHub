@@ -90,12 +90,18 @@
                             <td>@item.Department</td>
                             <td>
                                 @{
-                                    var shiftName = "";
-                                    if (item.ShiftId > 0)
+                                    var shiftNames = ViewBag.ShiftNames as Dictionary<int, string>;
+
+                                    var shiftName = "--";
+
+                                    if (item.ShiftId.HasValue &&
+                                        shiftNames != null &&
+                                        shiftNames.TryGetValue(item.ShiftId.Value, out var name))
                                     {
-                                        shiftName = ViewBag.ShiftNames[item.ShiftId] ?? "";
+                                        shiftName = name;
                                     }
                                 }
+
                                 @shiftName
                             </td>
                             <td>@item.Designation</td>

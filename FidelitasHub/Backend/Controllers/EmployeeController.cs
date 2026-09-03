@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -111,6 +111,14 @@ namespace FidelitasHub.Controllers
 
             ModelState.Remove(nameof(Employee.Password));
 
+            if (employee.Role == "SuperAdmin")
+            {
+                employee.ShiftId = null;
+                employee.ReportingManagerId = null;
+                employee.ReportingTeamLeaderId = null;
+            }
+
+
             //--------------------------------------------------
             // Duplicate Employee Code
             //--------------------------------------------------
@@ -198,6 +206,13 @@ namespace FidelitasHub.Controllers
         public IActionResult Edit(Employee employee)
         {
             ModelState.Remove(nameof(Employee.Password));
+
+            if (employee.Role == "SuperAdmin")
+            {
+                employee.ShiftId = null;
+                employee.ReportingManagerId = null;
+                employee.ReportingTeamLeaderId = null;
+            }
 
             //--------------------------------------------------
             // Prevent Employee from reporting to themselves
@@ -377,7 +392,9 @@ namespace FidelitasHub.Controllers
             var managers = _context.Employees
                 .Where(e =>
                     e.IsActive &&
-                    (e.Role == "Manager" || e.Role == "Admin"));
+                    (e.Role == "Manager" ||
+                     e.Role == "Admin" ||
+                     e.Role == "SuperAdmin"));
 
             //--------------------------------------------------
             // Reporting Team Leaders

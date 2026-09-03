@@ -32,8 +32,14 @@ namespace FidelitasHub.Controllers
             ViewBag.EmployeeName = HttpContext.Session.GetString("EmployeeName");
             ViewBag.TotalEmployees = _context.Employees.Count();
             ViewBag.ActiveEmployees = _context.Employees.Count(e => e.IsActive);
-            ViewBag.PresentToday = _context.Attendances
-                .Count(a => a.AttendanceDate.Date == today && a.PunchIn != null);
+            ViewBag.PresentToday =
+                (from a in _context.Attendances
+                 join e in _context.Employees
+                     on a.EmployeeId equals e.EmployeeId
+                 where a.AttendanceDate.Date == today &&
+                       a.PunchIn != null &&
+                       e.Role != "SuperAdmin"
+                 select a).Count();
 
             return View();
         }

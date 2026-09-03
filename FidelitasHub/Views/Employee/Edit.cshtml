@@ -4,7 +4,6 @@
     ViewData["Title"] = "Edit Employee";
 }
 
-
 <div class="page-head">
 
     <div>
@@ -17,7 +16,6 @@
             Update employee details
         </p>
     </div>
-
 
     <a asp-action="Index" class="btn btn-outline-secondary">
         <i class="fa-solid fa-arrow-left me-1"></i>
@@ -43,11 +41,9 @@
 
             <div class="card-body">
 
-
                 <form asp-action="Edit" method="post">
 
                     @Html.AntiForgeryToken()
-
 
                     <input asp-for="EmployeeId" type="hidden" />
                     <input asp-for="Password" type="hidden" />
@@ -180,6 +176,10 @@
                                     Admin
                                 </option>
 
+                                <option value="SuperAdmin">
+                                    SuperAdmin
+                                </option>
+
                             </select>
 
                             <span asp-validation-for="Role"
@@ -190,7 +190,7 @@
 
                         <!-- SHIFT -->
 
-                        <div class="col-md-4">
+                        <div class="col-md-4" id="shiftSection">
 
                             <label asp-for="ShiftId"
                                    class="form-label">
@@ -233,7 +233,8 @@
 
                         <!-- REPORTING MANAGER -->
 
-                        <div class="col-md-6">
+                        <div class="col-md-6"
+                             id="reportingManagerSection">
 
                             <label asp-for="ReportingManagerId"
                                    class="form-label">
@@ -258,7 +259,8 @@
 
                         <!-- REPORTING TEAM LEADER -->
 
-                        <div class="col-md-6">
+                        <div class="col-md-6"
+                             id="reportingTeamLeaderSection">
 
                             <label asp-for="ReportingTeamLeaderId"
                                    class="form-label">
@@ -306,15 +308,11 @@
 
                 </form>
 
-
             </div>
-
 
         </div>
 
-
     </div>
-
 
 </div>
 
@@ -324,4 +322,66 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const roleSelect =
+                document.getElementById("Role");
+
+            const shiftSection =
+                document.getElementById("shiftSection");
+
+            const reportingManagerSection =
+                document.getElementById("reportingManagerSection");
+
+            const reportingTeamLeaderSection =
+                document.getElementById("reportingTeamLeaderSection");
+
+
+            function toggleSuperAdminFields() {
+
+                const isSuperAdmin =
+                    roleSelect.value === "SuperAdmin";
+
+
+                shiftSection.style.display =
+                    isSuperAdmin ? "none" : "";
+
+                reportingManagerSection.style.display =
+                    isSuperAdmin ? "none" : "";
+
+                reportingTeamLeaderSection.style.display =
+                    isSuperAdmin ? "none" : "";
+
+
+                if (isSuperAdmin) {
+
+                    document.getElementById("ShiftId").value = "";
+
+                    document.getElementById(
+                        "ReportingManagerId"
+                    ).value = "";
+
+                    document.getElementById(
+                        "ReportingTeamLeaderId"
+                    ).value = "";
+
+                }
+
+            }
+
+
+            roleSelect.addEventListener(
+                "change",
+                toggleSuperAdminFields
+            );
+
+
+            toggleSuperAdminFields();
+
+        });
+
+    </script>
 }

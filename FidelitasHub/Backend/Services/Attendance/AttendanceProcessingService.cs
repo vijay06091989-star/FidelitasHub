@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using FidelitasHub.Helpers;
 using FidelitasHub.Models;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +48,8 @@ namespace FidelitasHub.Services.Attendance
                     .FirstOrDefaultAsync(e =>
                         e.EmployeeId == attendance.EmployeeId);
 
-                if (employee == null)
+                if (employee == null ||
+                    string.Equals(employee.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 var shift = await _context.Shifts

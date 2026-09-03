@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using FidelitasHub.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -82,7 +82,8 @@ namespace FidelitasHub.Services
             // Admin can see everyone
             //--------------------------------------------------
 
-            if (currentEmployee.Role == "Admin")
+            if (currentEmployee.Role == "Admin" ||
+                currentEmployee.Role == "SuperAdmin")
             {
                 return _context.Employees
                     .Where(e => e.IsActive);

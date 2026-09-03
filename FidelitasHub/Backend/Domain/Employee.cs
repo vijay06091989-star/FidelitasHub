@@ -60,7 +60,7 @@ namespace FidelitasHub.Models
         public Employee? ReportingManager { get; set; }
         public Employee? ReportingTeamLeader { get; set; }
 
-        public int ShiftId { get; set; }
+        public int? ShiftId { get; set; }
 
         public bool IsActive { get; set; } = true;
     }

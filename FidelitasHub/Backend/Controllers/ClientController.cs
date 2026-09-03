@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -393,6 +393,7 @@ namespace FidelitasHub.Controllers
                     e.IsActive &&
                     (
                         e.Role == "Admin" ||
+                        e.Role == "SuperAdmin" ||
                         e.Role == "Manager"
                     ))
                 .OrderBy(e => e.EmployeeName)
