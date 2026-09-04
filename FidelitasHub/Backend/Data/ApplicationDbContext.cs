@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Models;
+using FidelitasHub.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FidelitasHub.Data
@@ -27,6 +27,8 @@ namespace FidelitasHub.Data
         public DbSet<Holiday> Holidays { get; set; }
 
         public DbSet<Client> Clients { get; set; }
+
+        public DbSet<ClientSopDocument> ClientSopDocuments { get; set; }
 
 
         //==================================================
@@ -154,6 +156,21 @@ namespace FidelitasHub.Data
                 .WithMany()
                 .HasForeignKey(c => c.USShiftTeamLeaderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            //==================================================
+            // Client SOP Documents
+            //==================================================
+
+            modelBuilder.Entity<ClientSopDocument>()
+                .HasOne(s => s.Client)
+                .WithMany()
+                .HasForeignKey(s => s.ClientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ClientSopDocument>()
+                .HasIndex(s => new { s.ClientId, s.Version })
+                .IsUnique();
         }
     }
 }

@@ -2,16 +2,21 @@ using FidelitasHub.Data;
 using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace FidelitasHub.Controllers
 {
     public class ClientController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public ClientController(ApplicationDbContext context)
+        public ClientController(
+            ApplicationDbContext context,
+            IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
 
@@ -159,6 +164,7 @@ namespace FidelitasHub.Controllers
 
 
             LoadEmployees(client);
+            LoadSopDocuments(client.ClientId);
 
             return View(client);
         }
@@ -195,6 +201,7 @@ namespace FidelitasHub.Controllers
                     );
 
                     LoadEmployees(client);
+                    LoadSopDocuments(client.ClientId);
 
                     return View(client);
                 }
@@ -305,8 +312,175 @@ namespace FidelitasHub.Controllers
 
 
             LoadEmployees(client);
+            LoadSopDocuments(client.ClientId);
 
             return View(client);
+        }
+
+
+        //==================================================
+        // Upload New SOP Version
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadSop(int clientId, IFormFile? sopFile)
+        {
+            var client = await _context.Clients.FindAsync(clientId);
+
+            if (client == null)
+            {
+                TempData["Error"] = "Client not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (sopFile == null || sopFile.Length == 0)
+            {
+                TempData["Error"] = "Please select an SOP PDF file to upload.";
+                return RedirectToAction(nameof(Edit), new { id = clientId });
+            }
+
+            const long maxFileSize = 25 * 1024 * 1024;
+
+            if (sopFile.Length > maxFileSize)
+            {
+                TempData["Error"] = "SOP file size cannot exceed 25 MB.";
+                return RedirectToAction(nameof(Edit), new { id = clientId });
+            }
+
+            var extension = Path.GetExtension(sopFile.FileName);
+
+            if (!string.Equals(extension, ".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = "Only PDF files are supported for SOP upload.";
+                return RedirectToAction(nameof(Edit), new { id = clientId });
+            }
+
+            // Verify the file really starts with the PDF signature.
+            await using (var signatureStream = sopFile.OpenReadStream())
+            {
+                var signature = new byte[5];
+                var bytesRead = await signatureStream.ReadAsync(signature);
+
+                if (bytesRead != 5 ||
+                    signature[0] != (byte)'%' ||
+                    signature[1] != (byte)'P' ||
+                    signature[2] != (byte)'D' ||
+                    signature[3] != (byte)'F' ||
+                    signature[4] != (byte)'-')
+                {
+                    TempData["Error"] = "The uploaded file is not a valid PDF document.";
+                    return RedirectToAction(nameof(Edit), new { id = clientId });
+                }
+            }
+
+            var nextVersion =
+                (await _context.ClientSopDocuments
+                    .Where(s => s.ClientId == clientId)
+                    .Select(s => (int?)s.Version)
+                    .MaxAsync() ?? 0) + 1;
+
+            var safeClientName = MakeSafeFileName(client.ClientName);
+            var displayFileName = $"{safeClientName}_SOP_V{nextVersion}.pdf";
+
+            var relativeDirectory = Path.Combine("App_Data", "SOP", clientId.ToString());
+            var absoluteDirectory = Path.Combine(_environment.ContentRootPath, relativeDirectory);
+            Directory.CreateDirectory(absoluteDirectory);
+
+            var storedFileName = $"SOP_V{nextVersion}_{Guid.NewGuid():N}.pdf";
+            var absolutePath = Path.Combine(absoluteDirectory, storedFileName);
+            var relativePath = Path.Combine(relativeDirectory, storedFileName).Replace('\\', '/');
+
+            try
+            {
+                await using (var output = new FileStream(absolutePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    await sopFile.CopyToAsync(output);
+                }
+
+                var existingCurrent = await _context.ClientSopDocuments
+                    .Where(s => s.ClientId == clientId && s.IsCurrent)
+                    .ToListAsync();
+
+                foreach (var sop in existingCurrent)
+                {
+                    sop.IsCurrent = false;
+                }
+
+                var uploadedBy = HttpContext.Session.GetString("EmployeeName");
+
+                if (string.IsNullOrWhiteSpace(uploadedBy))
+                {
+                    uploadedBy = HttpContext.Session.GetString("EmployeeCode");
+                }
+
+                if (string.IsNullOrWhiteSpace(uploadedBy))
+                {
+                    uploadedBy = "System";
+                }
+
+                var document = new ClientSopDocument
+                {
+                    ClientId = clientId,
+                    Version = nextVersion,
+                    DisplayFileName = displayFileName,
+                    StoredFilePath = relativePath,
+                    ContentType = "application/pdf",
+                    FileSizeBytes = sopFile.Length,
+                    UploadedBy = uploadedBy,
+                    UploadedOn = DateTime.Now,
+                    IsCurrent = true
+                };
+
+                _context.ClientSopDocuments.Add(document);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"SOP Version {nextVersion} uploaded successfully.";
+            }
+            catch
+            {
+                if (System.IO.File.Exists(absolutePath))
+                {
+                    System.IO.File.Delete(absolutePath);
+                }
+
+                throw;
+            }
+
+            return RedirectToAction(nameof(Edit), new { id = clientId });
+        }
+
+
+        //==================================================
+        // View SOP Document
+        //==================================================
+
+        [HttpGet]
+        public async Task<IActionResult> ViewSop(int id)
+        {
+            var document = await _context.ClientSopDocuments.FindAsync(id);
+
+            if (document == null)
+            {
+                return NotFound();
+            }
+
+            var absolutePath = Path.Combine(
+                _environment.ContentRootPath,
+                document.StoredFilePath.Replace('/', Path.DirectorySeparatorChar));
+
+            if (!System.IO.File.Exists(absolutePath))
+            {
+                TempData["Error"] = "The SOP file could not be found on the server.";
+                return RedirectToAction(nameof(Edit), new { id = document.ClientId });
+            }
+
+            var stream = new FileStream(absolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            return File(
+                stream,
+                document.ContentType ?? "application/pdf",
+                enableRangeProcessing: true);
         }
 
 
@@ -374,6 +548,36 @@ namespace FidelitasHub.Controllers
 
 
             return RedirectToAction(nameof(Index));
+        }
+
+
+        //==================================================
+        // SOP Documents for Edit Page
+        //==================================================
+
+        private void LoadSopDocuments(int clientId)
+        {
+            var documents = _context.ClientSopDocuments
+                .Where(s => s.ClientId == clientId)
+                .OrderByDescending(s => s.Version)
+                .ToList();
+
+            ViewBag.CurrentSop = documents.FirstOrDefault(s => s.IsCurrent)
+                ?? documents.FirstOrDefault();
+
+            ViewBag.SopDocuments = documents;
+        }
+
+
+        private static string MakeSafeFileName(string value)
+        {
+            var invalidChars = Path.GetInvalidFileNameChars();
+            var safe = new string(value
+                .Select(ch => invalidChars.Contains(ch) ? '_' : ch)
+                .ToArray())
+                .Trim();
+
+            return string.IsNullOrWhiteSpace(safe) ? "Client" : safe;
         }
 
 

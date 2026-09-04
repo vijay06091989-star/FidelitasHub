@@ -1,7 +1,8 @@
-﻿@model FidelitasHub.Models.Client
+@model FidelitasHub.Models.Client
 
 @{
     ViewData["Title"] = $"{Model.ClientCode} Productivity";
+    var currentSop = ViewBag.CurrentSop as FidelitasHub.Models.ClientSopDocument;
 }
 
 <div class="page-head">
@@ -298,12 +299,29 @@
                         Standard operating procedures for this client.
                     </p>
 
-                    <button class="btn btn-outline-primary btn-sm"
-                            disabled>
+                    @if (currentSop != null)
+                    {
+                        <a asp-controller="Client"
+                           asp-action="ViewSop"
+                           asp-route-id="@currentSop.ClientSopDocumentId"
+                           target="_blank"
+                           class="btn btn-outline-primary btn-sm">
 
-                        View SOP
+                            <i class="fa-solid fa-eye me-1"></i>
+                            View SOP
 
-                    </button>
+                        </a>
+
+                        <div class="text-muted small mt-2">
+                            Current version: Version @currentSop.Version
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="btn btn-outline-secondary btn-sm" disabled>
+                            No SOP Available
+                        </button>
+                    }
 
                 </div>
 

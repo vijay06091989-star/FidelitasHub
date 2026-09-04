@@ -208,6 +208,56 @@ namespace FidelitasHub.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("FidelitasHub.Models.ClientSopDocument", b =>
+                {
+                    b.Property<int>("ClientSopDocumentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClientSopDocumentId"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("DisplayFileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsCurrent")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("StoredFilePath")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("UploadedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UploadedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClientSopDocumentId");
+
+                    b.HasIndex("ClientId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("ClientSopDocuments");
+                });
+
             modelBuilder.Entity("FidelitasHub.Models.Department", b =>
                 {
                     b.Property<int>("DepartmentId")
@@ -816,6 +866,17 @@ namespace FidelitasHub.Migrations
                     b.Navigation("USShiftManager");
 
                     b.Navigation("USShiftTeamLeader");
+                });
+
+            modelBuilder.Entity("FidelitasHub.Models.ClientSopDocument", b =>
+                {
+                    b.HasOne("FidelitasHub.Models.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.Employee", b =>

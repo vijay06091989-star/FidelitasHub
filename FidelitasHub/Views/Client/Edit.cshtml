@@ -1,4 +1,4 @@
-﻿@model FidelitasHub.Models.Client
+@model FidelitasHub.Models.Client
 
 @{
     ViewData["Title"] = "Edit Client";
@@ -373,6 +373,238 @@
     </div>
 
 </form>
+
+
+@{
+    var currentSop = ViewBag.CurrentSop as FidelitasHub.Models.ClientSopDocument;
+    var sopDocuments = ViewBag.SopDocuments as IEnumerable<FidelitasHub.Models.ClientSopDocument>
+        ?? Enumerable.Empty<FidelitasHub.Models.ClientSopDocument>();
+}
+
+
+<!-- ================================================== -->
+<!-- SOP Management -->
+<!-- ================================================== -->
+
+<div class="table-card mb-3">
+
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+        <div>
+            <h5 class="mb-0">
+                <i class="fa-solid fa-book me-2"></i>
+                SOP Management
+            </h5>
+
+            <div class="text-muted small mt-1">
+                Upload and maintain version-controlled SOP documents for this client.
+            </div>
+        </div>
+
+        @if (currentSop != null)
+        {
+            <span class="badge text-bg-success px-3 py-2">
+                Current: Version @currentSop.Version
+            </span>
+        }
+        else
+        {
+            <span class="badge text-bg-secondary px-3 py-2">
+                No SOP Uploaded
+            </span>
+        }
+
+    </div>
+
+
+    <div class="p-3">
+
+        <!-- Upload New Version -->
+
+        <form asp-action="UploadSop"
+              method="post"
+              enctype="multipart/form-data"
+              class="mb-4">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="clientId" value="@Model.ClientId" />
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-8">
+
+                    <label for="sopFile" class="form-label">
+                        Upload New SOP Version
+                    </label>
+
+                    <input type="file"
+                           id="sopFile"
+                           name="sopFile"
+                           accept="application/pdf,.pdf"
+                           class="form-control"
+                           required />
+
+                    <div class="form-text">
+                        PDF only. Maximum file size: 25 MB. The system automatically assigns the next version number.
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 d-grid">
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-upload me-1"></i>
+                        Upload New Version
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+
+        @if (currentSop != null)
+        {
+            <!-- Current SOP -->
+
+            <div class="border rounded p-3 mb-4">
+
+                <div class="row g-3 align-items-center">
+
+                    <div class="col-md-8">
+
+                        <div class="text-muted small">
+                            Current SOP
+                        </div>
+
+                        <div class="fw-semibold mb-2">
+                            <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+                            @currentSop.DisplayFileName
+                        </div>
+
+                        <div class="row g-2 small">
+
+                            <div class="col-md-4">
+                                <span class="text-muted">Version:</span>
+                                <strong>Version @currentSop.Version</strong>
+                            </div>
+
+                            <div class="col-md-4">
+                                <span class="text-muted">Uploaded By:</span>
+                                <strong>@currentSop.UploadedBy</strong>
+                            </div>
+
+                            <div class="col-md-4">
+                                <span class="text-muted">Uploaded On:</span>
+                                <strong>@currentSop.UploadedOn.ToString("dd-MMM-yyyy hh:mm tt")</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4 text-md-end">
+
+                        <a asp-action="ViewSop"
+                           asp-route-id="@currentSop.ClientSopDocumentId"
+                           target="_blank"
+                           class="btn btn-outline-primary">
+
+                            <i class="fa-solid fa-eye me-1"></i>
+                            View Current SOP
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+
+        <!-- Version History -->
+
+        @if (sopDocuments.Any())
+        {
+            <h6 class="mb-3">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i>
+                Version History
+            </h6>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Document</th>
+                            <th>Uploaded By</th>
+                            <th>Uploaded Date &amp; Time</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var sop in sopDocuments)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>Version @sop.Version</strong>
+                                </td>
+
+                                <td>@sop.DisplayFileName</td>
+
+                                <td>@sop.UploadedBy</td>
+
+                                <td>@sop.UploadedOn.ToString("dd-MMM-yyyy hh:mm tt")</td>
+
+                                <td>
+                                    @if (sop.IsCurrent)
+                                    {
+                                        <span class="badge text-bg-success">Current</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary">Archived</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    <a asp-action="ViewSop"
+                                       asp-route-id="@sop.ClientSopDocumentId"
+                                       target="_blank"
+                                       class="btn btn-outline-primary btn-sm">
+
+                                        <i class="fa-solid fa-eye me-1"></i>
+                                        View
+
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted py-3">
+                No SOP has been uploaded for this client yet.
+            </div>
+        }
+
+    </div>
+
+</div>
 
 
 @section Scripts

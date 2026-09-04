@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,6 +58,12 @@ namespace FidelitasHub.Controllers
             {
                 return NotFound();
             }
+
+
+            ViewBag.CurrentSop = _context.ClientSopDocuments
+                .Where(s => s.ClientId == client.ClientId && s.IsCurrent)
+                .OrderByDescending(s => s.Version)
+                .FirstOrDefault();
 
 
             return View(client);
