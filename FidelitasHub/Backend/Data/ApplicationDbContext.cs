@@ -39,6 +39,8 @@ namespace FidelitasHub.Data
 
         public DbSet<AttendanceBreak> AttendanceBreaks { get; set; }
 
+        public DbSet<EmployeeIdleSession> EmployeeIdleSessions { get; set; }
+
 
         //==================================================
         // Leave Management
@@ -97,6 +99,25 @@ namespace FidelitasHub.Data
                 .HasForeignKey(e => e.ReportingTeamLeaderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+
+            //==================================================
+            // Employee Idle Monitoring Relationships
+            //==================================================
+
+            modelBuilder.Entity<EmployeeIdleSession>()
+                .HasOne(i => i.Employee)
+                .WithMany()
+                .HasForeignKey(i => i.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EmployeeIdleSession>()
+                .HasOne(i => i.Attendance)
+                .WithMany()
+                .HasForeignKey(i => i.AttendanceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EmployeeIdleSession>()
+                .HasIndex(i => new { i.AttendanceId, i.IdleEnd });
 
             //==================================================
             // Client Responsibility Relationships

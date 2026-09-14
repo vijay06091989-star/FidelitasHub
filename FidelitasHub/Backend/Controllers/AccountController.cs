@@ -1,4 +1,4 @@
-﻿using FidelitasHub.Data;
+using FidelitasHub.Data;
 using FidelitasHub.Models;
 using FidelitasHub.Services.Email;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +71,12 @@ namespace FidelitasHub.Controllers
             //=====================================================
             // ROLE BASED REDIRECTION
             //=====================================================
+
+            if (string.Equals(employee.Role, "Viewer", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(employee.Role, "Editor", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Index", "Productivity");
+            }
 
             return RedirectToAction("Index", "Home");
         }
@@ -170,6 +176,12 @@ namespace FidelitasHub.Controllers
             _context.SaveChanges();
 
             TempData["Success"] = "Password changed successfully.";
+
+            if (string.Equals(employee.Role, "Viewer", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(employee.Role, "Editor", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Index", "Productivity");
+            }
 
             return RedirectToAction("Index", "Home");
         }

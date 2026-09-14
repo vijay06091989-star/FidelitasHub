@@ -53,6 +53,10 @@ x.Status == "Punched Out")
         <span class="stat__icon"><i class="fa-solid fa-briefcase"></i></span>
         <div class="stat__body"><p class="stat__label">Working</p><p class="stat__value">@Model.Count(x => x.Status == "Working")</p></div>
     </div>
+    <div class="stat stat--secondary attendance-card cursor-pointer" data-status="Idle">
+        <span class="stat__icon"><i class="fa-solid fa-hourglass-half"></i></span>
+        <div class="stat__body"><p class="stat__label">Idle</p><p class="stat__value">@Model.Count(x => x.CurrentActivity == "Idle")</p></div>
+    </div>
     <div class="stat stat--warning attendance-card cursor-pointer" data-status="On Break">
         <span class="stat__icon"><i class="fa-solid fa-mug-hot"></i></span>
         <div class="stat__body"><p class="stat__label">On Break</p><p class="stat__value">@Model.Count(x => x.Status == "On Break")</p></div>
@@ -101,6 +105,8 @@ x.Status == "Punched Out")
                     <th>Break Out</th>
                     <th>Total Break</th>
                     <th>Worked</th>
+                    <th>Current Activity</th>
+                    <th>Total Idle</th>
                     <th>Attendance Status</th>
                     <th>Leave Status</th>
                 </tr>
@@ -110,7 +116,7 @@ x.Status == "Punched Out")
                 {
                     foreach (var item in Model)
                     {
-                        <tr>
+                        <tr data-status="@item.Status" data-activity="@item.CurrentActivity">
                             <td>@slNo</td>
                             <td><span class="fw-semibold">@item.EmployeeCode</span></td>
                             <td>@item.EmployeeName</td>
@@ -122,6 +128,25 @@ x.Status == "Punched Out")
                             <td>@item.BreakEnd</td>
                             <td>@item.TotalBreak</td>
                             <td>@item.WorkedTime</td>
+                            <td>
+                                @if (item.CurrentActivity == "Idle")
+                                {
+                                    <span class="badge bg-warning text-dark">Idle</span>
+                                }
+                                else if (item.CurrentActivity == "Active")
+                                {
+                                    <span class="badge badge-soft-success">Active</span>
+                                }
+                                else if (item.CurrentActivity == "On Break")
+                                {
+                                    <span class="badge badge-soft-warning">On Break</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">@item.CurrentActivity</span>
+                                }
+                            </td>
+                            <td>@item.TotalIdle</td>
                             <td>
                                 @if (item.Status == "Working")
                                 {
@@ -163,7 +188,7 @@ x.Status == "Punched Out")
                 else
                 {
                     <tr>
-                        <td colspan="12" class="text-center text-muted py-4">
+                        <td colspan="15" class="text-center text-muted py-4">
                             <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
                             No attendance records for this shift.
                         </td>
@@ -177,21 +202,18 @@ x.Status == "Punched Out")
 @section Scripts
 {
     <script>
-        // Search
         document.getElementById("btnSearch").addEventListener("click", function () {
             var value = document.getElementById("txtSearch").value.toLowerCase();
-            document.querySelectorAll("tbody tr").forEach(function (row) {
+            document.querySelectorAll("tbody tr[data-status]").forEach(function (row) {
                 row.style.display = row.innerText.toLowerCase().indexOf(value) > -1 ? "" : "none";
             });
         });
 
-        // Clear
         document.getElementById("btnClear").addEventListener("click", function () {
             document.getElementById("txtSearch").value = "";
-            document.querySelectorAll("tbody tr").forEach(function (row) { row.style.display = ""; });
+            document.querySelectorAll("tbody tr[data-status]").forEach(function (row) { row.style.display = ""; });
         });
 
-        // Summary tile filter (toggle)
         let activeFilter = "";
         document.querySelectorAll(".attendance-card").forEach(function (card) {
             card.addEventListener("click", function () {
@@ -200,7 +222,7 @@ x.Status == "Punched Out")
                 if (activeFilter === filter) {
                     activeFilter = "";
                     document.querySelectorAll(".attendance-card").forEach(c => c.classList.remove("is-active"));
-                    document.querySelectorAll("tbody tr").forEach(row => row.style.display = "");
+                    document.querySelectorAll("tbody tr[data-status]").forEach(row => row.style.display = "");
                     return;
                 }
 
@@ -208,26 +230,28 @@ x.Status == "Punched Out")
                 document.querySelectorAll(".attendance-card").forEach(c => c.classList.remove("is-active"));
                 this.classList.add("is-active");
 
-                document.querySelectorAll("tbody tr").forEach(function (row) {
-                    if (!row.cells[11]) return;
-                    document.querySelectorAll("tbody tr").forEach(function(row) {
+                document.querySelectorAll("tbody tr[data-status]").forEach(function (row) {
+                    var attendanceStatus = (row.dataset.status || "").toLowerCase();
+                    var activity = (row.dataset.activity || "").toLowerCase();
+                    var leaveStatus = row.innerText.toLowerCase();
 
-                        var attendanceStatus = row.cells[11].innerText.toLowerCase();
-                        var leaveStatus = row.cells[12].innerText.toLowerCase();
-
-                        if (filter === "present") {
-                            row.style.display = attendanceStatus.indexOf("absent") === -1 ? "" : "none";
-                        }
-                        else if (filter === "approved leave") {
-                            row.style.display = leaveStatus.indexOf("approved leave") > -1 ? "" : "none";
-                        }
-                        else {
-                            row.style.display = attendanceStatus.indexOf(filter) > -1 ? "" : "none";
-                        }
-
-                    });
+                    if (filter === "present") {
+                        row.style.display = attendanceStatus === "absent" ? "none" : "";
+                    }
+                    else if (filter === "approved leave") {
+                        row.style.display = leaveStatus.indexOf("approved leave") > -1 ? "" : "none";
+                    }
+                    else if (filter === "idle") {
+                        row.style.display = activity === "idle" ? "" : "none";
+                    }
+                    else {
+                        row.style.display = attendanceStatus.indexOf(filter) > -1 ? "" : "none";
+                    }
                 });
             });
         });
+
+        // Live attendance data refreshes every 30 seconds.
+        setTimeout(function () { location.reload(); }, 30000);
     </script>
 }

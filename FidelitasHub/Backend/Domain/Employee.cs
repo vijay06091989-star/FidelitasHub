@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace FidelitasHub.Models
@@ -63,5 +63,8 @@ namespace FidelitasHub.Models
         public int? ShiftId { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        [Display(Name = "Enable Idle Activity Monitoring")]
+        public bool EnableIdleMonitoring { get; set; } = false;
     }
 }

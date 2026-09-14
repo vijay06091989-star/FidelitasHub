@@ -415,6 +415,9 @@ namespace FidelitasHub.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("EnableIdleMonitoring")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Mobile")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -452,6 +455,46 @@ namespace FidelitasHub.Migrations
                     b.HasIndex("ReportingTeamLeaderId");
 
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("FidelitasHub.Models.EmployeeIdleSession", b =>
+                {
+                    b.Property<int>("EmployeeIdleSessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeIdleSessionId"));
+
+                    b.Property<int>("AttendanceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ComputerName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("DurationSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("IdleEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("IdleStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WindowsUserName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("EmployeeIdleSessionId");
+
+                    b.HasIndex("AttendanceId", "IdleEnd");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeIdleSessions");
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.EmployeeLeaveBalance", b =>
@@ -894,6 +937,25 @@ namespace FidelitasHub.Migrations
                     b.Navigation("ReportingManager");
 
                     b.Navigation("ReportingTeamLeader");
+                });
+
+            modelBuilder.Entity("FidelitasHub.Models.EmployeeIdleSession", b =>
+                {
+                    b.HasOne("FidelitasHub.Models.Attendance", "Attendance")
+                        .WithMany()
+                        .HasForeignKey("AttendanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FidelitasHub.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attendance");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.EmployeeLeaveBalance", b =>

@@ -16,6 +16,15 @@
     bool isEmployee =
         role.Equals("Employee", StringComparison.OrdinalIgnoreCase) ||
         role.Equals("Employees", StringComparison.OrdinalIgnoreCase);
+
+    bool isProductivityViewer =
+        role.Equals("Viewer", StringComparison.OrdinalIgnoreCase);
+
+    bool isProductivityEditor =
+        role.Equals("Editor", StringComparison.OrdinalIgnoreCase);
+
+    bool isProductivityOnly =
+        isProductivityViewer || isProductivityEditor;
 }
 
 <aside class="sidebar">
@@ -29,6 +38,8 @@
 
     <nav class="sidebar__nav">
 
+        @if (!isProductivityOnly)
+        {
         <!-- ================= OVERVIEW ================= -->
 
         <div class="sidebar__section">Overview</div>
@@ -155,8 +166,10 @@
             </a>
         }
 
+        }
+
         <!-- ================= PRODUCTIVITY ================= -->
-        
+
         <div class="sidebar__section">Productivity</div>
 
             <a class="sidebar__link"
@@ -268,7 +281,7 @@
             </a>
 
         <!-- ================= ADMINISTRATION ================= -->
-        @if (isAdmin)
+        @if (isAdmin || isProductivityEditor)
         {
             <div class="sidebar__section">Administration</div>
 
@@ -284,29 +297,47 @@
 
                 <div class="sidebar__submenu">
 
-                    <a class="sidebar__link" asp-controller="Employee" asp-action="Index">
-                        <span>Employees</span>
-                    </a>
+                    @if (isAdmin)
+                    {
+                        <a class="sidebar__link" asp-controller="Employee" asp-action="Index">
+                            <span>Employees</span>
+                        </a>
+                    }
 
-                    <a class="sidebar__link" asp-controller="Department" asp-action="Index">
-                        <span>Departments</span>
-                    </a>
+                    @if (isAdmin)
+                    {
+                        <a class="sidebar__link" asp-controller="Department" asp-action="Index">
+                            <span>Departments</span>
+                        </a>
+                    }
 
-                    <a class="sidebar__link" asp-controller="Designation" asp-action="Index">
-                        <span>Designations</span>
-                    </a>
+                    @if (isAdmin)
+                    {
+                        <a class="sidebar__link" asp-controller="Designation" asp-action="Index">
+                            <span>Designations</span>
+                        </a>
+                    }
 
-                    <a class="sidebar__link" asp-controller="Shift" asp-action="Index">
-                        <span>Shifts</span>
-                    </a>
+                    @if (isAdmin)
+                    {
+                        <a class="sidebar__link" asp-controller="Shift" asp-action="Index">
+                            <span>Shifts</span>
+                        </a>
+                    }
 
-                    <a class="sidebar__link" asp-controller="LeaveType" asp-action="Index">
-                        <span>Leave Types</span>
-                    </a>
+                    @if (isAdmin)
+                    {
+                        <a class="sidebar__link" asp-controller="LeaveType" asp-action="Index">
+                            <span>Leave Types</span>
+                        </a>
+                    }
 
-                    <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
-                        <span>Holidays</span>
-                    </a>
+                    @if (isAdmin)
+                    {
+                        <a class="sidebar__link" asp-controller="Holiday" asp-action="Index">
+                            <span>Holidays</span>
+                        </a>
+                    }
 
                     <a class="sidebar__link" asp-controller="Client" asp-action="Index">
                         <span>Clients</span>
@@ -316,6 +347,8 @@
 
             </div>
 
+            @if (isAdmin)
+            {
             <!-- ================= REPORTS ================= -->
 
             <div class="sidebar__group">
@@ -344,6 +377,10 @@
 
             </div>
 
+            }
+
+            @if (isAdmin)
+            {
             <!-- ================= SYSTEM ================= -->
 
             <div class="sidebar__group">
@@ -376,6 +413,10 @@
 
             </div>
 
+            }
+
+            @if (isAdmin)
+            {
             <!-- ================= EMAIL ================= -->
 
             <div class="sidebar__group">
@@ -407,6 +448,7 @@
                 </div>
 
             </div>
+            }
 
         }
 

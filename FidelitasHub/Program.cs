@@ -1,5 +1,6 @@
 using FidelitasHub.Data;
 using FidelitasHub.Services;
+using FidelitasHub.Middleware;
 using FidelitasHub.Services.Attendance;
 using FidelitasHub.Services.BackgroundServices;
 using FidelitasHub.Services.Configuration;
@@ -82,6 +83,9 @@ app.UseRouting();
 //==================================================
 
 app.UseSession();
+
+// Restrict the special Productivity-only Viewer/Editor roles.
+app.UseMiddleware<ProductivityRoleAccessMiddleware>();
 
 app.UseAuthorization();
 

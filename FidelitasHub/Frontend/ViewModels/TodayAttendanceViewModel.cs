@@ -1,7 +1,9 @@
-﻿namespace FidelitasHub.Models
+namespace FidelitasHub.Models
 {
     public class TodayAttendanceViewModel
     {
+        public int? AttendanceId { get; set; }
+
         public string EmployeeCode { get; set; }
 
         public string EmployeeName { get; set; }
@@ -21,6 +23,14 @@
         public string TotalBreak { get; set; }
 
         public string WorkedTime { get; set; }
+
+        public bool IsIdleMonitoringEnabled { get; set; }
+
+        public bool IsCurrentlyIdle { get; set; }
+
+        public string CurrentActivity { get; set; } = "--";
+
+        public string TotalIdle { get; set; } = "--";
 
         // KEEP THIS (existing)
         public string Status { get; set; }

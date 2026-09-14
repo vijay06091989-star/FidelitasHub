@@ -1,4 +1,5 @@
 using FidelitasHub.Data;
+using FidelitasHub.Helpers;
 using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -118,6 +119,14 @@ namespace FidelitasHub.Controllers
                 employee.ReportingTeamLeaderId = null;
             }
 
+            if (IsProductivityOnlyRole(employee.Role))
+            {
+                employee.ShiftId = null;
+                employee.ReportingManagerId = null;
+                employee.ReportingTeamLeaderId = null;
+                employee.EnableIdleMonitoring = false;
+            }
+
 
             //--------------------------------------------------
             // Duplicate Employee Code
@@ -214,6 +223,14 @@ namespace FidelitasHub.Controllers
                 employee.ReportingTeamLeaderId = null;
             }
 
+            if (IsProductivityOnlyRole(employee.Role))
+            {
+                employee.ShiftId = null;
+                employee.ReportingManagerId = null;
+                employee.ReportingTeamLeaderId = null;
+                employee.EnableIdleMonitoring = false;
+            }
+
             //--------------------------------------------------
             // Prevent Employee from reporting to themselves
             //--------------------------------------------------
@@ -265,6 +282,23 @@ namespace FidelitasHub.Controllers
 
             if (ModelState.IsValid)
             {
+                if (!employee.EnableIdleMonitoring)
+                {
+                    var openIdleSessions = _context.EmployeeIdleSessions
+                        .Where(i => i.EmployeeId == employee.EmployeeId && i.IdleEnd == null)
+                        .ToList();
+
+                    var now = DateTimeHelper.GetIST();
+
+                    foreach (var idleSession in openIdleSessions)
+                    {
+                        idleSession.IdleEnd = now;
+                        idleSession.DurationSeconds = Math.Max(
+                            0,
+                            (int)Math.Round((now - idleSession.IdleStart).TotalSeconds));
+                    }
+                }
+
                 _context.Update(employee);
 
                 _context.SaveChanges();
@@ -455,5 +489,15 @@ namespace FidelitasHub.Controllers
                 "EmployeeName",
                 selectedTeamLeaderId);
         }
+        //==================================================
+        // Productivity-only role helper
+        //==================================================
+
+        private static bool IsProductivityOnlyRole(string? role)
+        {
+            return string.Equals(role, "Viewer", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(role, "Editor", StringComparison.OrdinalIgnoreCase);
+        }
+
     }
 }

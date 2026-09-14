@@ -180,6 +180,14 @@
                                     SuperAdmin
                                 </option>
 
+                                <option value="Viewer">
+                                    Viewer
+                                </option>
+
+                                <option value="Editor">
+                                    Editor
+                                </option>
+
                             </select>
 
                             <span asp-validation-for="Role"
@@ -283,6 +291,25 @@
                         </div>
 
 
+                        <!-- IDLE MONITORING -->
+
+                        <div class="col-12">
+
+                            <div class="form-check">
+
+                                <input asp-for="EnableIdleMonitoring"
+                                       class="form-check-input" />
+
+                                <label asp-for="EnableIdleMonitoring"
+                                       class="form-check-label">
+                                    Enable Idle Activity Monitoring
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
                     </div>
 
 
@@ -345,18 +372,25 @@
                 const isSuperAdmin =
                     roleSelect.value === "SuperAdmin";
 
+                const isProductivityOnly =
+                    roleSelect.value === "Viewer" ||
+                    roleSelect.value === "Editor";
+
+                const hideEmployeeStructure =
+                    isSuperAdmin || isProductivityOnly;
+
 
                 shiftSection.style.display =
-                    isSuperAdmin ? "none" : "";
+                    hideEmployeeStructure ? "none" : "";
 
                 reportingManagerSection.style.display =
-                    isSuperAdmin ? "none" : "";
+                    hideEmployeeStructure ? "none" : "";
 
                 reportingTeamLeaderSection.style.display =
-                    isSuperAdmin ? "none" : "";
+                    hideEmployeeStructure ? "none" : "";
 
 
-                if (isSuperAdmin) {
+                if (hideEmployeeStructure) {
 
                     document.getElementById("ShiftId").value = "";
 

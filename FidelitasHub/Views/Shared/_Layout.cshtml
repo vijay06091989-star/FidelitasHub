@@ -41,6 +41,9 @@
         bool isTeamLeader = role == "Team Leader";
         bool isHR = role == "HR";
         bool isEmployee = role == "Employee";
+        bool isProductivityViewer = string.Equals(role, "Viewer", StringComparison.OrdinalIgnoreCase);
+        bool isProductivityEditor = string.Equals(role, "Editor", StringComparison.OrdinalIgnoreCase);
+        bool isProductivityOnly = isProductivityViewer || isProductivityEditor;
     }
 
     @if (hideShell)
