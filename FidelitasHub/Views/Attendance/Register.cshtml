@@ -2,9 +2,7 @@
 
 @{
     ViewData["Title"] = "Attendance Register";
-
     var today = FidelitasHub.Helpers.DateTimeHelper.GetIST().Date;
-
     var minDate = today.AddDays(-90).ToString("yyyy-MM-dd");
     var maxDate = today.ToString("yyyy-MM-dd");
 }
@@ -17,21 +15,12 @@
     <span class="badge badge-soft fs-6 px-3 py-2">Total Records: @Model.Count</span>
 </div>
 
-<!-- Filters -->
 <div class="fh-card mb-4">
     <div class="card-body">
         <form asp-action="Register" method="get">
             <div class="row g-3">
-                <div class="col-md-2">
-                    <label class="form-label">From Date</label>
-                    <input type="date" class="form-control" id="fromDate" name="fromDate"
-                           value="@(((DateTime?)ViewBag.FromDate)?.ToString("yyyy-MM-dd"))" min="@minDate" max="@maxDate" />
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">To Date</label>
-                    <input type="date" class="form-control" id="toDate" name="toDate"
-                           value="@(((DateTime?)ViewBag.ToDate)?.ToString("yyyy-MM-dd"))" min="@minDate" max="@maxDate" />
-                </div>
+                <div class="col-md-2"><label class="form-label">From Date</label><input type="date" class="form-control" id="fromDate" name="fromDate" value="@(((DateTime?)ViewBag.FromDate)?.ToString("yyyy-MM-dd"))" min="@minDate" max="@maxDate" /></div>
+                <div class="col-md-2"><label class="form-label">To Date</label><input type="date" class="form-control" id="toDate" name="toDate" value="@(((DateTime?)ViewBag.ToDate)?.ToString("yyyy-MM-dd"))" min="@minDate" max="@maxDate" /></div>
                 <div class="col-md-2">
                     <label class="form-label">Shift</label>
                     <select class="form-select" id="shift" name="shift">
@@ -40,11 +29,7 @@
                         <option value="US Shift" selected="@(ViewBag.Shift == "US Shift")">US Shift</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Employee</label>
-                    <input type="text" class="form-control" id="employee" name="employee"
-                           value="@ViewBag.Employee" placeholder="Employee code / name" />
-                </div>
+                <div class="col-md-3"><label class="form-label">Employee</label><input type="text" class="form-control" id="employee" name="employee" value="@ViewBag.Employee" placeholder="Employee code / name" /></div>
                 <div class="col-md-3">
                     <label class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
@@ -56,47 +41,38 @@
                     </select>
                 </div>
             </div>
-
             <hr />
-
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-magnifying-glass me-1"></i> Search
-                </button>
-                <a asp-controller="Attendance" asp-action="Register" class="btn btn-outline-secondary">
-                    <i class="fa-solid fa-eraser me-1"></i> Clear
-                </a>
-                <button type="submit" class="btn btn-outline-success"
-                        formaction="@Url.Action("ExportAttendanceRegisterExcel", "Attendance")" formmethod="get">
-                    <i class="fa-solid fa-file-excel me-1"></i> Excel
-                </button>
-                <button type="button" class="btn btn-outline-secondary" disabled title="Coming in Version 2">
-                    <i class="fa-solid fa-file-pdf me-1"></i> PDF
-                </button>
-                <button type="button" class="btn btn-outline-secondary" disabled title="Coming in Version 2">
-                    <i class="fa-solid fa-print me-1"></i> Print
-                </button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i> Search</button>
+                <a asp-controller="Attendance" asp-action="Register" class="btn btn-outline-secondary"><i class="fa-solid fa-eraser me-1"></i> Clear</a>
+                <button type="submit" class="btn btn-outline-success" formaction="@Url.Action("ExportAttendanceRegisterExcel", "Attendance")" formmethod="get"><i class="fa-solid fa-file-excel me-1"></i> Excel</button>
+                <button type="button" class="btn btn-outline-secondary" disabled title="Coming in Version 2"><i class="fa-solid fa-file-pdf me-1"></i> PDF</button>
+                <button type="button" class="btn btn-outline-secondary" disabled title="Coming in Version 2"><i class="fa-solid fa-print me-1"></i> Print</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Table -->
 <div class="table-card">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0" id="attendanceRegisterTable">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Code</th>
-                    <th>Employee Name</th>
-                    <th>Date</th>
-                    <th>Shift</th>
-                    <th>Punch In</th>
-                    <th>Punch Out</th>
-                    <th>Worked</th>
-                    <th>Break</th>
-                    <th>Status</th>
+                    <th data-sort="text">Code <span class="sort-indicator"></span></th>
+                    <th data-sort="text">Employee Name <span class="sort-indicator"></span></th>
+                    <th data-sort="date">Date <span class="sort-indicator"></span></th>
+                    <th data-sort="text">Shift <span class="sort-indicator"></span></th>
+                    <th data-sort="time">Punch In <span class="sort-indicator"></span></th>
+                    <th data-sort="time">Punch Out <span class="sort-indicator"></span></th>
+                    <th data-sort="time">Break In <span class="sort-indicator"></span></th>
+                    <th data-sort="time">Break Out <span class="sort-indicator"></span></th>
+                    <th data-sort="duration">Worked <span class="sort-indicator"></span></th>
+                    <th data-sort="duration">Break <span class="sort-indicator"></span></th>
+                    <th data-sort="text">Current Activity <span class="sort-indicator"></span></th>
+                    <th data-sort="duration">Total Idle <span class="sort-indicator"></span></th>
+                    <th data-sort="text">Attendance Status <span class="sort-indicator"></span></th>
+                    <th data-sort="text">Leave Status <span class="sort-indicator"></span></th>
                 </tr>
             </thead>
             <tbody>
@@ -106,15 +82,19 @@
                     foreach (var item in Model)
                     {
                         <tr>
-                            <td>@slNo</td>
+                            <td class="row-number">@slNo</td>
                             <td><span class="fw-semibold">@item.EmployeeCode</span></td>
                             <td>@item.EmployeeName</td>
-                            <td>@(item.AttendanceDate == DateTime.MinValue ? "--" : item.AttendanceDate.ToString("dd-MMM-yyyy"))</td>
+                            <td data-value="@(item.AttendanceDate == DateTime.MinValue ? "" : item.AttendanceDate.ToString("yyyy-MM-dd"))">@(item.AttendanceDate == DateTime.MinValue ? "--" : item.AttendanceDate.ToString("dd-MMM-yyyy"))</td>
                             <td>@item.Shift</td>
                             <td>@item.PunchIn</td>
                             <td>@item.PunchOut</td>
+                            <td>@item.BreakStart</td>
+                            <td>@item.BreakEnd</td>
                             <td>@item.WorkedTime</td>
                             <td>@item.BreakTime</td>
+                            <td>@item.CurrentActivity</td>
+                            <td>@item.TotalIdle</td>
                             <td>
                                 @switch (item.AttendanceStatus)
                                 {
@@ -122,39 +102,102 @@
                                         <span class="badge badge-soft-success">Working</span>
                                         break;
                                     case "On Break":
+
                                         <span class="badge badge-soft-warning">On Break</span>
                                         break;
                                     case "Present":
+
                                         <span class="badge badge-soft-success">Present</span>
                                         break;
                                     case "Present - Late Entry":
+
                                         <span class="badge badge-soft-warning">Late Entry</span>
                                         break;
                                     case "Half Day":
+
                                         <span class="badge badge-soft">Half Day</span>
                                         break;
                                     case "Absent":
+
                                         <span class="badge badge-soft-danger">Absent</span>
                                         break;
                                     default:
+
                                         <span class="badge bg-secondary-subtle text-secondary-emphasis">@item.AttendanceStatus</span>
                                         break;
                                 }
                             </td>
+                            <td>@item.LeaveStatus</td>
                         </tr>
                         slNo++;
                     }
                 }
                 else
                 {
-                    <tr>
-                        <td colspan="10" class="text-center text-muted py-4">
-                            <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>
-                            No attendance records found.
-                        </td>
-                    </tr>
+                    <tr><td colspan="15" class="text-center text-muted py-4"><i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>No attendance records found.</td></tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+<style>
+    #attendanceRegisterTable th[data-sort] { cursor:pointer; user-select:none; white-space:nowrap; }
+    #attendanceRegisterTable th[data-sort]:hover { opacity:.8; }
+    .sort-indicator { display:inline-block; min-width:12px; margin-left:3px; }
+</style>
+
+<script>
+    (function () {
+        const table = document.getElementById("attendanceRegisterTable");
+        if (!table) return;
+        const headers = table.querySelectorAll("thead th[data-sort]");
+
+        function missing(v) { return !v || v.trim() === "--"; }
+        function duration(v) {
+            if (missing(v)) return null;
+            const p = v.trim().split(":").map(Number);
+            if (p.some(Number.isNaN)) return null;
+            return p.length === 2 ? p[0] * 60 + p[1] : p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : null;
+        }
+        function time(v) {
+            if (missing(v)) return null;
+            const m = v.trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+            if (!m) return null;
+            let h = Number(m[1]), min = Number(m[2]), sec = Number(m[3] || 0);
+            if (m[4]) { const ap = m[4].toUpperCase(); if (ap === "AM" && h === 12) h = 0; if (ap === "PM" && h !== 12) h += 12; }
+            return h * 3600 + min * 60 + sec;
+        }
+        function val(cell, type) {
+            const raw = cell.getAttribute("data-value") || cell.textContent.trim();
+            if (missing(raw)) return null;
+            if (type === "date") { const x = Date.parse(raw); return Number.isNaN(x) ? null : x; }
+            if (type === "time") return time(raw);
+            if (type === "duration") return duration(raw);
+            return raw.toLowerCase();
+        }
+        headers.forEach((header) => {
+            header.addEventListener("click", function () {
+                const type = header.dataset.sort;
+                const tbody = table.querySelector("tbody");
+                const rows = Array.from(tbody.querySelectorAll("tr"));
+                if (rows.length === 1 && rows[0].querySelector("td[colspan]")) return;
+                const index = header.cellIndex;
+                const direction = header.dataset.direction === "asc" ? "desc" : "asc";
+                headers.forEach(h => { h.dataset.direction = "none"; const i = h.querySelector(".sort-indicator"); if (i) i.textContent = ""; });
+                header.dataset.direction = direction;
+                const indicator = header.querySelector(".sort-indicator");
+                if (indicator) indicator.textContent = direction === "asc" ? "▲" : "▼";
+                rows.sort((a,b) => {
+                    const x = val(a.children[index], type), y = val(b.children[index], type);
+                    if (x === null && y === null) return 0;
+                    if (x === null) return 1;
+                    if (y === null) return -1;
+                    const r = x < y ? -1 : x > y ? 1 : 0;
+                    return direction === "asc" ? r : -r;
+                });
+                rows.forEach((row,i) => { row.querySelector(".row-number").textContent = i + 1; tbody.appendChild(row); });
+            });
+        });
+    })();
+</script>

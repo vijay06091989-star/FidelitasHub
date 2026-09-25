@@ -54,6 +54,12 @@ namespace FidelitasHub.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // Server IST time for Dashboard live clock
+            ViewBag.ServerISTMilliseconds =
+                new DateTimeOffset(
+                    DateTimeHelper.GetIST(),
+                    TimeSpan.FromHours(5.5))
+                .ToUnixTimeMilliseconds();
             //--------------------------------------------------
             // SuperAdmin is not attendance-tracked
             //--------------------------------------------------
@@ -478,11 +484,11 @@ namespace FidelitasHub.Controllers
             string greeting;
 
             if (istNow.Hour < 12)
-                greeting = "ðŸŒž Good Morning";
+                greeting = "🌞 Good Morning";
             else if (istNow.Hour < 17)
-                greeting = "â˜€ï¸ Good Afternoon";
+                greeting = "☀️ Good Afternoon";
             else
-                greeting = "ðŸŒ™ Good Evening";
+                greeting = "🌙 Good Evening";
 
             return Json(new
             {
@@ -623,7 +629,7 @@ $@"Welcome to Fidelitas Hub
             return Json(new
             {
                 success = true,
-                title = "â˜• Break Started",
+                title = "☕ Break Started",
                 message =
 $@"Started At
 
@@ -749,7 +755,7 @@ $@"Started At
             return Json(new
             {
                 success = true,
-                title = "â–¶ Break Ended",
+                title = "▶ Break Ended",
                 message =
         $@"Welcome Back!
 
@@ -909,7 +915,7 @@ $@"Started At
             return Json(new
             {
                 success = true,
-                title = $"ðŸ‘‹ Goodbye {employee.EmployeeName}",
+                title = $"👋 Goodbye {employee.EmployeeName}",
                 message =
 
 $@"Punch Out Successful
@@ -1330,11 +1336,6 @@ $@"Punch Out Successful
         //====================================================
 
         [HttpGet]
-        //====================================================
-        // EXPORT ATTENDANCE REGISTER - EXCEL
-        //====================================================
-
-        [HttpGet]
         public IActionResult ExportAttendanceRegisterExcel(
     DateTime? fromDate,
     DateTime? toDate,
@@ -1370,7 +1371,7 @@ $@"Punch Out Successful
                 // Report Heading
                 //==========================================
 
-                ws.Range("A1:L1").Merge();
+                ws.Range("A1:P1").Merge();
                 ws.Cell("A1").Value = "FIDELITAS HUB";
                 ws.Cell("A1").Style.Font.Bold = true;
                 ws.Cell("A1").Style.Font.FontSize = 20;
@@ -1379,7 +1380,7 @@ $@"Punch Out Successful
                 ws.Cell("A1").Style.Alignment.Horizontal =
                     XLAlignmentHorizontalValues.Center;
 
-                ws.Range("A2:L2").Merge();
+                ws.Range("A2:P2").Merge();
                 ws.Cell("A2").Value = "ATTENDANCE REGISTER";
                 ws.Cell("A2").Style.Font.Bold = true;
                 ws.Cell("A2").Style.Font.FontSize = 16;
@@ -1424,13 +1425,18 @@ $@"Punch Out Successful
                 ws.Cell(row, 5).Value = "Shift";
                 ws.Cell(row, 6).Value = "Punch In";
                 ws.Cell(row, 7).Value = "Punch Out";
-                ws.Cell(row, 8).Value = "Worked";
-                ws.Cell(row, 9).Value = "Break";
-                ws.Cell(row, 11).Value = "Status";
-                ws.Cell(row, 12).Value = "Remarks";
+                ws.Cell(row, 8).Value = "Break In";
+                ws.Cell(row, 9).Value = "Break Out";
+                ws.Cell(row, 10).Value = "Worked";
+                ws.Cell(row, 11).Value = "Break";
+                ws.Cell(row, 12).Value = "Current Activity";
+                ws.Cell(row, 13).Value = "Total Idle";
+                ws.Cell(row, 14).Value = "Attendance Status";
+                ws.Cell(row, 15).Value = "Leave Status";
+                ws.Cell(row, 16).Value = "Remarks";
 
-                ws.Range(row, 1, row, 12).Style.Font.Bold = true;
-                ws.Range(row, 1, row, 12).Style.Fill.BackgroundColor =
+                ws.Range(row, 1, row, 16).Style.Font.Bold = true;
+                ws.Range(row, 1, row, 16).Style.Fill.BackgroundColor =
                     XLColor.LightBlue;
 
                 //==========================================
@@ -1449,10 +1455,15 @@ $@"Punch Out Successful
                     ws.Cell(row, 5).Value = item.Shift;
                     ws.Cell(row, 6).Value = item.PunchIn;
                     ws.Cell(row, 7).Value = item.PunchOut;
-                    ws.Cell(row, 8).Value = item.WorkedTime;
-                    ws.Cell(row, 9).Value = item.BreakTime;
-                    ws.Cell(row, 11).Value = item.AttendanceStatus;
-                    ws.Cell(row, 12).Value = item.Remarks;
+                    ws.Cell(row, 8).Value = item.BreakStart;
+                    ws.Cell(row, 9).Value = item.BreakEnd;
+                    ws.Cell(row, 10).Value = item.WorkedTime;
+                    ws.Cell(row, 11).Value = item.BreakTime;
+                    ws.Cell(row, 12).Value = item.CurrentActivity;
+                    ws.Cell(row, 13).Value = item.TotalIdle;
+                    ws.Cell(row, 14).Value = item.AttendanceStatus;
+                    ws.Cell(row, 15).Value = item.LeaveStatus;
+                    ws.Cell(row, 16).Value = item.Remarks;
 
                     row++;
                 }
@@ -1481,7 +1492,6 @@ $@"Punch Out Successful
             }
         }
 
-        //====================================================
         // EXPORT TODAY ATTENDANCE - EXCEL
         //====================================================
 

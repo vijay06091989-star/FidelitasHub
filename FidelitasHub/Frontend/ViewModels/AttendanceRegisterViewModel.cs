@@ -33,5 +33,15 @@
         public string AttendanceStatus { get; set; } = "";
 
         public string Remarks { get; set; } = "";
+
+        //==================================
+        // Attendance Register Enhancements
+        //==================================
+
+        public string CurrentActivity { get; set; } = "";
+
+        public string TotalIdle { get; set; } = "";
+
+        public string LeaveStatus { get; set; } = "";
     }
 }
