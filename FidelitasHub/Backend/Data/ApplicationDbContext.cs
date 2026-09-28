@@ -30,6 +30,8 @@ namespace FidelitasHub.Data
 
         public DbSet<ClientSopDocument> ClientSopDocuments { get; set; }
 
+        public DbSet<ClientWebLogin> ClientWebLogins { get; set; }
+
 
         //==================================================
         // Attendance
@@ -192,6 +194,19 @@ namespace FidelitasHub.Data
             modelBuilder.Entity<ClientSopDocument>()
                 .HasIndex(s => new { s.ClientId, s.Version })
                 .IsUnique();
+
+            //==================================================
+            // Client Web Portal Logins
+            //==================================================
+
+            modelBuilder.Entity<ClientWebLogin>()
+                .HasOne(w => w.Client)
+                .WithMany()
+                .HasForeignKey(w => w.ClientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ClientWebLogin>()
+                .HasIndex(w => w.ClientId);
         }
     }
 }

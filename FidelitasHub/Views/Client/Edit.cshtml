@@ -607,6 +607,146 @@
 </div>
 
 
+@{
+    var webLogins = ViewBag.WebLogins as IEnumerable<FidelitasHub.Models.ClientWebLogin>
+        ?? Enumerable.Empty<FidelitasHub.Models.ClientWebLogin>();
+}
+
+
+<!-- ================================================== -->
+<!-- Web Portal Logins -->
+<!-- ================================================== -->
+
+<div class="table-card mb-3">
+
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+        <div>
+            <h5 class="mb-0">
+                <i class="fa-solid fa-key me-2"></i>
+                Web Portal Logins
+            </h5>
+
+            <div class="text-muted small mt-1">
+                Maintain client portal and website login information.
+                Passwords and security answers are stored encrypted.
+            </div>
+        </div>
+
+        <a asp-action="CreateWebLogin"
+           asp-route-clientId="@Model.ClientId"
+           class="btn btn-primary btn-sm">
+
+            <i class="fa-solid fa-plus me-1"></i>
+            Add Web Login
+
+        </a>
+
+    </div>
+
+
+    <div class="p-3">
+
+        @if (webLogins.Any())
+        {
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Website / Portal</th>
+                            <th>URL</th>
+                            <th>User Name</th>
+                            <th>Password</th>
+                            <th>Security Questions</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var login in webLogins)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@login.Website</strong>
+                                </td>
+
+                                <td>
+                                    <a href="@login.Url"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>
+                                        Open
+                                    </a>
+                                </td>
+
+                                <td>@login.Username</td>
+
+                                <td>
+                                    <span class="text-muted">••••••••</span>
+                                </td>
+
+                                <td>
+                                    <span class="text-muted">••••••••</span>
+                                </td>
+
+                                <td class="text-end text-nowrap">
+
+                                    <a asp-action="EditWebLogin"
+                                       asp-route-id="@login.ClientWebLoginId"
+                                       class="btn btn-outline-primary btn-sm"
+                                       title="Edit">
+
+                                        <i class="fa-solid fa-pen"></i>
+
+                                    </a>
+
+                                    <form asp-action="DeleteWebLogin"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Delete this web portal login?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@login.ClientWebLoginId" />
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                title="Delete">
+
+                                            <i class="fa-solid fa-trash"></i>
+
+                                        </button>
+
+                                    </form>
+
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted py-3">
+                No web portal logins have been added for this client yet.
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
 @section Scripts
 {
     <partial name="_ValidationScriptsPartial" />

@@ -1,0 +1,203 @@
+@model FidelitasHub.Models.ClientWebLoginViewModel
+
+@{
+    ViewData["Title"] = "Edit Web Portal Login";
+}
+
+<div class="page-head">
+
+    <div>
+        <h1 class="page-head__title">
+            <i class="fa-solid fa-key"></i>
+            Edit Web Portal Login
+        </h1>
+
+        <p class="page-head__sub">
+            @Model.ClientName
+        </p>
+    </div>
+
+    <a asp-action="Edit"
+       asp-route-id="@Model.ClientId"
+       class="btn btn-outline-secondary">
+
+        <i class="fa-solid fa-arrow-left me-1"></i>
+        Back to Client
+
+    </a>
+
+</div>
+
+
+<form asp-action="EditWebLogin"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden"
+           asp-for="ClientWebLoginId" />
+
+    <input type="hidden"
+           asp-for="ClientId" />
+
+
+    <div class="table-card mb-3">
+
+        <div class="p-3 border-bottom">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-globe me-2"></i>
+                Web Portal Details
+            </h5>
+        </div>
+
+        <div class="p-3">
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+
+                    <label asp-for="Website"
+                           class="form-label">
+                        Website / Portal
+                    </label>
+
+                    <input asp-for="Website"
+                           class="form-control" />
+
+                    <span asp-validation-for="Website"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="Url"
+                           class="form-label">
+                        URL Link
+                    </label>
+
+                    <input asp-for="Url"
+                           class="form-control" />
+
+                    <span asp-validation-for="Url"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="Username"
+                           class="form-label">
+                        User Name
+                    </label>
+
+                    <input asp-for="Username"
+                           class="form-control" />
+
+                    <span asp-validation-for="Username"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="Password"
+                           class="form-label">
+                        New Password
+                    </label>
+
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control"
+                           autocomplete="new-password" />
+
+                    <div class="form-text">
+                        Leave blank to keep the existing password.
+                    </div>
+
+                    <span asp-validation-for="Password"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-12">
+
+                    <label asp-for="SecurityQuestions"
+                           class="form-label">
+                        New Security Questions
+                    </label>
+
+                    <textarea asp-for="SecurityQuestions"
+                              class="form-control"
+                              rows="5"></textarea>
+
+                    <div class="form-text">
+                        Leave blank to keep the existing security information.
+                    </div>
+
+                    <span asp-validation-for="SecurityQuestions"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-12">
+
+                    <div class="form-check">
+
+                        <input asp-for="ClearSecurityQuestions"
+                               class="form-check-input" />
+
+                        <label asp-for="ClearSecurityQuestions"
+                               class="form-check-label">
+                            Clear existing security questions
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+
+        <a asp-action="Edit"
+           asp-route-id="@Model.ClientId"
+           class="btn btn-outline-secondary">
+
+            <i class="fa-solid fa-xmark me-1"></i>
+            Cancel
+
+        </a>
+
+        <button type="submit"
+                class="btn btn-primary">
+
+            <i class="fa-solid fa-floppy-disk me-1"></i>
+            Save Changes
+
+        </button>
+
+    </div>
+
+</form>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

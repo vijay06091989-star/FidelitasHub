@@ -1,16 +1,22 @@
 using FidelitasHub.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FidelitasHub.Models;
+using FidelitasHub.Services.Security;
 
 namespace FidelitasHub.Controllers
 {
     public class ProductivityController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IClientWebLoginProtectionService _webLoginProtection;
 
-        public ProductivityController(ApplicationDbContext context)
+        public ProductivityController(
+            ApplicationDbContext context,
+            IClientWebLoginProtectionService webLoginProtection)
         {
             _context = context;
+            _webLoginProtection = webLoginProtection;
         }
 
 
@@ -65,6 +71,60 @@ namespace FidelitasHub.Controllers
                 .OrderByDescending(s => s.Version)
                 .FirstOrDefault();
 
+
+            return View(client);
+        }
+
+
+        //==================================================
+        // Client Web Logins
+        //==================================================
+
+        public IActionResult WebLogins(int id)
+        {
+            var client = _context.Clients
+                .FirstOrDefault(c => c.ClientId == id);
+
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            var webLogins = _context.ClientWebLogins
+                .Where(w => w.ClientId == id)
+                .OrderBy(w => w.Website)
+                .ThenBy(w => w.Username)
+                .ToList()
+                .Select(w =>
+                {
+                    var passwordAvailable =
+                        _webLoginProtection.TryUnprotect(
+                            w.EncryptedPassword,
+                            out var password);
+
+                    var securityAvailable =
+                        _webLoginProtection.TryUnprotect(
+                            w.EncryptedSecurityQuestions,
+                            out var securityQuestions);
+
+                    return new ClientWebLoginDisplayViewModel
+                    {
+                        ClientWebLoginId = w.ClientWebLoginId,
+                        ClientId = w.ClientId,
+                        Website = w.Website,
+                        Url = w.Url,
+                        Username = w.Username,
+                        Password = passwordAvailable
+                            ? password
+                            : "[Unavailable]",
+                        SecurityQuestions = securityAvailable
+                            ? securityQuestions
+                            : "[Unavailable]"
+                    };
+                })
+                .ToList();
+
+            ViewBag.WebLogins = webLogins;
 
             return View(client);
         }

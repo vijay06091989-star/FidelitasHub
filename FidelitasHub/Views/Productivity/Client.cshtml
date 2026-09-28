@@ -281,12 +281,12 @@
 
     <div class="p-3">
 
-        <div class="row g-3">
+        <div class="row row-cols-1 row-cols-md-5 g-3">
 
 
             <!-- SOP -->
 
-            <div class="col-md-3">
+            <div class="col">
 
                 <div class="border rounded p-3 h-100">
 
@@ -318,8 +318,11 @@
                     }
                     else
                     {
-                        <button class="btn btn-outline-secondary btn-sm" disabled>
+                        <button class="btn btn-outline-secondary btn-sm"
+                                disabled>
+
                             No SOP Available
+
                         </button>
                     }
 
@@ -328,9 +331,39 @@
             </div>
 
 
+            <!-- Web Logins -->
+
+            <div class="col">
+
+                <div class="border rounded p-3 h-100">
+
+                    <h6>
+                        <i class="fa-solid fa-key me-1"></i>
+                        Web Logins
+                    </h6>
+
+                    <p class="text-muted small mb-3">
+                        Client portal and website login information.
+                    </p>
+
+                    <a asp-controller="Productivity"
+                       asp-action="WebLogins"
+                       asp-route-id="@Model.ClientId"
+                       class="btn btn-outline-primary btn-sm">
+
+                        <i class="fa-solid fa-eye me-1"></i>
+                        View Logins
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
             <!-- Billing -->
 
-            <div class="col-md-3">
+            <div class="col">
 
                 <div class="border rounded p-3 h-100">
 
@@ -357,7 +390,7 @@
 
             <!-- Posting -->
 
-            <div class="col-md-3">
+            <div class="col">
 
                 <div class="border rounded p-3 h-100">
 
@@ -382,9 +415,9 @@
             </div>
 
 
-            <!-- Other -->
+            <!-- Others -->
 
-            <div class="col-md-3">
+            <div class="col">
 
                 <div class="border rounded p-3 h-100">
 

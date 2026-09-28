@@ -258,6 +258,60 @@ namespace FidelitasHub.Migrations
                     b.ToTable("ClientSopDocuments");
                 });
 
+            modelBuilder.Entity("FidelitasHub.Models.ClientWebLogin", b =>
+                {
+                    b.Property<int>("ClientWebLoginId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClientWebLoginId"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EncryptedPassword")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EncryptedSecurityQuestions")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Website")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.HasKey("ClientWebLoginId");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("ClientWebLogins");
+                });
+
             modelBuilder.Entity("FidelitasHub.Models.Department", b =>
                 {
                     b.Property<int>("DepartmentId")
@@ -912,6 +966,17 @@ namespace FidelitasHub.Migrations
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.ClientSopDocument", b =>
+                {
+                    b.HasOne("FidelitasHub.Models.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("FidelitasHub.Models.ClientWebLogin", b =>
                 {
                     b.HasOne("FidelitasHub.Models.Client", "Client")
                         .WithMany()

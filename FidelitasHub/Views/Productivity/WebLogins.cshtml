@@ -1,0 +1,212 @@
+@model FidelitasHub.Models.Client
+
+@{
+    ViewData["Title"] = $"{Model.ClientCode} Web Logins";
+
+    var webLogins =
+        ViewBag.WebLogins as IEnumerable<FidelitasHub.Models.ClientWebLoginDisplayViewModel>
+        ?? Enumerable.Empty<FidelitasHub.Models.ClientWebLoginDisplayViewModel>();
+}
+
+<div class="page-head">
+
+    <div>
+        <h1 class="page-head__title">
+            <i class="fa-solid fa-key"></i>
+            @Model.ClientCode Web Logins
+        </h1>
+
+        <p class="page-head__sub">
+            @Model.ClientName
+        </p>
+    </div>
+
+    <div class="d-flex flex-column align-items-end gap-2">
+
+        <div class="alert alert-warning small mb-0 py-2 px-3 text-end">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+            Portal passwords and security information are confidential.
+            Use this page only for authorized client work.
+        </div>
+
+        <a asp-action="Client"
+           asp-route-id="@Model.ClientId"
+           class="btn btn-outline-secondary">
+
+            <i class="fa-solid fa-arrow-left me-1"></i>
+            Back to Client
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="table-card mb-4">
+
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+
+        <div>
+            <h5 class="mb-0">
+                <i class="fa-solid fa-globe me-2"></i>
+                Client Portal Logins
+            </h5>
+
+            <div class="text-muted small mt-1">
+                Login information maintained through Client Master.
+            </div>
+        </div>
+
+        <span class="badge text-bg-primary">
+            @webLogins.Count() Login(s)
+        </span>
+
+    </div>
+
+
+    <div class="p-3">
+
+        @if (webLogins.Any())
+        {
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Website / Portal</th>
+                            <th>URL</th>
+                            <th>User Name</th>
+                            <th style="min-width: 190px;">Password</th>
+                            <th style="min-width: 300px;">Security Questions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var login in webLogins)
+                        {
+                            var passwordId = $"password_{login.ClientWebLoginId}";
+                            var securityId = $"security_{login.ClientWebLoginId}";
+
+                            <tr>
+
+                                <td>
+                                    <strong>@login.Website</strong>
+                                </td>
+
+                                <td>
+                                    <a href="@login.Url"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="btn btn-outline-primary btn-sm">
+
+                                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>
+                                        Open
+
+                                    </a>
+                                </td>
+
+                                <td>
+                                    @login.Username
+                                </td>
+
+                                <td>
+
+                                    <div class="input-group input-group-sm">
+
+                                        <input id="@passwordId"
+                                               type="password"
+                                               value="@login.Password"
+                                               class="form-control"
+                                               readonly
+                                               autocomplete="off" />
+
+                                        <button type="button"
+                                                class="btn btn-outline-secondary"
+                                                onclick="toggleSecret('@passwordId', this)"
+                                                title="Show / Hide Password">
+
+                                            <i class="fa-solid fa-eye"></i>
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+
+                                    <div class="input-group input-group-sm">
+
+                                        <input id="@securityId"
+                                               type="password"
+                                               value="@login.SecurityQuestions"
+                                               class="form-control"
+                                               readonly
+                                               autocomplete="off" />
+
+                                        <button type="button"
+                                                class="btn btn-outline-secondary"
+                                                onclick="toggleSecret('@securityId', this)"
+                                                title="Show / Hide Security Information">
+
+                                            <i class="fa-solid fa-eye"></i>
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 text-muted">
+
+                <i class="fa-solid fa-key fa-2x mb-3"></i>
+
+                <div>
+                    No web portal logins have been added for this client yet.
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+        function toggleSecret(id, button) {
+            const input = document.getElementById(id);
+            const icon = button.querySelector("i");
+
+            if (!input) {
+                return;
+            }
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
+    </script>
+}

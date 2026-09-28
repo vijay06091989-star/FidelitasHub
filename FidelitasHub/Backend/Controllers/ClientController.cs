@@ -3,6 +3,7 @@ using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using FidelitasHub.Services.Security;
 
 namespace FidelitasHub.Controllers
 {
@@ -10,13 +11,16 @@ namespace FidelitasHub.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly IClientWebLoginProtectionService _webLoginProtection;
 
         public ClientController(
             ApplicationDbContext context,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IClientWebLoginProtectionService webLoginProtection)
         {
             _context = context;
             _environment = environment;
+            _webLoginProtection = webLoginProtection;
         }
 
 
@@ -165,6 +169,7 @@ namespace FidelitasHub.Controllers
 
             LoadEmployees(client);
             LoadSopDocuments(client.ClientId);
+            LoadWebLogins(client.ClientId);
 
             return View(client);
         }
@@ -202,6 +207,7 @@ namespace FidelitasHub.Controllers
 
                     LoadEmployees(client);
                     LoadSopDocuments(client.ClientId);
+                    LoadWebLogins(client.ClientId);
 
                     return View(client);
                 }
@@ -313,8 +319,220 @@ namespace FidelitasHub.Controllers
 
             LoadEmployees(client);
             LoadSopDocuments(client.ClientId);
+            LoadWebLogins(client.ClientId);
 
             return View(client);
+        }
+
+
+        //==================================================
+        // Create Web Login - GET
+        //==================================================
+
+        [HttpGet]
+        public IActionResult CreateWebLogin(int clientId)
+        {
+            var client = _context.Clients.Find(clientId);
+
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            return View(new ClientWebLoginViewModel
+            {
+                ClientId = client.ClientId,
+                ClientName = client.ClientName
+            });
+        }
+
+
+        //==================================================
+        // Create Web Login - POST
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CreateWebLogin(ClientWebLoginViewModel model)
+        {
+            if (!ModelState.IsValid ||
+                string.IsNullOrWhiteSpace(model.Password))
+            {
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    ModelState.AddModelError(
+                        nameof(model.Password),
+                        "Password is required.");
+                }
+
+                model.ClientName =
+                    _context.Clients
+                        .Where(c => c.ClientId == model.ClientId)
+                        .Select(c => c.ClientName)
+                        .FirstOrDefault()
+                    ?? string.Empty;
+
+                return View(model);
+            }
+
+            var client = _context.Clients.Find(model.ClientId);
+
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            var webLogin = new ClientWebLogin
+            {
+                ClientId = model.ClientId,
+                Website = model.Website.Trim(),
+                Url = model.Url.Trim(),
+                Username = model.Username.Trim(),
+                EncryptedPassword =
+                    _webLoginProtection.Protect(model.Password),
+                EncryptedSecurityQuestions =
+                    string.IsNullOrWhiteSpace(model.SecurityQuestions)
+                        ? null
+                        : _webLoginProtection.Protect(
+                            model.SecurityQuestions),
+                CreatedOn = DateTime.Now,
+                CreatedBy = GetCurrentUserName()
+            };
+
+            _context.ClientWebLogins.Add(webLogin);
+            _context.SaveChanges();
+
+            TempData["Success"] =
+                "Web portal login added successfully.";
+
+            return RedirectToAction(
+                nameof(Edit),
+                new { id = model.ClientId });
+        }
+
+
+        //==================================================
+        // Edit Web Login - GET
+        //==================================================
+
+        [HttpGet]
+        public IActionResult EditWebLogin(int id)
+        {
+            var webLogin = _context.ClientWebLogins
+                .Include(w => w.Client)
+                .FirstOrDefault(w => w.ClientWebLoginId == id);
+
+            if (webLogin == null)
+            {
+                return NotFound();
+            }
+
+            return View(new ClientWebLoginViewModel
+            {
+                ClientWebLoginId = webLogin.ClientWebLoginId,
+                ClientId = webLogin.ClientId,
+                ClientName = webLogin.Client?.ClientName ?? string.Empty,
+                Website = webLogin.Website,
+                Url = webLogin.Url,
+                Username = webLogin.Username
+            });
+        }
+
+
+        //==================================================
+        // Edit Web Login - POST
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditWebLogin(ClientWebLoginViewModel model)
+        {
+            var webLogin = _context.ClientWebLogins
+                .FirstOrDefault(w =>
+                    w.ClientWebLoginId == model.ClientWebLoginId);
+
+            if (webLogin == null)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.ClientName =
+                    _context.Clients
+                        .Where(c => c.ClientId == webLogin.ClientId)
+                        .Select(c => c.ClientName)
+                        .FirstOrDefault()
+                    ?? string.Empty;
+
+                return View(model);
+            }
+
+            webLogin.Website = model.Website.Trim();
+            webLogin.Url = model.Url.Trim();
+            webLogin.Username = model.Username.Trim();
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                webLogin.EncryptedPassword =
+                    _webLoginProtection.Protect(model.Password);
+            }
+
+            if (model.ClearSecurityQuestions)
+            {
+                webLogin.EncryptedSecurityQuestions = null;
+            }
+            else if (!string.IsNullOrWhiteSpace(model.SecurityQuestions))
+            {
+                webLogin.EncryptedSecurityQuestions =
+                    _webLoginProtection.Protect(
+                        model.SecurityQuestions);
+            }
+
+            webLogin.ModifiedOn = DateTime.Now;
+            webLogin.ModifiedBy = GetCurrentUserName();
+
+            _context.SaveChanges();
+
+            TempData["Success"] =
+                "Web portal login updated successfully.";
+
+            return RedirectToAction(
+                nameof(Edit),
+                new { id = webLogin.ClientId });
+        }
+
+
+        //==================================================
+        // Delete Web Login
+        //==================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteWebLogin(int id)
+        {
+            var webLogin = _context.ClientWebLogins
+                .FirstOrDefault(w => w.ClientWebLoginId == id);
+
+            if (webLogin == null)
+            {
+                TempData["Error"] =
+                    "Web portal login not found.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            var clientId = webLogin.ClientId;
+
+            _context.ClientWebLogins.Remove(webLogin);
+            _context.SaveChanges();
+
+            TempData["Success"] =
+                "Web portal login deleted successfully.";
+
+            return RedirectToAction(
+                nameof(Edit),
+                new { id = clientId });
         }
 
 
@@ -566,6 +784,32 @@ namespace FidelitasHub.Controllers
                 ?? documents.FirstOrDefault();
 
             ViewBag.SopDocuments = documents;
+        }
+
+
+        private void LoadWebLogins(int clientId)
+        {
+            ViewBag.WebLogins = _context.ClientWebLogins
+                .Where(w => w.ClientId == clientId)
+                .OrderBy(w => w.ClientWebLoginId)
+                .ToList();
+        }
+
+
+        private string GetCurrentUserName()
+        {
+            var userName =
+                HttpContext.Session.GetString("EmployeeName");
+
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                userName =
+                    HttpContext.Session.GetString("EmployeeCode");
+            }
+
+            return string.IsNullOrWhiteSpace(userName)
+                ? "System"
+                : userName;
         }
 
 
