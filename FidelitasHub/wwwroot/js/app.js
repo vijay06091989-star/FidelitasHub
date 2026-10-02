@@ -9,21 +9,6 @@
     var root = document.documentElement;
     var body = document.body;
 
-    /* ---------- Theme -------------------------------------------------- */
-    function applyTheme(theme) {
-        root.setAttribute("data-bs-theme", theme);
-        root.setAttribute("data-theme", theme);
-        try { localStorage.setItem("fh-theme", theme); } catch (e) { }
-        var icon = document.querySelector("[data-theme-icon]");
-        if (icon) {
-            icon.className = (theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon");
-        }
-    }
-    window.fhToggleTheme = function () {
-        var current = root.getAttribute("data-bs-theme") === "dark" ? "dark" : "light";
-        applyTheme(current === "dark" ? "light" : "dark");
-    };
-
     /* ---------- Sidebar ------------------------------------------------ */
     var DESKTOP = 992;
     window.fhToggleSidebar = function () {

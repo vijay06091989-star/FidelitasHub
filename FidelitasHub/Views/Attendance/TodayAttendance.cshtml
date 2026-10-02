@@ -91,24 +91,24 @@ x.Status == "Punched Out")
 <!-- Table -->
 <div class="table-card">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table id="attendanceTable" class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Code</th>
-                    <th>Employee Name</th>
-                    <th>Department</th>
-                    <th>Shift</th>
-                    <th>Punch In</th>
-                    <th>Punch Out</th>
-                    <th>Break In</th>
-                    <th>Break Out</th>
-                    <th>Total Break</th>
-                    <th>Worked</th>
-                    <th>Current Activity</th>
-                    <th>Total Idle</th>
-                    <th>Attendance Status</th>
-                    <th>Leave Status</th>
+                    <th class="sortable" data-column="0" data-type="number"># <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="1" data-type="text">Code <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="2" data-type="text">Employee Name <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="3" data-type="text">Department <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="4" data-type="text">Shift <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="5" data-type="time">Punch In <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="6" data-type="time">Punch Out <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="7" data-type="time">Break In <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="8" data-type="time">Break Out <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="9" data-type="duration">Total Break <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="10" data-type="duration">Worked <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="11" data-type="text">Current Activity <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="12" data-type="duration">Total Idle <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="13" data-type="text">Attendance Status <span class="sort-indicator"></span></th>
+                    <th class="sortable" data-column="14" data-type="text">Leave Status <span class="sort-indicator"></span></th>
                 </tr>
             </thead>
             <tbody>
@@ -116,7 +116,22 @@ x.Status == "Punched Out")
                 {
                     foreach (var item in Model)
                     {
-                        <tr data-status="@item.Status" data-activity="@item.CurrentActivity">
+                        <tr data-status="@item.Status"
+                            data-activity="@item.CurrentActivity"
+                            data-sort-code="@item.EmployeeCode"
+                            data-sort-name="@item.EmployeeName"
+                            data-sort-department="@item.Department"
+                            data-sort-shift="@item.Shift"
+                            data-sort-punchin="@item.PunchIn"
+                            data-sort-punchout="@item.PunchOut"
+                            data-sort-breakin="@item.BreakStart"
+                            data-sort-breakout="@item.BreakEnd"
+                            data-sort-totalbreak="@item.TotalBreak"
+                            data-sort-worked="@item.WorkedTime"
+                            data-sort-activity="@item.CurrentActivity"
+                            data-sort-idle="@item.TotalIdle"
+                            data-sort-status="@item.Status"
+                            data-sort-leave="@item.LeaveStatus">
                             <td>@slNo</td>
                             <td><span class="fw-semibold">@item.EmployeeCode</span></td>
                             <td>@item.EmployeeName</td>
@@ -199,59 +214,226 @@ x.Status == "Punched Out")
     </div>
 </div>
 
+
+<style>
+    #attendanceTable th.sortable {
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    #attendanceTable th.sortable:hover {
+        text-decoration: underline;
+    }
+
+    #attendanceTable .sort-indicator {
+        font-size: 0.75em;
+        opacity: 0.75;
+    }
+</style>
+
 @section Scripts
 {
     <script>
-        document.getElementById("btnSearch").addEventListener("click", function () {
-            var value = document.getElementById("txtSearch").value.toLowerCase();
-            document.querySelectorAll("tbody tr[data-status]").forEach(function (row) {
-                row.style.display = row.innerText.toLowerCase().indexOf(value) > -1 ? "" : "none";
+        let activeFilter = "";
+        let currentSortColumn = -1;
+        let currentSortDirection = 1;
+
+        function getRows() {
+            return Array.from(document.querySelectorAll("tbody tr[data-status]"));
+        }
+
+        function applyFilters() {
+            var searchValue = document.getElementById("txtSearch").value.toLowerCase();
+
+            getRows().forEach(function (row) {
+                var matchesSearch =
+                    row.innerText.toLowerCase().indexOf(searchValue) > -1;
+
+                var matchesCard = true;
+
+                if (activeFilter !== "") {
+                    var attendanceStatus = (row.dataset.status || "").toLowerCase();
+                    var activity = (row.dataset.activity || "").toLowerCase();
+                    var leaveStatus = row.innerText.toLowerCase();
+
+                    if (activeFilter === "present") {
+                        matchesCard = attendanceStatus !== "absent";
+                    }
+                    else if (activeFilter === "approved leave") {
+                        matchesCard = leaveStatus.indexOf("approved leave") > -1;
+                    }
+                    else if (activeFilter === "idle") {
+                        matchesCard = activity === "idle";
+                    }
+                    else {
+                        matchesCard =
+                            attendanceStatus.indexOf(activeFilter) > -1;
+                    }
+                }
+
+                row.style.display =
+                    matchesSearch && matchesCard ? "" : "none";
             });
+        }
+
+        document.getElementById("btnSearch").addEventListener("click", function () {
+            applyFilters();
         });
 
         document.getElementById("btnClear").addEventListener("click", function () {
             document.getElementById("txtSearch").value = "";
-            document.querySelectorAll("tbody tr[data-status]").forEach(function (row) { row.style.display = ""; });
+            activeFilter = "";
+
+            document.querySelectorAll(".attendance-card")
+                .forEach(c => c.classList.remove("is-active"));
+
+            applyFilters();
         });
 
-        let activeFilter = "";
         document.querySelectorAll(".attendance-card").forEach(function (card) {
             card.addEventListener("click", function () {
                 var filter = this.dataset.status.toLowerCase();
 
                 if (activeFilter === filter) {
                     activeFilter = "";
-                    document.querySelectorAll(".attendance-card").forEach(c => c.classList.remove("is-active"));
-                    document.querySelectorAll("tbody tr[data-status]").forEach(row => row.style.display = "");
+                    document.querySelectorAll(".attendance-card")
+                        .forEach(c => c.classList.remove("is-active"));
+
+                    applyFilters();
                     return;
                 }
 
                 activeFilter = filter;
-                document.querySelectorAll(".attendance-card").forEach(c => c.classList.remove("is-active"));
+
+                document.querySelectorAll(".attendance-card")
+                    .forEach(c => c.classList.remove("is-active"));
+
                 this.classList.add("is-active");
 
-                document.querySelectorAll("tbody tr[data-status]").forEach(function (row) {
-                    var attendanceStatus = (row.dataset.status || "").toLowerCase();
-                    var activity = (row.dataset.activity || "").toLowerCase();
-                    var leaveStatus = row.innerText.toLowerCase();
-
-                    if (filter === "present") {
-                        row.style.display = attendanceStatus === "absent" ? "none" : "";
-                    }
-                    else if (filter === "approved leave") {
-                        row.style.display = leaveStatus.indexOf("approved leave") > -1 ? "" : "none";
-                    }
-                    else if (filter === "idle") {
-                        row.style.display = activity === "idle" ? "" : "none";
-                    }
-                    else {
-                        row.style.display = attendanceStatus.indexOf(filter) > -1 ? "" : "none";
-                    }
-                });
+                applyFilters();
             });
         });
 
+        function parseTime(value) {
+            if (!value || value === "--") return Number.POSITIVE_INFINITY;
+
+            var match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+            if (!match) return Number.POSITIVE_INFINITY;
+
+            var hour = parseInt(match[1], 10);
+            var minute = parseInt(match[2], 10);
+            var ampm = match[3].toUpperCase();
+
+            if (ampm === "AM" && hour === 12) hour = 0;
+            if (ampm === "PM" && hour !== 12) hour += 12;
+
+            return (hour * 60) + minute;
+        }
+
+        function parseDuration(value) {
+            if (!value || value === "--") return Number.POSITIVE_INFINITY;
+
+            var match = value.trim().match(/^(\d+):(\d{2})$/);
+            if (!match) return Number.POSITIVE_INFINITY;
+
+            return (parseInt(match[1], 10) * 60) +
+                   parseInt(match[2], 10);
+        }
+
+        function getSortValue(row, column, type) {
+            var values = [
+                row.children[0]?.innerText.trim() || "",
+                row.dataset.sortCode || "",
+                row.dataset.sortName || "",
+                row.dataset.sortDepartment || "",
+                row.dataset.sortShift || "",
+                row.dataset.sortPunchin || "",
+                row.dataset.sortPunchout || "",
+                row.dataset.sortBreakin || "",
+                row.dataset.sortBreakout || "",
+                row.dataset.sortTotalbreak || "",
+                row.dataset.sortWorked || "",
+                row.dataset.sortActivity || "",
+                row.dataset.sortIdle || "",
+                row.dataset.sortStatus || "",
+                row.dataset.sortLeave || ""
+            ];
+
+            var value = values[column];
+
+            if (type === "number") {
+                return parseInt(value, 10) || 0;
+            }
+
+            if (type === "time") {
+                return parseTime(value);
+            }
+
+            if (type === "duration") {
+                return parseDuration(value);
+            }
+
+            return value.toLowerCase();
+        }
+
+        function sortTable(header) {
+            var column = parseInt(header.dataset.column, 10);
+            var type = header.dataset.type;
+
+            if (currentSortColumn === column) {
+                currentSortDirection *= -1;
+            }
+            else {
+                currentSortColumn = column;
+                currentSortDirection = 1;
+            }
+
+            var tbody = document.querySelector("#attendanceTable tbody");
+            var rows = getRows();
+
+            rows.sort(function (a, b) {
+                var valueA = getSortValue(a, column, type);
+                var valueB = getSortValue(b, column, type);
+
+                if (valueA < valueB) return -1 * currentSortDirection;
+                if (valueA > valueB) return 1 * currentSortDirection;
+                return 0;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+
+            // Re-number the visible table rows after sorting.
+            rows.forEach(function (row, index) {
+                row.children[0].innerText = index + 1;
+            });
+
+            document.querySelectorAll(".sort-indicator")
+                .forEach(function (indicator) {
+                    indicator.innerText = "";
+                });
+
+            var indicator = header.querySelector(".sort-indicator");
+            indicator.innerText =
+                currentSortDirection === 1 ? " ▲" : " ▼";
+
+            applyFilters();
+        }
+
+        document.querySelectorAll("#attendanceTable th.sortable")
+            .forEach(function (header) {
+                header.style.cursor = "pointer";
+                header.title = "Click to sort";
+
+                header.addEventListener("click", function () {
+                    sortTable(this);
+                });
+            });
+
         // Live attendance data refreshes every 30 seconds.
-        setTimeout(function () { location.reload(); }, 30000);
+        setTimeout(function () {
+            location.reload();
+        }, 30000);
     </script>
 }

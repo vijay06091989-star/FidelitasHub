@@ -1,6 +1,7 @@
 using FidelitasHub.Data;
 using FidelitasHub.Helpers;
 using FidelitasHub.Models;
+using FidelitasHub.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -9,10 +10,14 @@ namespace FidelitasHub.Controllers
     public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;
+    private readonly IProtectedActionService _protectedActionService;
 
-        public EmployeeController(ApplicationDbContext context)
+        public EmployeeController(
+        ApplicationDbContext context,
+        IProtectedActionService protectedActionService)
         {
             _context = context;
+        _protectedActionService = protectedActionService;
         }
 
         //==================================================
@@ -21,6 +26,12 @@ namespace FidelitasHub.Controllers
 
         public IActionResult Index(string searchText, string status)
         {
+            // Clear any employee-edit authorization left from a previous edit session.
+            // This ensures returning to Employee Master requires PIN verification again.
+            _protectedActionService.RevokeAll(
+                HttpContext,
+                ProtectedActionService.EmployeeEditAction);
+
             var employees = _context.Employees.AsQueryable();
 
             //=========================
@@ -194,6 +205,19 @@ namespace FidelitasHub.Controllers
                 return NotFound();
             }
 
+            if (!_protectedActionService.IsAuthorized(
+                HttpContext,
+                ProtectedActionService.EmployeeEditAction,
+                id))
+            {
+                return RedirectToAction(
+                    nameof(VerifyPin),
+                    new
+                    {
+                        id
+                    });
+            }
+
             LoadDepartments();
 
             LoadShifts();
@@ -214,6 +238,22 @@ namespace FidelitasHub.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Employee employee)
         {
+            if (!_protectedActionService.IsAuthorized(
+                HttpContext,
+                ProtectedActionService.EmployeeEditAction,
+                employee.EmployeeId))
+            {
+                return RedirectToAction(
+                    nameof(VerifyPin),
+                    new
+                    {
+                        id = employee.EmployeeId,
+                        returnUrl = Url.Action(
+                            nameof(Edit),
+                            new { id = employee.EmployeeId })
+                    });
+            }
+
             ModelState.Remove(nameof(Employee.Password));
 
             if (employee.Role == "SuperAdmin")
@@ -302,6 +342,11 @@ namespace FidelitasHub.Controllers
                 _context.Update(employee);
 
                 _context.SaveChanges();
+                _protectedActionService.Revoke(
+                    HttpContext,
+                    ProtectedActionService.EmployeeEditAction,
+                    employee.EmployeeId);
+
 
                 TempData["Success"] =
                     "Employee updated successfully.";
@@ -322,6 +367,64 @@ namespace FidelitasHub.Controllers
         }
 
         //==================================================
+        //==================================================
+        // Employee Edit PIN Verification
+        //==================================================
+
+        [HttpGet]
+        public IActionResult VerifyPin(int id, string? returnUrl = null)
+        {
+            var employee = _context.Employees.Find(id);
+
+            if (employee == null)
+                return NotFound();
+
+            ViewBag.EmployeeName = employee.EmployeeName;
+            ViewBag.ReturnUrl = string.IsNullOrWhiteSpace(returnUrl)
+                ? Url.Action(nameof(Edit), new { id })
+                : returnUrl;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult VerifyPin(
+            int id,
+            string pin,
+            string? returnUrl = null)
+        {
+            var employee = _context.Employees.Find(id);
+
+            if (employee == null)
+                return NotFound();
+
+            if (!_protectedActionService.VerifyPin(pin))
+            {
+                ViewBag.EmployeeName = employee.EmployeeName;
+                ViewBag.ReturnUrl = string.IsNullOrWhiteSpace(returnUrl)
+                    ? Url.Action(nameof(Edit), new { id })
+                    : returnUrl;
+                ViewBag.PinError = "Incorrect PIN. Please try again.";
+                return View();
+            }
+
+            _protectedActionService.Grant(
+                HttpContext,
+                ProtectedActionService.EmployeeEditAction,
+                id);
+
+            return LocalRedirect(
+                string.IsNullOrWhiteSpace(returnUrl)
+                    ? Url.Action(nameof(Edit), new { id })!
+                    : returnUrl);
+        }
+
+        //==================================================
+        // Employee Edit PIN Verification
+        //==================================================
+
+        [HttpGet]
         // Disable Employee
         //==================================================
 
@@ -501,3 +604,7 @@ namespace FidelitasHub.Controllers
 
     }
 }
+
+
+
+

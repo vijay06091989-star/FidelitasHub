@@ -5,9 +5,11 @@ using FidelitasHub.Services.Attendance;
 using FidelitasHub.Services.BackgroundServices;
 using FidelitasHub.Services.Configuration;
 using FidelitasHub.Services.Email;
+using FidelitasHub.Services.Security;
 using FidelitasHub.Services.Leave;
 using FidelitasHub.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +48,11 @@ builder.Services.AddScoped<MasterSequenceGenerator>();
 builder.Services.AddScoped<ConfigurationService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<EmailTemplateService>();
+builder.Services.AddScoped<IProtectedActionService, ProtectedActionService>();
+builder.Services.AddScoped<IClientWebLoginProtectionService, ClientWebLoginProtectionService>();
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("FidelitasHub");
 
 //==================================================
 // Enable Session

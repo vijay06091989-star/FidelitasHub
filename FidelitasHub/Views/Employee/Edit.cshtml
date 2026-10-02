@@ -313,6 +313,155 @@
                     </div>
 
 
+                    <!-- PERSONAL & EMERGENCY DETAILS -->
+
+                    <hr />
+
+                    <div class="mb-3">
+                        <h5 class="mb-1">
+                            <i class="fa-solid fa-address-card text-primary me-1"></i>
+                            Personal &amp; Emergency Details
+                        </h5>
+                        <p class="text-muted mb-0">Personal, identification and emergency contact information</p>
+                    </div>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label asp-for="Gender" class="form-label"></label>
+                            <input asp-for="Gender" class="form-control" />
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="MaritalStatus" class="form-label"></label>
+                            <input asp-for="MaritalStatus" class="form-control" />
+                            <span asp-validation-for="MaritalStatus" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="DateOfBirth" class="form-label"></label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="PANNumber" class="form-label"></label>
+                            <input asp-for="PANNumber" class="form-control" />
+                            <span asp-validation-for="PANNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="AadharNumber" class="form-label"></label>
+                            <input asp-for="AadharNumber" class="form-control" />
+                            <span asp-validation-for="AadharNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="BloodGroup" class="form-label"></label>
+                            <input asp-for="BloodGroup" class="form-control" />
+                            <span asp-validation-for="BloodGroup" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="FatherName" class="form-label"></label>
+                            <input asp-for="FatherName" class="form-control" />
+                            <span asp-validation-for="FatherName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="EmergencyContactPerson" class="form-label"></label>
+                            <input asp-for="EmergencyContactPerson" class="form-control" />
+                            <span asp-validation-for="EmergencyContactPerson" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="EmergencyContactNumber" class="form-label"></label>
+                            <input asp-for="EmergencyContactNumber" class="form-control" />
+                            <span asp-validation-for="EmergencyContactNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PersonalEmail" class="form-label"></label>
+                            <input asp-for="PersonalEmail" type="email" class="form-control" />
+                            <span asp-validation-for="PersonalEmail" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="PermanentAddress" class="form-label"></label>
+                            <textarea asp-for="PermanentAddress" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="PermanentAddress" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="ResidentialAddress" class="form-label"></label>
+                            <textarea asp-for="ResidentialAddress" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="ResidentialAddress" class="text-danger"></span>
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =====================================================
+                         EMPLOYEE DOCUMENTS
+                         View / Download only - upload is done by the employee
+                         from My Dashboard.
+                         ===================================================== -->
+                    <div class="fh-document-master mt-4 mb-4">
+                        <div class="fh-document-master-head">
+                            <div>
+                                <div class="fh-document-master-title">
+                                    <i class="fa-solid fa-folder-open me-2"></i>
+                                    Employee Documents
+                                </div>
+                                <div class="fh-document-master-sub">
+                                    Aadhaar and PAN copies uploaded by the employee.
+                                </div>
+                            </div>
+                            <span class="badge text-bg-light" id="employeeDocumentSecurity">
+                                PIN protected
+                            </span>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <div class="fh-master-document-card">
+                                    <div class="fh-master-document-icon">
+                                        <i class="fa-solid fa-id-card"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">Aadhaar Card</div>
+                                        <div class="small text-muted" id="editAadhaarStatus">Checking...</div>
+                                        <div class="d-flex gap-2 flex-wrap mt-2" id="editAadhaarActions"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="fh-master-document-card">
+                                    <div class="fh-master-document-icon">
+                                        <i class="fa-solid fa-address-card"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">PAN Card</div>
+                                        <div class="small text-muted" id="editPanStatus">Checking...</div>
+                                        <div class="d-flex gap-2 flex-wrap mt-2" id="editPanActions"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <style>
+                        .fh-document-master { padding:18px; border-radius:15px; border:1px solid rgba(148,163,184,.20); background:rgba(148,163,184,.045); }
+                        .fh-document-master-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+                        .fh-document-master-title { font-weight:800; font-size:1rem; }
+                        .fh-document-master-sub { font-size:.78rem; opacity:.62; margin-top:3px; }
+                        .fh-master-document-card { display:flex; align-items:center; gap:13px; padding:15px; border-radius:13px; background:var(--bs-body-bg); border:1px solid rgba(148,163,184,.18); }
+                        .fh-master-document-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(14,165,233,.11); color:#0284c7; flex:0 0 auto; }
+                    </style>
+
                     <hr />
 
 
@@ -413,7 +562,71 @@
             );
 
 
+
             toggleSuperAdminFields();
+
+            //==================================================
+            // Employee document status / View / Download
+            //==================================================
+            function loadEmployeeDocuments() {
+                fetch('@Url.Action("Status", "EmployeeDocuments")?employeeId=@Model.EmployeeId', {
+                    credentials: "same-origin"
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("Document status unavailable");
+                    return response.json();
+                })
+                .then(data => {
+                    renderEmployeeDocument(
+                        "Aadhaar",
+                        "aadhaar",
+                        data.aadhaarUploaded);
+                    renderEmployeeDocument(
+                        "Pan",
+                        "pan",
+                        data.panUploaded);
+                })
+                .catch(() => {
+                    document.getElementById("editAadhaarStatus").textContent =
+                        "PIN authorization expired or status unavailable.";
+                    document.getElementById("editPanStatus").textContent =
+                        "PIN authorization expired or status unavailable.";
+                });
+            }
+
+            function renderEmployeeDocument(label, type, uploaded) {
+                const status = document.getElementById("edit" + label + "Status");
+                const actions = document.getElementById("edit" + label + "Actions");
+
+                if (!status || !actions) return;
+
+                actions.innerHTML = "";
+
+                if (!uploaded) {
+                    status.textContent = "Not uploaded by employee";
+                    return;
+                }
+
+                status.textContent = "✓ Uploaded and available";
+
+                const view = document.createElement("a");
+                view.className = "btn btn-sm btn-outline-primary";
+                view.href = '@Url.Action("ViewDocument", "EmployeeDocuments")' +
+                    '?employeeId=@Model.EmployeeId&documentType=' + encodeURIComponent(type);
+                view.target = "_blank";
+                view.innerHTML = '<i class="fa-solid fa-eye me-1"></i> View';
+
+                const download = document.createElement("a");
+                download.className = "btn btn-sm btn-outline-secondary";
+                download.href = '@Url.Action("DownloadDocument", "EmployeeDocuments")' +
+                    '?employeeId=@Model.EmployeeId&documentType=' + encodeURIComponent(type);
+                download.innerHTML = '<i class="fa-solid fa-download me-1"></i> Download';
+
+                actions.appendChild(view);
+                actions.appendChild(download);
+            }
+
+            loadEmployeeDocuments();
 
         });
 

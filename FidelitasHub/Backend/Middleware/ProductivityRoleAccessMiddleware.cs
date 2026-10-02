@@ -51,8 +51,8 @@ namespace FidelitasHub.Middleware
                 return;
             }
 
-            // Both roles can view the Productivity dashboard and individual
-            // client productivity pages. Editor additionally gets the full
+            // Both roles can view the Productivity dashboard, individual
+            // client productivity pages and client web logins. Editor additionally gets the full
             // Productivity area (including future setup/register/report pages).
             if (path.StartsWithSegments("/Productivity"))
             {
@@ -72,6 +72,10 @@ namespace FidelitasHub.Middleware
                     string.Equals(
                         productivityAction,
                         "Client",
+                        StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(
+                        productivityAction,
+                        "WebLogins",
                         StringComparison.OrdinalIgnoreCase))
                 {
                     await _next(context);

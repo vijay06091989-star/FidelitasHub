@@ -12,15 +12,15 @@ namespace FidelitasHub.Services.Attendance
         private readonly ReportingService _reportingService;
 
         public AttendanceRegisterService(
-    ApplicationDbContext context,
-    ReportingService reportingService)
+            ApplicationDbContext context,
+            ReportingService reportingService)
         {
             _context = context;
             _reportingService = reportingService;
         }
 
         public List<AttendanceRegisterViewModel> GetAttendanceRegister(
-    AttendanceRegisterRequest request)
+            AttendanceRegisterRequest request)
         {
             //=============================
             // Validate Request
@@ -99,10 +99,27 @@ namespace FidelitasHub.Services.Attendance
                     x => (x.EmployeeId, x.AttendanceDate.Date));
 
             //====================================
+            // Idle Sessions Lookup
+            //====================================
+
+            var attendanceIds = attendanceRecords
+                .Select(a => a.AttendanceId)
+                .ToList();
+
+            var idleSessionsByAttendance = _context.EmployeeIdleSessions
+                .Where(i => attendanceIds.Contains(i.AttendanceId))
+                .ToList()
+                .GroupBy(i => i.AttendanceId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.ToList());
+
+            //====================================
             // Result List
             //====================================
 
             var attendanceRegister = new List<AttendanceRegisterViewModel>();
+
             //====================================
             // Attendance Engine
             //====================================
@@ -122,6 +139,30 @@ namespace FidelitasHub.Services.Attendance
                         shiftLookup.TryGetValue(
                             employee.ShiftId.Value,
                             out shift);
+                    }
+
+                    //====================================
+                    // Calculate Idle Time
+                    //====================================
+
+                    int totalIdleSeconds = 0;
+
+                    if (attendance != null &&
+                        employee.EnableIdleMonitoring &&
+                        idleSessionsByAttendance.TryGetValue(
+                            attendance.AttendanceId,
+                            out var idleSessions))
+                    {
+                        var istNow = DateTimeHelper.GetIST();
+
+                        totalIdleSeconds = idleSessions.Sum(i =>
+                            i.DurationSeconds +
+                            (i.IdleEnd == null
+                                ? Math.Max(
+                                    0,
+                                    (int)(istNow - i.IdleStart)
+                                        .TotalSeconds)
+                                : 0));
                     }
 
                     attendanceRegister.Add(new AttendanceRegisterViewModel
@@ -153,6 +194,12 @@ namespace FidelitasHub.Services.Attendance
 
                         BreakTime = attendance != null
                             ? TimeSpan.FromMinutes(attendance.TotalBreakMinutes)
+                                .ToString(@"hh\:mm")
+                            : "--",
+
+                        TotalIdle = attendance != null &&
+                                    employee.EnableIdleMonitoring
+                            ? TimeSpan.FromSeconds(totalIdleSeconds)
                                 .ToString(@"hh\:mm")
                             : "--",
 
@@ -189,8 +236,12 @@ namespace FidelitasHub.Services.Attendance
 
                 attendanceRegister = attendanceRegister
                     .Where(x =>
-                        x.EmployeeCode.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                        x.EmployeeName.Contains(search, StringComparison.OrdinalIgnoreCase))
+                        x.EmployeeCode.Contains(
+                            search,
+                            StringComparison.OrdinalIgnoreCase) ||
+                        x.EmployeeName.Contains(
+                            search,
+                            StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 
@@ -207,7 +258,6 @@ namespace FidelitasHub.Services.Attendance
             }
 
             return attendanceRegister;
-
         }
 
         //====================================================
@@ -215,9 +265,8 @@ namespace FidelitasHub.Services.Attendance
         //====================================================
 
         private string CalculateAttendanceStatus(
-    AttendanceModel? attendance,
-    Shift? shift)
-
+            AttendanceModel? attendance,
+            Shift? shift)
         {
             if (attendance == null)
                 return "Absent";

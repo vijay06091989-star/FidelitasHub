@@ -78,7 +78,8 @@ namespace FidelitasHub.Controllers
                 return RedirectToAction("Index", "Productivity");
             }
 
-            return RedirectToAction("Index", "Home");
+            // Normal employee login now opens My Dashboard directly.
+            return RedirectToAction("Dashboard", "Attendance");
         }
 
         //=====================================================
@@ -157,8 +158,6 @@ namespace FidelitasHub.Controllers
                 return RedirectToAction("Login");
             }
 
-
-
             //=====================================================
             // PREVENT SAME PASSWORD
             //=====================================================
@@ -183,7 +182,9 @@ namespace FidelitasHub.Controllers
                 return RedirectToAction("Index", "Productivity");
             }
 
-            return RedirectToAction("Index", "Home");
+            // After a mandatory password change, normal employees also
+            // land directly on My Dashboard.
+            return RedirectToAction("Dashboard", "Attendance");
         }
 
         //=====================================================
@@ -195,7 +196,7 @@ namespace FidelitasHub.Controllers
         {
             return View();
         }
-    
+
         //=====================================================
         // FORGOT PASSWORD
         //=====================================================
@@ -238,10 +239,10 @@ namespace FidelitasHub.Controllers
                 //=====================================================
 
                 var values = new Dictionary<string, string>
-{
-    { "EmployeeName", employee.EmployeeName },
-    { "TemporaryPassword", temporaryPassword }
-};
+                {
+                    { "EmployeeName", employee.EmployeeName },
+                    { "TemporaryPassword", temporaryPassword }
+                };
 
                 await _emailService.SendTemplateAsync(
                     "FORGOT_PASSWORD",

@@ -1,0 +1,139 @@
+﻿@{
+    ViewData["Title"] = "Authorization Required";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-8 col-md-5 col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+
+                    <div class="text-center mb-3">
+                        <h4 class="mb-1">Employee Master</h4>
+                        <div class="text-muted">
+                            Authorization required to edit
+                        </div>
+                        <div class="fw-semibold mt-2">
+                            @ViewBag.EmployeeName
+                        </div>
+                    </div>
+
+                    <form asp-action="VerifyPin"
+                          asp-controller="Employee"
+                          method="post"
+                          id="pinForm">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@Context.Request.RouteValues["id"]" />
+
+                        <input type="hidden"
+                               name="returnUrl"
+                               value="@returnUrl" />
+
+                        <input id="pin"
+                               name="pin"
+                               type="password"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               maxlength="4"
+                               class="form-control form-control-lg text-center mb-3"
+                               style="letter-spacing: .5rem; font-size: 1.8rem;"
+                               aria-label="4 digit PIN" />
+
+                        @if (ViewBag.PinError != null)
+                        {
+                            <div class="alert alert-danger text-center py-2">
+                                @ViewBag.PinError
+                            </div>
+                        }
+
+                        <div class="row g-2 mb-3">
+                            @for (var n = 1; n <= 9; n++)
+                            {
+                                <div class="col-4">
+                                    <button type="button"
+                                            class="btn btn-outline-secondary btn-lg w-100 pin-key"
+                                            data-key="@n">
+                                        @n
+                                    </button>
+                                </div>
+                            }
+
+                            <div class="col-4">
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-lg w-100"
+                                        id="clearPin">
+                                    Clear
+                                </button>
+                            </div>
+
+                            <div class="col-4">
+                                <button type="button"
+                                        class="btn btn-outline-secondary btn-lg w-100 pin-key"
+                                        data-key="0">
+                                    0
+                                </button>
+                            </div>
+
+                            <div class="col-4">
+                                <button type="submit"
+                                        class="btn btn-primary btn-lg w-100"
+                                        id="submitPin">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="@Url.Action("Index", "Employee")"
+                               class="btn btn-link text-decoration-none">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    const pin = document.getElementById("pin");
+    const form = document.getElementById("pinForm");
+
+    document.querySelectorAll(".pin-key").forEach(function (button) {
+        button.addEventListener("click", function () {
+            if (pin.value.length < 4) {
+                pin.value += button.dataset.key;
+            }
+
+            if (pin.value.length === 4) {
+                document.getElementById("submitPin").focus();
+            }
+        });
+    });
+
+    document.getElementById("clearPin").addEventListener("click", function () {
+        pin.value = "";
+        pin.focus();
+    });
+
+    form.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            window.location.href = '@Url.Action("Index", "Employee")';
+        }
+    });
+
+    pin.focus();
+})();
+</script>
+}
+
+
