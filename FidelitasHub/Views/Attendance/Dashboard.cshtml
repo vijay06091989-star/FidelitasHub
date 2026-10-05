@@ -460,6 +460,14 @@
                 }
             }
 
+
+            function maskSensitiveNumber(value) {
+                if (!value) return "--";
+                const normalized = String(value).replace(/\s+/g, "");
+                if (normalized.length <= 4) return normalized;
+                return "X".repeat(normalized.length - 4) + normalized.slice(-4);
+            }
+
             fetch('@Url.Action("DashboardData", "EmployeeDocuments")', { credentials: "same-origin" })
                 .then(response => {
                     if (!response.ok) throw new Error("Profile could not be loaded.");
@@ -489,8 +497,8 @@
                     setText("pMaritalStatus", data.maritalStatus);
                     setText("pDob", data.dateOfBirth);
                     setText("pBloodGroup", data.bloodGroup);
-                    setText("pPan", data.panNumber);
-                    setText("pAadhaar", data.aadharNumber);
+                    setText("pPan", maskSensitiveNumber(data.panNumber));
+                    setText("pAadhaar", maskSensitiveNumber(data.aadharNumber));
                     setText("pFatherName", data.fatherName);
                     setText("pPermanentAddress", data.permanentAddress);
                     setText("pResidentialAddress", data.residentialAddress);
@@ -539,7 +547,6 @@
 
         });
     </script>
-}
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

@@ -509,3 +509,123 @@ a.stat:hover, .stat--link:hover { box-shadow: var(--fh-shadow-lg); transform: tr
 .text-primary { color: var(--fh-primary) !important; }
 .bg-primary   { background-color: var(--fh-primary) !important; }
 .cursor-pointer { cursor: pointer; }
+
+
+/* ------------------------------------------------------------------ *
+ * Fidelitas Hub — Compact auto-hover sidebar
+ * Desktop: compact icon rail by default; expand while pointer is over
+ * the sidebar. Moving into the workspace collapses it again.
+ * ------------------------------------------------------------------ */
+@media (min-width: 992px) {
+    .sidebar {
+        width: 74px;
+        flex-basis: 74px;
+        transition: width .20s ease;
+    }
+
+    .app-main {
+        margin-left: 74px;
+        transition: margin-left .20s ease;
+    }
+
+    .sidebar__brand {
+        justify-content: center;
+        padding: 0 10px;
+    }
+
+    .sidebar__brand span:last-child,
+    .sidebar__section,
+    .sidebar__link span,
+    .sidebar__link .caret,
+    .sidebar__submenu {
+        display: none;
+    }
+
+    .sidebar__nav {
+        padding: 10px 8px 18px;
+    }
+
+    .sidebar__link {
+        justify-content: center;
+        gap: 0;
+        padding: 7px 8px;
+        margin: 1px 0;
+        font-size: .78rem;
+    }
+
+    .sidebar__link i {
+        width: 18px;
+        font-size: .95rem;
+        text-align: center;
+    }
+
+    /* Keep compact-mode icons exactly the same size as the full sidebar. */
+    body.sidebar-collapsed .sidebar__link i {
+        width: 18px;
+        font-size: .95rem;
+        text-align: center;
+        margin: 0;
+    }
+
+    /* Expand automatically when the mouse enters the sidebar. */
+    body:has(.sidebar:hover) .sidebar {
+        width: 230px;
+        flex-basis: 230px;
+    }
+
+    body:has(.sidebar:hover) .app-main {
+        margin-left: 230px;
+    }
+
+    body:has(.sidebar:hover) .sidebar__brand {
+        justify-content: flex-start;
+        padding: 0 14px;
+    }
+
+    body:has(.sidebar:hover) .sidebar__brand span:last-child,
+    body:has(.sidebar:hover) .sidebar__section,
+    body:has(.sidebar:hover) .sidebar__link span,
+    body:has(.sidebar:hover) .sidebar__link .caret {
+        display: block;
+    }
+
+    body:has(.sidebar:hover) .sidebar__link {
+        justify-content: flex-start;
+        gap: 9px;
+        padding: 6px 9px;
+        font-size: .78rem;
+    }
+
+    body:has(.sidebar:hover) .sidebar__link i {
+        width: 18px;
+        font-size: .88rem;
+    }
+
+    body:has(.sidebar:hover) .sidebar__submenu {
+        display: block;
+    }
+
+    /* Keep the existing submenu open/closed animation working. */
+    body:has(.sidebar:hover) .sidebar__group.open .sidebar__submenu {
+        max-height: 480px;
+    }
+
+    /* Existing click-to-collapse class no longer overrides hover behavior. */
+    body.sidebar-collapsed .sidebar {
+        width: 74px;
+        flex-basis: 74px;
+    }
+
+    body.sidebar-collapsed .app-main {
+        margin-left: 74px;
+    }
+
+    body.sidebar-collapsed:has(.sidebar:hover) .sidebar {
+        width: 230px;
+        flex-basis: 230px;
+    }
+
+    body.sidebar-collapsed:has(.sidebar:hover) .app-main {
+        margin-left: 230px;
+    }
+}
