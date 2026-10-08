@@ -58,7 +58,7 @@ namespace FidelitasHub.Middleware
                     "Client", "WebLogins"
                 };
 
-                if (canView && viewerActions.Any(x => x.Equals(action, StringComparison.OrdinalIgnoreCase)))
+                if ((canView || canManage) && viewerActions.Any(x => x.Equals(action, StringComparison.OrdinalIgnoreCase)))
                 {
                     await _next(context);
                     return;
