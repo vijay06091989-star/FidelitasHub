@@ -48,12 +48,26 @@
         <div class="fh-hero-visual">
             <div class="fh-hero-photo"></div>
             <div class="fh-hero-overlay">
-                <strong>US Medical Billing &amp; RCM</strong>
+                <strong>Fidelitas RCM &amp; Health Care</strong>
                 <small>Accurate Billing · Timely Reimbursement · Better Patient Care</small>
             </div>
         </div>
     </section>
 
+    <!-- DASHBOARD TABS -->
+    <div class="fh-dashboard-tabs" role="tablist" aria-label="Dashboard sections">
+        <button type="button" class="fh-dashboard-tab is-active" id="tabDashboard" role="tab" aria-selected="true" aria-controls="dashboardPanel">
+            <i class="fa-solid fa-chart-line"></i><span>Dashboard</span>
+        </button>
+        <button type="button" class="fh-dashboard-tab" id="tabProfile" role="tab" aria-selected="false" aria-controls="profilePanel" tabindex="-1">
+            <i class="fa-solid fa-user-check"></i><span>My Profile</span>
+        </button>
+        <button type="button" class="fh-dashboard-tab" id="tabDocuments" role="tab" aria-selected="false" aria-controls="documentsPanel" tabindex="-1">
+            <i class="fa-solid fa-folder-open"></i><span>My Documents</span>
+        </button>
+    </div>
+
+    <div id="dashboardPanel" class="fh-tab-panel is-active" role="tabpanel" aria-labelledby="tabDashboard">
     <!-- ATTENDANCE -->
     <section class="fh-main-row">
         <div class="fh-time-card">
@@ -134,16 +148,11 @@
             </div>
         </div>
     </section>
+    </div>
 
     <!-- PROFILE -->
-    <section id="profile" class="fh-profile-section fh-accordion-section">
-        <button type="button" class="fh-accordion-header" id="profileToggle"
-                aria-expanded="false" aria-controls="profilePanel">
-            <span><i class="fa-solid fa-user-check"></i> My Profile</span>
-            <i class="fa-solid fa-chevron-down fh-accordion-chevron"></i>
-        </button>
-
-        <div id="profilePanel" class="fh-accordion-panel">
+    <section id="profile" class="fh-profile-section fh-tab-panel" role="tabpanel" aria-labelledby="tabProfile">
+        <div id="profilePanel">
             <div class="fh-profile-grid">
 
             <div class="fh-info-card">
@@ -198,14 +207,8 @@
     </section>
 
     <!-- DOCUMENTS -->
-    <section id="documents" class="fh-documents-section fh-accordion-section">
-        <button type="button" class="fh-accordion-header" id="documentsToggle"
-                aria-expanded="false" aria-controls="documentsPanel">
-            <span><i class="fa-solid fa-folder-open"></i> My Documents</span>
-            <i class="fa-solid fa-chevron-down fh-accordion-chevron"></i>
-        </button>
-
-        <div id="documentsPanel" class="fh-accordion-panel">
+    <section id="documents" class="fh-documents-section fh-tab-panel" role="tabpanel" aria-labelledby="tabDocuments">
+        <div id="documentsPanel">
             <div class="fh-document-grid">
             <div class="fh-document-card">
                 <div class="fh-document-icon aadhaar"><i class="fa-solid fa-fingerprint"></i></div>
@@ -303,7 +306,7 @@
     .fh-hero-photo {
         position:absolute;inset:0;
         background-image:linear-gradient(90deg,rgba(255,255,255,.12),rgba(8,58,120,.02)),
-                          url('/images/medical-billing-hero.jpg');
+                          url('/images/fidelitas-dashboard-hero.png');
         background-size:cover;background-position:center;
     }
     .fh-hero-overlay {
@@ -390,6 +393,48 @@
     .fh-stat strong { display:block;font-size:11px;color:#173b69;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .fh-stat small { display:block;color:#93a2b5;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 
+    .fh-dashboard-tabs {
+        display:flex;
+        align-items:flex-end;
+        gap:4px;
+        margin:12px 0 0;
+        padding:0 10px;
+        border-bottom:1px solid #dbe7f5;
+    }
+    .fh-dashboard-tab {
+        border:1px solid transparent;
+        border-bottom:0;
+        background:transparent;
+        color:#8b9bb0;
+        font:600 13px/1 "Segoe UI",Arial,sans-serif;
+        padding:10px 18px 11px;
+        border-radius:10px 10px 0 0;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        transition:all .18s ease;
+        position:relative;
+        top:1px;
+    }
+    .fh-dashboard-tab i { font-size:13px; }
+    .fh-dashboard-tab:hover { color:#416a98; background:#f5f8fc; }
+    .fh-dashboard-tab.is-active {
+        color:#075fc9;
+        background:#fff;
+        border-color:#dbe7f5;
+        box-shadow:0 -2px 8px rgba(20,67,120,.04);
+    }
+    .fh-dashboard-tab.is-active::after {
+        content:"";
+        position:absolute;
+        left:12px; right:12px; bottom:-1px;
+        height:3px;
+        background:#075fc9;
+        border-radius:3px 3px 0 0;
+    }
+    .fh-tab-panel { display:none; }
+    .fh-tab-panel.is-active { display:block; }
     .fh-profile-section,.fh-documents-section { margin-top:18px; }
     .fh-accordion-header {
         width:100%;border:1px solid var(--fh-border);border-radius:13px;background:#fff;
@@ -595,39 +640,37 @@
                 });
 
             //==================================================
-            // Profile / Documents accordion
-            // Only one section stays open at a time.
+            // Dashboard / Profile / Documents tabs
+            // Dashboard is the default view; only the selected
+            // section is visible.
             //==================================================
-            const profileToggle = document.getElementById("profileToggle");
-            const documentsToggle = document.getElementById("documentsToggle");
-            const profilePanel = document.getElementById("profilePanel");
-            const documentsPanel = document.getElementById("documentsPanel");
+            const tabDashboard = document.getElementById("tabDashboard");
+            const tabProfile = document.getElementById("tabProfile");
+            const tabDocuments = document.getElementById("tabDocuments");
+            const dashboardPanel = document.getElementById("dashboardPanel");
+            const profileSection = document.getElementById("profile");
+            const documentsSection = document.getElementById("documents");
 
-            function toggleDashboardPanel(panel, toggle, otherPanel, otherToggle) {
-                if (!panel || !toggle) return;
+            const dashboardTabs = [
+                { button: tabDashboard, panel: dashboardPanel },
+                { button: tabProfile, panel: profileSection },
+                { button: tabDocuments, panel: documentsSection }
+            ];
 
-                const shouldOpen = !panel.classList.contains("is-open");
-
-                if (otherPanel && otherToggle) {
-                    otherPanel.classList.remove("is-open");
-                    otherToggle.setAttribute("aria-expanded", "false");
-                }
-
-                panel.classList.toggle("is-open", shouldOpen);
-                toggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
-            }
-
-            if (profileToggle) {
-                profileToggle.addEventListener("click", function () {
-                    toggleDashboardPanel(profilePanel, profileToggle, documentsPanel, documentsToggle);
+            function activateDashboardTab(selectedButton) {
+                dashboardTabs.forEach(({ button, panel }) => {
+                    if (!button || !panel) return;
+                    const active = button === selectedButton;
+                    button.classList.toggle("is-active", active);
+                    button.setAttribute("aria-selected", active ? "true" : "false");
+                    button.tabIndex = active ? 0 : -1;
+                    panel.classList.toggle("is-active", active);
                 });
             }
 
-            if (documentsToggle) {
-                documentsToggle.addEventListener("click", function () {
-                    toggleDashboardPanel(documentsPanel, documentsToggle, profilePanel, profileToggle);
-                });
-            }
+            dashboardTabs.forEach(({ button }) => {
+                if (button) button.addEventListener("click", () => activateDashboardTab(button));
+            });
 
             function doAction(url, color) {
                 fetch(url, { method: "POST" })
