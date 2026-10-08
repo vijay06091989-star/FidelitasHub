@@ -181,7 +181,78 @@
                     <span>Productivity Dashboard</span>
                 </a>
 
-                <a class="sidebar__link" asp-controller="Productivity" asp-action="Register">
+                <div class="sidebar__group">
+
+                <a class="sidebar__link" href="#"
+                   onclick="toggleProductivityClients(event)">
+
+                    <i class="fa-solid fa-handshake"></i>
+
+                    <span>Clients</span>
+
+                    <i id="productivityClientCaret"
+                       class="fa-solid fa-chevron-right caret"></i>
+
+                </a>
+
+                <div id="productivityClientMenu"
+                     class="sidebar__submenu"
+                     style="display:none;">
+
+                    @{
+                        var productivityClients = Db.Clients
+                            .Where(c => c.IsActive)
+                            .OrderBy(c => c.ClientCode)
+                            .ToList();
+                    }
+
+                    <div class="productivity-client-selector">
+
+                        <div class="productivity-client-input-wrap">
+
+                            <input type="text"
+                                   id="productivityClientSearch"
+                                   class="productivity-client-input"
+                                   placeholder="Select client..."
+                                   autocomplete="off"
+                                   oninput="filterProductivityClients()" />
+
+                            <button type="button"
+                                    class="productivity-client-arrow"
+                                    onclick="toggleProductivityClientDropdown(event)"
+                                    tabindex="-1">
+
+                                <i id="productivityClientArrow"
+                                   class="fa-solid fa-chevron-down"></i>
+
+                            </button>
+
+                        </div>
+
+                        <div id="productivityClientDropdown"
+                             class="productivity-client-dropdown">
+
+                            @foreach (var client in productivityClients)
+                            {
+                                <button type="button"
+                                        class="productivity-client-option"
+                                        data-code="@client.ClientCode"
+                                        data-id="@client.ClientId"
+                                        onclick="selectProductivityClient(this)">
+
+                                    @client.ClientCode
+
+                                </button>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+            <a class="sidebar__link" asp-controller="Productivity" asp-action="Register">
                     <i class="fa-solid fa-clipboard-list"></i>
                     <span>Productivity Register</span>
                 </a>
@@ -566,4 +637,5 @@
             });
 
         </script>
+
 
