@@ -49,7 +49,7 @@ namespace FidelitasHub.Middleware
                     return;
                 }
 
-                var viewerActions = new[] { "Index", "Register", "Reports", "ExportReport", "UploadSpreadsheet" };
+                var viewerActions = new[] { "Index", "Register", "Reports", "ExportReport", "UploadSpreadsheet", "Client", "WebLogins" };
                 var managerActions = new[]
                 {
                     "Setup", "CreateProcess", "CreateActivity", "CreateAssignment",
@@ -58,7 +58,7 @@ namespace FidelitasHub.Middleware
                     "Client", "WebLogins"
                 };
 
-                if ((canView || canManage) && viewerActions.Any(x => x.Equals(action, StringComparison.OrdinalIgnoreCase)))
+                if (canView && viewerActions.Any(x => x.Equals(action, StringComparison.OrdinalIgnoreCase)))
                 {
                     await _next(context);
                     return;
@@ -94,4 +94,3 @@ namespace FidelitasHub.Middleware
         }
     }
 }
-

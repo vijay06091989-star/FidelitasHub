@@ -82,7 +82,7 @@ namespace FidelitasHub.Controllers
 
         public IActionResult Client(int id)
         {
-            if (!CanManageProductivity()) return Forbid();
+            if (!CanViewProductivity()) return Forbid();
             var client = _context.Clients
                 .Include(c => c.GeneralShiftManager)
                 .Include(c => c.GeneralShiftBillingTeamLeader)
@@ -120,7 +120,7 @@ namespace FidelitasHub.Controllers
 
         public IActionResult WebLogins(int id)
         {
-            if (!CanManageProductivity()) return Forbid();
+            if (!CanViewProductivity()) return Forbid();
             var client = _context.Clients.FirstOrDefault(c => c.ClientId == id);
             if (client == null) return NotFound();
 
@@ -743,4 +743,3 @@ namespace FidelitasHub.Controllers
         private static string Csv(string? value) => $"\"{(value ?? string.Empty).Replace("\"", "\"\"")}\"";
     }
 }
-
