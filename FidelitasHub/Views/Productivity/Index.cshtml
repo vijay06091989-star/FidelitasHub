@@ -1,81 +1,48 @@
-﻿@{
+@{
     ViewData["Title"] = "Productivity Dashboard";
+    var top = ViewBag.TopEmployees as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
 }
 
 <div class="page-head">
     <div>
-        <h1 class="page-head__title">
-            <i class="fa-solid fa-chart-line"></i>
-            Productivity Dashboard
-        </h1>
-
-        <p class="page-head__sub">
-            Monitor productivity performance across clients and teams
-        </p>
+        <h1 class="page-head__title"><i class="fa-solid fa-chart-line"></i> Productivity Dashboard</h1>
+        <p class="page-head__sub">Current Payroll Cycle Productivity</p>
+        <div class="text-muted small">Payroll cycle: @ViewBag.PayrollPeriod @if (!string.IsNullOrWhiteSpace((string?)ViewBag.PayrollMonth)) { <span>· @ViewBag.PayrollMonth</span> }</div>
     </div>
 </div>
-
-
-<!-- ==================================================
-     Productivity Statistics
-================================================== -->
 
 <div class="stat-grid">
-
-    <div class="stat">
-        <span class="stat__icon">
-            <i class="fa-solid fa-handshake"></i>
-        </span>
-
-        <div class="stat__body">
-            <p class="stat__label">Active Clients</p>
-            <p class="stat__value">0</p>
-        </div>
-    </div>
-
-
-    <div class="stat stat--success">
-        <span class="stat__icon">
-            <i class="fa-solid fa-users"></i>
-        </span>
-
-        <div class="stat__body">
-            <p class="stat__label">Employees</p>
-            <p class="stat__value">0</p>
-        </div>
-    </div>
-
-
-    <div class="stat stat--danger">
-        <span class="stat__icon">
-            <i class="fa-solid fa-chart-column"></i>
-        </span>
-
-        <div class="stat__body">
-            <p class="stat__label">Productivity Records</p>
-            <p class="stat__value">0</p>
-        </div>
-    </div>
-
+    <div class="stat"><span class="stat__icon"><i class="fa-solid fa-handshake"></i></span><div class="stat__body"><p class="stat__label">Active Clients</p><p class="stat__value">@ViewBag.ActiveClients</p></div></div>
+    <div class="stat stat--success"><span class="stat__icon"><i class="fa-solid fa-users"></i></span><div class="stat__body"><p class="stat__label">Visible Employees</p><p class="stat__value">@ViewBag.AssignedEmployees</p></div></div>
+    <div class="stat"><span class="stat__icon"><i class="fa-solid fa-clipboard-list"></i></span><div class="stat__body"><p class="stat__label">Production Records</p><p class="stat__value">@ViewBag.ProductivityRecords</p></div></div>
+    <div class="stat stat--success"><span class="stat__icon"><i class="fa-solid fa-percent"></i></span><div class="stat__body"><p class="stat__label">Cycle Achievement</p><p class="stat__value">@(((decimal)ViewBag.PayrollAchievement).ToString("0.0"))%</p></div></div>
 </div>
 
-
-<!-- ==================================================
-     Coming Soon / Setup Status
-================================================== -->
-
-<div class="table-card">
-
-    <div class="p-4 text-center">
-
-        <i class="fa-solid fa-chart-line fa-2x mb-3 text-muted"></i>
-
-        <h4>Productivity Module</h4>
-
-        <p class="text-muted mb-0">
-            Productivity setup and reporting will appear here.
-        </p>
-
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="table-card">
+            <div class="p-3 border-bottom"><h5 class="mb-0">Visible Employee Performance</h5></div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Employee</th><th class="text-end">Target</th><th class="text-end">Actual</th><th class="text-end">Achievement</th></tr></thead>
+                    <tbody>
+                    @foreach (var x in top)
+                    {
+                        <tr><td>@x.EmployeeCode - @x.EmployeeName</td><td class="text-end">@x.Target.ToString("0.##")</td><td class="text-end">@x.Actual.ToString("0.##")</td><td class="text-end">@x.Achievement.ToString("0.00")%</td></tr>
+                    }
+                    @if (!top.Any()) { <tr><td colspan="4" class="text-center text-muted p-4">No productivity records for this payroll cycle.</td></tr> }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-
+    <div class="col-lg-4">
+        <div class="table-card p-4">
+            <h5>Quick Actions</h5>
+            <div class="d-grid gap-2 mt-3">
+                <a asp-action="Register" class="btn btn-primary"><i class="fa-solid fa-clipboard-list me-1"></i> Enter Production</a>
+                <a asp-action="Reports" class="btn btn-outline-secondary"><i class="fa-solid fa-chart-column me-1"></i> View Reports</a>
+            </div>
+        </div>
+    </div>
 </div>

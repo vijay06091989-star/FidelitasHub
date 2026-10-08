@@ -3,14 +3,10 @@ using Microsoft.AspNetCore.Http;
 namespace FidelitasHub.Middleware
 {
     /// <summary>
-    /// Restricts the special Productivity-only roles so they cannot enter
-    /// the normal HR/attendance/leave/admin parts of Fidelitas Hub.
-    ///
-    /// Viewer  -> Productivity only.
-    /// Editor  -> Productivity + Client Master.
-    ///
-    /// This is deliberately enforced server-side in addition to hiding
-    /// navigation links in the sidebar.
+    /// Enforces the Productivity role split at the HTTP layer.
+    /// Employee / Team Leader -> Dashboard, Register and Reports.
+    /// Manager / Admin / SuperAdmin -> Productivity Setup and configuration.
+    /// Legacy Viewer / Editor restrictions are retained for the rest of the Hub.
     /// </summary>
     public class ProductivityRoleAccessMiddleware
     {
@@ -23,17 +19,64 @@ namespace FidelitasHub.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var role = context.Session.GetString("Role")?.Trim();
+            var role = context.Session.GetString("Role")?.Trim() ?? string.Empty;
 
-            var isViewer = string.Equals(
-                role,
-                "Viewer",
-                StringComparison.OrdinalIgnoreCase);
+            if (context.Request.Path.StartsWithSegments("/Account"))
+            {
+                await _next(context);
+                return;
+            }
 
-            var isEditor = string.Equals(
-                role,
-                "Editor",
-                StringComparison.OrdinalIgnoreCase);
+            var path = context.Request.Path;
+            if (path.StartsWithSegments("/Productivity"))
+            {
+                var action = context.Request.RouteValues["action"]?.ToString() ?? string.Empty;
+
+                var canView = role.Equals("Employee", StringComparison.OrdinalIgnoreCase) ||
+                              role.Equals("Team Leader", StringComparison.OrdinalIgnoreCase);
+
+                var canManage = role.Equals("Manager", StringComparison.OrdinalIgnoreCase) ||
+                                role.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                                role.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase);
+
+                // Legacy Productivity-only accounts are allowed through to the
+                // controller so they receive the normal authorization result
+                // rather than getting caught in a redirect loop.
+                if (role.Equals("Viewer", StringComparison.OrdinalIgnoreCase) ||
+                    role.Equals("Editor", StringComparison.OrdinalIgnoreCase))
+                {
+                    await _next(context);
+                    return;
+                }
+
+                var viewerActions = new[] { "Index", "Register", "Reports", "ExportReport", "UploadSpreadsheet" };
+                var managerActions = new[]
+                {
+                    "Setup", "CreateProcess", "CreateActivity", "CreateAssignment",
+                    "CreateGroup", "SaveGroupMembers", "CreateGroupAssignment",
+                    "DeactivateGroupAssignment", "DeactivateGroupMember", "DeactivateAssignment",
+                    "Client", "WebLogins"
+                };
+
+                if ((canView || canManage) && viewerActions.Any(x => x.Equals(action, StringComparison.OrdinalIgnoreCase)))
+                {
+                    await _next(context);
+                    return;
+                }
+
+                if (canManage && managerActions.Any(x => x.Equals(action, StringComparison.OrdinalIgnoreCase)))
+                {
+                    await _next(context);
+                    return;
+                }
+
+                context.Response.Redirect(canManage ? "/Productivity/Setup" : "/Productivity/Index");
+                return;
+            }
+
+            // Retain the legacy special-role restriction for Viewer / Editor accounts.
+            var isViewer = role.Equals("Viewer", StringComparison.OrdinalIgnoreCase);
+            var isEditor = role.Equals("Editor", StringComparison.OrdinalIgnoreCase);
 
             if (!isViewer && !isEditor)
             {
@@ -41,63 +84,14 @@ namespace FidelitasHub.Middleware
                 return;
             }
 
-            var path = context.Request.Path;
-
-            // Account pages must remain available so these users can
-            // change password, use forgot-password and log out.
-            if (path.StartsWithSegments("/Account"))
+            if (isEditor && path.StartsWithSegments("/Client"))
             {
                 await _next(context);
                 return;
             }
 
-            // Both roles can view the Productivity dashboard, individual
-            // client productivity pages and client web logins. Editor additionally gets the full
-            // Productivity area (including future setup/register/report pages).
-            if (path.StartsWithSegments("/Productivity"))
-            {
-                if (isEditor)
-                {
-                    await _next(context);
-                    return;
-                }
-
-                var productivityAction =
-                    context.Request.RouteValues["action"]?.ToString();
-
-                if (string.Equals(
-                        productivityAction,
-                        "Index",
-                        StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(
-                        productivityAction,
-                        "Client",
-                        StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(
-                        productivityAction,
-                        "WebLogins",
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    await _next(context);
-                    return;
-                }
-
-                context.Response.Redirect("/Productivity/Index");
-                return;
-            }
-
-            // Editor additionally gets the Client Master, including
-            // Create/Edit/SOP/Enable/Disable operations.
-            if (isEditor &&
-                path.StartsWithSegments("/Client"))
-            {
-                await _next(context);
-                return;
-            }
-
-            // Keep the special accounts completely out of the normal
-            // attendance, leave, reports, masters, system and email flow.
             context.Response.Redirect("/Productivity/Index");
         }
     }
 }
+

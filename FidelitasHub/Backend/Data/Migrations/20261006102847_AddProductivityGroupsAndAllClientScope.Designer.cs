@@ -4,6 +4,7 @@ using FidelitasHub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FidelitasHub.Backend.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006102847_AddProductivityGroupsAndAllClientScope")]
+    partial class AddProductivityGroupsAndAllClientScope
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1181,7 +1184,7 @@ namespace FidelitasHub.Backend.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductivityProcessId"));
 
-                    b.Property<int?>("ClientId")
+                    b.Property<int>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedOn")
@@ -1211,8 +1214,7 @@ namespace FidelitasHub.Backend.Data.Migrations
                     b.HasIndex("DepartmentId");
 
                     b.HasIndex("ClientId", "ProcessCode")
-                        .IsUnique()
-                        .HasFilter("[ClientId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("ProductivityProcesses");
                 });
@@ -1555,7 +1557,8 @@ namespace FidelitasHub.Backend.Data.Migrations
                     b.HasOne("FidelitasHub.Models.Client", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("FidelitasHub.Models.Department", "Department")
                         .WithMany()

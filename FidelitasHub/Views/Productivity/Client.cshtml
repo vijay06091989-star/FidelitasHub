@@ -447,3 +447,12 @@
     </div>
 
 </div>
+
+<div class="table-card mb-4">
+<div class="p-3 border-bottom"><h5 class="mb-0"><i class="fa-solid fa-chart-column me-2"></i>Productivity Configuration</h5></div>
+<div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Process</th><th>Activity</th><th>Unit</th><th>Default Target</th><th>Default Weight</th><th>Assigned Employees</th></tr></thead><tbody>
+@{ var processes = ViewBag.Processes as IEnumerable<FidelitasHub.Models.ProductivityProcess> ?? Enumerable.Empty<FidelitasHub.Models.ProductivityProcess>(); var assignments = ViewBag.Assignments as IEnumerable<FidelitasHub.Models.ProductivityAssignment> ?? Enumerable.Empty<FidelitasHub.Models.ProductivityAssignment>(); }
+@foreach(var p in processes){ foreach(var a in p.Activities.Where(x=>x.IsActive).OrderBy(x=>x.ActivityName)){ var count = assignments.Count(x=>x.ProductivityActivityId==a.ProductivityActivityId); <tr><td>@p.ProcessName</td><td>@a.ActivityName</td><td>@a.Unit</td><td>@a.DefaultTargetPerDay.ToString("0.##")</td><td>@a.DefaultWeight.ToString("0.####")</td><td>@count</td></tr> }}
+@if(!processes.Any()){<tr><td colspan="6" class="text-center text-muted p-4">No Productivity setup exists for this client.</td></tr>}
+</tbody></table></div></div>
+

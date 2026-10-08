@@ -4,16 +4,19 @@ using FidelitasHub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace FidelitasHub.Backend.Data.Migrations
+namespace FidelitasHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006071244_AddProductivityModule")]
+    partial class AddProductivityModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1050,129 +1053,6 @@ namespace FidelitasHub.Backend.Data.Migrations
                     b.ToTable("ProductivityEntries");
                 });
 
-            modelBuilder.Entity("FidelitasHub.Models.ProductivityGroup", b =>
-                {
-                    b.Property<int>("ProductivityGroupId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductivityGroupId"));
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("GroupName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ProductivityGroupId");
-
-                    b.HasIndex("GroupName")
-                        .IsUnique();
-
-                    b.ToTable("ProductivityGroups");
-                });
-
-            modelBuilder.Entity("FidelitasHub.Models.ProductivityGroupAssignment", b =>
-                {
-                    b.Property<int>("ProductivityGroupAssignmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductivityGroupAssignmentId"));
-
-                    b.Property<int?>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("EffectiveFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EffectiveTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProductivityActivityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductivityGroupId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TargetPerDay")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<decimal>("Weight")
-                        .HasPrecision(18, 6)
-                        .HasColumnType("decimal(18,6)");
-
-                    b.HasKey("ProductivityGroupAssignmentId");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("ProductivityActivityId");
-
-                    b.HasIndex("ProductivityGroupId", "ClientId", "ProductivityActivityId", "EffectiveFrom");
-
-                    b.ToTable("ProductivityGroupAssignments");
-                });
-
-            modelBuilder.Entity("FidelitasHub.Models.ProductivityGroupMember", b =>
-                {
-                    b.Property<int>("ProductivityGroupMemberId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductivityGroupMemberId"));
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("EffectiveFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EffectiveTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProductivityGroupId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ProductivityGroupMemberId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("ProductivityGroupId", "EmployeeId", "EffectiveFrom");
-
-                    b.ToTable("ProductivityGroupMembers");
-                });
-
             modelBuilder.Entity("FidelitasHub.Models.ProductivityProcess", b =>
                 {
                     b.Property<int>("ProductivityProcessId")
@@ -1181,7 +1061,7 @@ namespace FidelitasHub.Backend.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductivityProcessId"));
 
-                    b.Property<int?>("ClientId")
+                    b.Property<int>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedOn")
@@ -1211,8 +1091,7 @@ namespace FidelitasHub.Backend.Data.Migrations
                     b.HasIndex("DepartmentId");
 
                     b.HasIndex("ClientId", "ProcessCode")
-                        .IsUnique()
-                        .HasFilter("[ClientId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("ProductivityProcesses");
                 });
@@ -1505,57 +1384,13 @@ namespace FidelitasHub.Backend.Data.Migrations
                     b.Navigation("EnteredByEmployee");
                 });
 
-            modelBuilder.Entity("FidelitasHub.Models.ProductivityGroupAssignment", b =>
-                {
-                    b.HasOne("FidelitasHub.Models.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("FidelitasHub.Models.ProductivityActivity", "Activity")
-                        .WithMany()
-                        .HasForeignKey("ProductivityActivityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FidelitasHub.Models.ProductivityGroup", "Group")
-                        .WithMany("Assignments")
-                        .HasForeignKey("ProductivityGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Activity");
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Group");
-                });
-
-            modelBuilder.Entity("FidelitasHub.Models.ProductivityGroupMember", b =>
-                {
-                    b.HasOne("FidelitasHub.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FidelitasHub.Models.ProductivityGroup", "Group")
-                        .WithMany("Members")
-                        .HasForeignKey("ProductivityGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Group");
-                });
-
             modelBuilder.Entity("FidelitasHub.Models.ProductivityProcess", b =>
                 {
                     b.HasOne("FidelitasHub.Models.Client", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("FidelitasHub.Models.Department", "Department")
                         .WithMany()
@@ -1565,13 +1400,6 @@ namespace FidelitasHub.Backend.Data.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Department");
-                });
-
-            modelBuilder.Entity("FidelitasHub.Models.ProductivityGroup", b =>
-                {
-                    b.Navigation("Assignments");
-
-                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("FidelitasHub.Models.ProductivityProcess", b =>

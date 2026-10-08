@@ -1,0 +1,226 @@
+@model FidelitasHub.Models.ProductivityRegisterViewModel
+@{
+    ViewData["Title"] = "Productivity Register";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-head__title"><i class="fa-solid fa-clipboard-list"></i> Productivity Register</h1>
+        <p class="page-head__sub">Enter multiple activities for the same employee and production day, then save them together.</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+<div class="table-card mb-4">
+    <div class="p-3 border-bottom">
+        <h5 class="mb-0">Production Entry</h5>
+    </div>
+
+    <div class="p-3">
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <label class="form-label">Production Date</label>
+                <input id="productionDate" value="@Model.ProductionDate.ToString("yyyy-MM-dd")" type="date" class="form-control" onchange="reloadRegister()" />
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Employee</label>
+                <select id="employeeId" class="form-select" onchange="reloadRegister()">
+                    @foreach (var e in Model.Employees)
+                    {
+                        <option value="@e.EmployeeId" selected="@(e.EmployeeId == Model.EmployeeId)">@e.EmployeeCode - @e.EmployeeName</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <!-- Upload is deliberately before Save Production. -->
+        <form asp-action="UploadSpreadsheet" method="post" enctype="multipart/form-data" class="border rounded p-3 mb-3 bg-light">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+            <input type="hidden" name="productionDate" value="@Model.ProductionDate.ToString("yyyy-MM-dd")" />
+            <div class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label"><i class="fa-solid fa-file-excel me-1"></i> Employee Production Spreadsheet for the Day</label>
+                    <input name="productionFile" type="file" class="form-control" accept=".xlsx,.xls,.csv" required />
+                    <div class="form-text">Upload the employee's production file for this production date. Excel or CSV, maximum 10 MB.</div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fa-solid fa-upload me-1"></i> Upload Spreadsheet
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <form asp-action="Register" method="post" id="productionSaveForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProductionDate" value="@Model.ProductionDate.ToString("yyyy-MM-dd")" />
+            <input type="hidden" name="EmployeeId" value="@Model.EmployeeId" />
+
+            <div id="productionLines">
+                @for (var i = 0; i < Model.Lines.Count; i++)
+                {
+                    var line = Model.Lines[i];
+                    <div class="production-line border rounded p-3 mb-3" data-line-index="@i">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Client</label>
+                                <select name="Lines[@i].ClientId" class="form-select line-client" onchange="filterActivities(this)" required>
+                                    <option value="">Select client</option>
+                                    @foreach (var c in Model.Clients)
+                                    {
+                                        <option value="@c.ClientId" selected="@(c.ClientId == line.ClientId)">@c.ClientCode - @c.ClientName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Activity</label>
+                                <select name="Lines[@i].ProductivityActivityId" class="form-select line-activity" required>
+                                    <option value="">Select activity</option>
+                                    @foreach (var a in Model.AssignmentOptions)
+                                    {
+                                        <option value="@a.ActivityId" data-client-id="@a.ClientId" selected="@(a.ClientId == line.ClientId && a.ActivityId == line.ProductivityActivityId)">
+                                            @a.ProcessName - @a.ActivityName (@a.Unit) · Target @a.TargetPerDay.ToString("0.##") · ×@a.Weight.ToString("0.####")
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Count / Quantity</label>
+                                <input name="Lines[@i].Quantity" value="@line.Quantity" type="number" min="0" step="0.01" class="form-control" required />
+                            </div>
+                            <div class="col-md-2 d-flex gap-2">
+                                <button type="button" class="btn btn-outline-danger w-100 remove-line" onclick="removeProductionLine(this)">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
+                                <input name="Lines[@i].Remarks" value="@line.Remarks" class="form-control" maxlength="1000" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button type="button" class="btn btn-outline-primary" onclick="addProductionLine()">
+                    <i class="fa-solid fa-plus me-1"></i> Add Activity
+                </button>
+                <span class="text-muted small">Add another activity for the same employee and date. All rows are saved together.</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-save me-1"></i> Save Production
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="p-3 border-bottom"><h5 class="mb-0">Recent Entries</h5></div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Date</th><th>Employee</th><th>Client</th><th>Process</th><th>Activity</th><th>Qty</th><th>Weighted</th><th>Entered</th></tr></thead>
+            <tbody>
+            @foreach (var x in Model.RecentEntries)
+            {
+                <tr>
+                    <td>@x.ProductionDate.ToString("dd-MMM-yyyy")</td>
+                    <td>@x.Employee?.EmployeeCode</td>
+                    <td>@x.Client?.ClientCode</td>
+                    <td>@x.Activity?.Process?.ProcessName</td>
+                    <td>@x.Activity?.ActivityName</td>
+                    <td>@x.Quantity.ToString("0.##")</td>
+                    <td>@x.WeightedAchievement.ToString("0.##")</td>
+                    <td>@x.EnteredOn.ToString("dd-MMM HH:mm")</td>
+                </tr>
+            }
+            @if (!Model.RecentEntries.Any())
+            {
+                <tr><td colspan="8" class="text-center text-muted p-4">No production entries for this date.</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function reloadRegister() {
+        const d = document.getElementById('productionDate').value;
+        const e = document.getElementById('employeeId').value;
+        window.location = '@Url.Action("Register", "Productivity")?employeeId=' + encodeURIComponent(e) + '&date=' + encodeURIComponent(d);
+    }
+
+    function filterActivities(clientSelect) {
+        const line = clientSelect.closest('.production-line');
+        const activitySelect = line.querySelector('.line-activity');
+        const clientId = clientSelect.value;
+        const current = activitySelect.value;
+        let currentStillVisible = false;
+
+        Array.from(activitySelect.options).forEach(option => {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+            const match = option.dataset.clientId === clientId;
+            option.hidden = !match;
+            if (match && option.value === current) currentStillVisible = true;
+        });
+
+        if (!currentStillVisible) activitySelect.value = '';
+    }
+
+    function addProductionLine() {
+        const container = document.getElementById('productionLines');
+        const source = container.querySelector('.production-line');
+        const clone = source.cloneNode(true);
+        clone.querySelectorAll('input, select').forEach(input => {
+            if (input.classList.contains('line-client') || input.classList.contains('line-activity')) {
+                input.value = '';
+            } else if (input.type === 'number') {
+                input.value = '0';
+            } else {
+                input.value = '';
+            }
+        });
+        clone.querySelectorAll('.line-activity option').forEach(option => option.hidden = false);
+        container.appendChild(clone);
+        reindexProductionLines();
+        filterActivities(clone.querySelector('.line-client'));
+        updateRemoveButtons();
+    }
+
+    function removeProductionLine(button) {
+        const lines = document.querySelectorAll('.production-line');
+        if (lines.length <= 1) return;
+        button.closest('.production-line').remove();
+        reindexProductionLines();
+        updateRemoveButtons();
+    }
+
+    function reindexProductionLines() {
+        document.querySelectorAll('.production-line').forEach((line, index) => {
+            line.dataset.lineIndex = index;
+            line.querySelectorAll('input, select').forEach(input => {
+                const field = input.name.split(']').pop();
+                if (field) input.name = `Lines[${index}]${field}`;
+            });
+        });
+    }
+
+    function updateRemoveButtons() {
+        const buttons = document.querySelectorAll('.remove-line');
+        buttons.forEach(b => b.disabled = buttons.length === 1);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.line-client').forEach(filterActivities);
+        updateRemoveButtons();
+    });
+</script>
+}

@@ -22,6 +22,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ReportingService>();
+builder.Services.AddScoped<ProductivityService>();
 builder.Services.AddScoped<PayrollCycleLeaveService>();
 
 builder.Services.AddHostedService<AttendanceAutoPunchOutService>();
