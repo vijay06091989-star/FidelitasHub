@@ -1,4 +1,4 @@
-using FidelitasHub.Data;
+﻿using FidelitasHub.Data;
 using FidelitasHub.Models;
 using FidelitasHub.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +47,7 @@ namespace FidelitasHub.Controllers
             {
                 var adminLeaves = await _context.LeaveApplications
                     .Include(x => x.Employee)
+                    .ThenInclude(e => e.ReportingTeamLeader)
                     .Where(x =>
                         x.Status == "Pending Manager Approval")
                     .OrderByDescending(x => x.AppliedOn)
@@ -66,6 +67,7 @@ namespace FidelitasHub.Controllers
             {
                 var managerLeaves = await _context.LeaveApplications
                     .Include(x => x.Employee)
+                    .ThenInclude(e => e.ReportingTeamLeader)
                     .Where(x =>
                         x.Status == "Pending Manager Approval" &&
                         x.Employee.ReportingManagerId ==
@@ -217,6 +219,8 @@ namespace FidelitasHub.Controllers
             //==================================================
             // Final Approval
             //==================================================
+
+            leave.ManagerId = currentEmployee.EmployeeId;
 
             leave.ManagerStatus = "Approved";
 

@@ -1,7 +1,8 @@
-using FidelitasHub.Data;
+﻿using FidelitasHub.Data;
 using FidelitasHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using FidelitasHub.Helpers;
 using FidelitasHub.Services.Leave;
 
@@ -456,6 +457,10 @@ namespace FidelitasHub.Controllers
             DateTime? toDate)
         {
             var leaves = _context.LeaveApplications
+                .Include(l => l.Employee)
+                    .ThenInclude(e => e.ReportingTeamLeader)
+                .Include(l => l.Employee)
+                    .ThenInclude(e => e.ReportingManager)
                 .AsQueryable();
 
 
@@ -499,6 +504,20 @@ namespace FidelitasHub.Controllers
 
 
             ViewBag.EmployeeNames = _context.Employees
+                .ToDictionary(e => e.EmployeeId, e => e.EmployeeName);
+
+            ViewBag.EmployeeCodes = _context.Employees
+                .ToDictionary(e => e.EmployeeId, e => e.EmployeeCode);
+
+            ViewBag.TeamLeaderIds = _context.Employees
+                .Where(e => e.ReportingTeamLeaderId.HasValue)
+                .ToDictionary(e => e.EmployeeId, e => e.ReportingTeamLeaderId.Value);
+
+            ViewBag.EmployeeManagerIds = _context.Employees
+                .Where(e => e.ReportingManagerId.HasValue)
+                .ToDictionary(e => e.EmployeeId, e => e.ReportingManagerId.Value);
+
+            ViewBag.ManagerNames = _context.Employees
                 .ToDictionary(e => e.EmployeeId, e => e.EmployeeName);
 
 

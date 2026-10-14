@@ -1,9 +1,17 @@
-@model IEnumerable<FidelitasHub.Models.LeaveApplication>
+﻿@model IEnumerable<FidelitasHub.Models.LeaveApplication>
 
 @{
     ViewData["Title"] = "Leave Register";
 
     var names = ViewBag.EmployeeNames as Dictionary<int, string>
+                ?? new Dictionary<int, string>();
+    var codes = ViewBag.EmployeeCodes as Dictionary<int, string>
+                ?? new Dictionary<int, string>();
+    var teamLeaderIds = ViewBag.TeamLeaderIds as Dictionary<int, int>
+                ?? new Dictionary<int, int>();
+    var employeeManagerIds = ViewBag.EmployeeManagerIds as Dictionary<int, int>
+                ?? new Dictionary<int, int>();
+    var managerNames = ViewBag.ManagerNames as Dictionary<int, string>
                 ?? new Dictionary<int, string>();
 
     Func<string, string> badge = s =>
@@ -260,7 +268,10 @@
 
                 <tr>
 
+                    <th>Employee Code</th>
                     <th>Employee</th>
+                    <th>Reporting Lead</th>
+                    <th>Manager Approver</th>
                     <th>Type</th>
                     <th>From</th>
                     <th>To</th>
@@ -286,12 +297,27 @@
                         <tr>
 
 
+                            <td>@(codes.TryGetValue(l.EmployeeId, out var code) ? code : "-")</td>
+
                             <td class="fw-semibold">
+                                @(names.TryGetValue(l.EmployeeId, out var n) ? n : "#" + l.EmployeeId)
+                            </td>
 
-                                @(names.TryGetValue(l.EmployeeId, out var n)
-                                ? n
-                                : "#" + l.EmployeeId)
+                            <td>@(teamLeaderIds.TryGetValue(l.EmployeeId, out var leadId) && managerNames.TryGetValue(leadId, out var leadName) ? leadName : "Not assigned")</td>
 
+                            <td>
+                                @if (l.ManagerId.HasValue && managerNames.TryGetValue(l.ManagerId.Value, out var approvedManagerName))
+                                {
+                                    @approvedManagerName
+                                }
+                                else if (employeeManagerIds.TryGetValue(l.EmployeeId, out var assignedManagerId) && managerNames.TryGetValue(assignedManagerId, out var assignedManagerName))
+                                {
+                                    @assignedManagerName
+                                }
+                                else
+                                {
+                                    @("Not recorded")
+                                }
                             </td>
 
 
@@ -341,7 +367,7 @@
 
                     <tr>
 
-                        <td colspan="7"
+                        <td colspan="10"
                             class="text-center text-muted py-4">
 
                             <i class="fa-solid fa-inbox fa-lg d-block mb-2"></i>

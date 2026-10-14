@@ -47,6 +47,7 @@ namespace FidelitasHub.Controllers
             {
                 var adminLeaves = await _context.LeaveApplications
                     .Include(x => x.Employee)
+                    .ThenInclude(e => e.ReportingTeamLeader)
                     .Where(x =>
                         x.Status == "Pending")
                     .OrderByDescending(x => x.AppliedOn)
@@ -67,6 +68,7 @@ namespace FidelitasHub.Controllers
                 var teamLeaderLeaves =
                     await _context.LeaveApplications
                         .Include(x => x.Employee)
+                        .ThenInclude(e => e.ReportingTeamLeader)
                         .Where(x =>
                             x.Status == "Pending" &&
                             x.Employee.ReportingTeamLeaderId ==
@@ -160,6 +162,8 @@ namespace FidelitasHub.Controllers
             //==================================================
             // Team Leader Approval
             //==================================================
+
+            leave.TeamLeaderId = currentEmployee.EmployeeId;
 
             leave.TeamLeaderStatus =
                 "Approved";

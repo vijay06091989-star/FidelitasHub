@@ -32,6 +32,8 @@
                         <thead>
                             <tr>
                                 <th>Employee</th>
+                                <th>Reporting Lead</th>
+                                <th>Reporting Manager</th>
                                 <th>From</th>
                                 <th>To</th>
                                 <th>Total Days</th>
@@ -54,6 +56,9 @@
                                     <td class="fw-semibold">
                                         @item.Employee?.EmployeeCode - @item.Employee?.EmployeeName
                                     </td>
+
+                                    <td>@(item.Employee?.ReportingTeamLeader?.EmployeeName ?? "Not assigned")</td>
+                                    <td>@(item.Employee?.ReportingManager?.EmployeeName ?? "Not assigned")</td>
 
                                     <td>@item.FromDate.ToString("dd-MMM-yyyy")</td>
 
